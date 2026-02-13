@@ -1,111 +1,34 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
 While running game code:
-  File "renpy/style.pyx", line 96, in renpy.style.get_style
-  File "renpy/style.pyx", line 83, in renpy.style.get_style
-Exception: Style 'title' does not exist.
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "renpy/style.pyx", line 96, in renpy.style.get_style
-  File "renpy/style.pyx", line 98, in renpy.style.get_style
-Exception: Style 'menu_title' does not exist.
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "tmp/gen3-static/styleclass.pxi", line 621, in renpy.styledata.styleclass.Style.slow_abortable.__get__
-  File "renpy/style.pyx", line 493, in renpy.style.StyleCore._get
-  File "renpy/style.pyx", line 686, in renpy.style.build_style
-  File "renpy/style.pyx", line 142, in renpy.style.get_full_style
-  File "renpy/style.pyx", line 98, in renpy.style.get_style
-Exception: Style 'main_menu_title' does not exist.
+Exception: Could not load the game. Perhaps the script changed in an incompatible way.
 
 -- Full Traceback ------------------------------------------------------------
 
 Traceback (most recent call last):
-  File "renpy/style.pyx", line 96, in renpy.style.get_style
-  File "renpy/style.pyx", line 83, in renpy.style.get_style
-Exception: Style 'title' does not exist.
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "renpy/style.pyx", line 96, in renpy.style.get_style
-  File "renpy/style.pyx", line 98, in renpy.style.get_style
-Exception: Style 'menu_title' does not exist.
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "renpy/common/_layout/screen_main_menu.rpym", line 28, in script
+  File "renpy/common/00start.rpy", line 234, in script call
+    call _load_reload_game from _call__load_reload_game_1
+  File "renpy/common/00keymap.rpy", line 551, in script
     python hide:
   File "renpy/ast.py", line 1187, in execute
     renpy.python.py_exec_bytecode(self.code.bytecode, self.hide, store=self.store)
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/python.py", line 1260, in py_exec_bytecode
+  File "renpy/python.py", line 1273, in py_exec_bytecode
     exec(bytecode, globals, locals)
     ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/common/_layout/screen_main_menu.rpym", line 28, in <module>
+  File "renpy/common/00keymap.rpy", line 551, in <module>
     python hide:
-  File "renpy/common/_layout/screen_main_menu.rpym", line 35, in _execute_python_hide
-    ui.interact()
-    ~~~~~~~~~~~^^
-  File "renpy/ui.py", line 304, in interact
-    rv = renpy.game.interface.interact(roll_forward=roll_forward, **kwargs)
-         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/core.py", line 2219, in interact
-    repeat, rv = self.interact_core(
-                 ~~~~~~~~~~~~~~~~~~^
-        preloads=preloads,
-        ^^^^^^^^^^^^^^^^^^
-    ...<4 lines>...
-        **kwargs,
-        ^^^^^^^^^
-    )  # type: ignore
-    ^                
-  File "renpy/display/core.py", line 2757, in interact_core
-    root_widget.visit_all(lambda d: d.per_interact())
-    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/displayable.py", line 432, in visit_all
-    d.visit_all(callback, seen)
-    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
-  File "renpy/display/displayable.py", line 432, in visit_all
-    d.visit_all(callback, seen)
-    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
-  File "renpy/display/displayable.py", line 432, in visit_all
-    d.visit_all(callback, seen)
-    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
-  File "renpy/display/screen.py", line 508, in visit_all
-    self.child.visit_all(callback, seen=None)
-    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/displayable.py", line 432, in visit_all
-    d.visit_all(callback, seen)
-    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
-  File "renpy/display/displayable.py", line 432, in visit_all
-    d.visit_all(callback, seen)
-    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
-  File "renpy/display/displayable.py", line 432, in visit_all
-    d.visit_all(callback, seen)
-    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
-  File "renpy/display/displayable.py", line 434, in visit_all
-    callback(self)
-    ~~~~~~~~^^^^^^
-  File "renpy/display/core.py", line 2757, in <lambda>
-    root_widget.visit_all(lambda d: d.per_interact())
-                                    ~~~~~~~~~~~~~~^^ 
-  File "renpy/text/text.py", line 2354, in per_interact
-    if self.style.slow_abortable:
-       ^^^^^^^^^^^^^^^^^^^^^^^^^ 
-  File "tmp/gen3-static/styleclass.pxi", line 621, in renpy.styledata.styleclass.Style.slow_abortable.__get__
-  File "renpy/style.pyx", line 493, in renpy.style.StyleCore._get
-  File "renpy/style.pyx", line 686, in renpy.style.build_style
-  File "renpy/style.pyx", line 142, in renpy.style.get_full_style
-  File "renpy/style.pyx", line 98, in renpy.style.get_style
-Exception: Style 'main_menu_title' does not exist.
+  File "renpy/common/00keymap.rpy", line 565, in _execute_python_hide
+    renpy.load(renpy.session["_reload_slot"])
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/loadsave.py", line 638, in load
+    log.unfreeze(roots, label="_after_load")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/rollback.py", line 1094, in unfreeze
+    raise Exception("Could not load the game. Perhaps the script changed in an incompatible way.")
+Exception: Could not load the game. Perhaps the script changed in an incompatible way.
 
 Windows-11-10.0.26200-SP0 AMD64
-Ren'Py 8.4.1.25072401
-За гранью чувств 1.0
-Sun Jan 25 20:39:28 2026
+Ren'Py 8.5.3.26020901+nightly
+За гранью чувств 0.0
+Fri Feb 13 17:24:42 2026
