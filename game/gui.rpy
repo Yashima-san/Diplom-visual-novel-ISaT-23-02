@@ -17,6 +17,27 @@ init python:
 define config.check_conflicting_properties = True
 
 
+## Курсоры #####################################################################
+
+## Определяем изображения для разных состояний курсора
+define gui.default_cursor = "gui/cursor/default.png"
+define gui.hover_cursor = "gui/cursor/hover.png"
+define gui.click_cursor = "gui/cursor/click.png"
+
+## Задаем hotspot (область нажатия) для каждого курсора, если нужно
+## Обычно hotspot - это точка, которая считается "кончиком" курсора
+define gui.cursor_hotspot = (0, 0)  # (x, y) координаты точки нажатия
+
+## Включаем пользовательский курсор с поддержкой нажатия
+define config.mouse = {
+    "default": [ ("gui/cursor/default.png", 0, 0) ],
+    "hover": [ ("gui/cursor/hover.png", 0, 0) ],
+    "selected_hover": [ ("gui/cursor/click.png", 0, 0) ],  # Для нажатых кнопок
+    "selected": [ ("gui/cursor/click.png", 0, 0) ],        # Для выбранных элементов
+    "insensitive": [ ("gui/cursor/default.png", 0, 0) ],   # Для неактивных элементов
+    "busy": [ ("gui/cursor/click.png", 0, 0) ],            # Для занятого состояния
+}
+
 ################################################################################
 ## Конфигурируемые Переменные GUI
 ################################################################################

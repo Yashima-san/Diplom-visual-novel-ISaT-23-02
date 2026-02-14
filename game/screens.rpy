@@ -74,6 +74,81 @@ style frame:
     padding gui.frame_borders.padding
     background Frame("gui/frame.png", gui.frame_borders, tile=gui.frame_tile)
 
+###### Стили курсоров ######
+
+# Базовый стиль для всех кнопок
+style button:
+    properties gui.button_properties("button")
+    mouse "hover"           # Обычное наведение
+    hover_mouse "hover"     # Наведение
+    selected_mouse "selected"           # Выбранное состояние
+    selected_hover_mouse "selected_hover" # Наведение на выбранном состоянии
+    insensitive_mouse "insensitive"      # Неактивное состояние
+
+# Для кнопок главного меню
+style main_menu_button:
+    background Frame("gui/button/sticker_button_idle.png", 10, 10, 10, 10)
+    hover_background Frame("gui/button/sticker_button_hover.png", 10, 10, 10, 10)
+    selected_background Frame("gui/button/sticker_button_hover.png", 10, 10, 10, 10)
+    xalign 0.5
+    padding (20, 10)
+    xsize 400
+    ysize None
+    margin (0, 0)
+    mouse "hover"
+    hover_mouse "hover"
+    selected_mouse "selected"
+    selected_hover_mouse "selected_hover"
+    insensitive_mouse "insensitive"
+
+# Для кнопок навигации
+style navigation_button:
+    size_group "navigation"
+    properties gui.button_properties("navigation_button")
+    mouse "hover"
+    hover_mouse "hover"
+    selected_mouse "selected"
+    selected_hover_mouse "selected_hover"
+    insensitive_mouse "insensitive"
+
+# Для кнопок быстрого меню
+style quick_button:
+    properties gui.button_properties("quick_button")
+    mouse "hover"
+    hover_mouse "hover"
+    selected_mouse "selected"
+    selected_hover_mouse "selected_hover"
+    insensitive_mouse "insensitive"
+
+# Для кнопок выбора
+style choice_button:
+    properties gui.button_properties("choice_button")
+    mouse "hover"
+    hover_mouse "hover"
+    selected_mouse "selected"
+    selected_hover_mouse "selected_hover"
+    insensitive_mouse "insensitive"
+
+# Для ползунков
+style slider:
+    ysize gui.slider_size
+    base_bar Frame("gui/slider/horizontal_[prefix_]bar.png", gui.slider_borders, tile=gui.slider_tile)
+    thumb "gui/slider/horizontal_[prefix_]thumb.png"
+    mouse "hover"
+    hover_mouse "hover"
+    selected_mouse "selected"
+    selected_hover_mouse "selected_hover"
+
+# Для полос прокрутки
+style scrollbar:
+    ysize gui.scrollbar_size
+    base_bar Frame("gui/scrollbar/horizontal_[prefix_]bar.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
+    thumb Frame("gui/scrollbar/horizontal_[prefix_]thumb.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
+    mouse "hover"
+    hover_mouse "hover"
+    selected_mouse "selected"
+    selected_hover_mouse "selected_hover"
+    
 ################################################################################
 ## Внутриигровые экраны
 ################################################################################
