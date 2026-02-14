@@ -1,0 +1,298 @@
+2026-02-14 12:54:58 UTC
+Windows-11-10.0.26200-SP0
+Ren'Py 8.5.3.26020901+nightly
+
+Early init took 225 ms
+Loading error handling took 88 ms
+Loading script took 522 ms
+Loading save slot metadata took 141 ms
+Loading persistent took 0 ms
+Running init code took 217 ms
+Loading analysis data took 17 ms
+Analyze and compile ATL took 4 ms
+Reloading save slot metadata took 58 ms
+Dump and make backups took 178 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 317 ms
+DPI scale factor: 1.250000
+nvdrs: Loaded, about to disable thread optimizations.
+nvdrs: b"Couldn't load nvlib." (can be ignored)
+Creating interface object took 14 ms
+Init translation took 1 ms
+Cleaning stores took 0 ms
+Load screen analysis took 163 ms
+Analyze screens took 3 ms
+Save screen analysis took 0 ms
+Save pyanalysis took 0 ms
+Save bytecode took 0 ms
+Running _start took 3 ms
+Interface start took 1720 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 22 ms
+Loading error handling took 51 ms
+Loading script took 265 ms
+Loading save slot metadata took 47 ms
+Loading persistent took 1 ms
+Running init code took 100 ms
+Loading analysis data took 36 ms
+Analyze and compile ATL took 3 ms
+Reloading save slot metadata took 28 ms
+Dump and make backups took 129 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 172 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 0 ms
+Cleaning stores took 1 ms
+Load screen analysis took 88 ms
+Analyze screens took 4 ms
+Save screen analysis took 1 ms
+Save pyanalysis took 0 ms
+Save bytecode took 0 ms
+Running _start took 2 ms
+Interface start took 891 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 47 ms
+Loading error handling took 89 ms
+Loading script took 1114 ms
+Loading save slot metadata took 77 ms
+Loading persistent took 0 ms
+Running init code took 201 ms
+Loading analysis data took 17 ms
+Analyze and compile ATL took 4 ms
+Reloading save slot metadata took 58 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 228 ms
+Cleaning cache took 1 ms
+Making clean stores took 0 ms
+Initial gc took 220 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 2 ms
+Cleaning stores took 0 ms
+Load screen analysis took 2 ms
+Analyze screens took 55 ms
+Save screen analysis took 53 ms
+Save pyanalysis took 0 ms
+Save bytecode took 0 ms
+Running _start took 7 ms
+Interface start took 1220 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 188 ms
+Loading error handling took 152 ms
+Loading script took 1951 ms
+Loading save slot metadata took 1224 ms
+Loading persistent took 0 ms
+Running init code took 221 ms
+Loading analysis data took 17 ms
+Analyze and compile ATL took 4 ms
+Reloading save slot metadata took 51 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 243 ms
+Cleaning cache took 1 ms
+Making clean stores took 0 ms
+Initial gc took 233 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 0 ms
+Load screen analysis took 2 ms
+Analyze screens took 50 ms
+Save screen analysis took 61 ms
+Save pyanalysis took 1 ms
+Save bytecode took 0 ms
+Running _start took 2 ms
+Interface start took 1135 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 36 ms
+Loading error handling took 83 ms
+Loading script took 851 ms
+Loading save slot metadata took 76 ms
+Loading persistent took 1 ms
+Running init code took 181 ms
+Loading analysis data took 13 ms
+Analyze and compile ATL took 7 ms
+Reloading save slot metadata took 42 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 199 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 223 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 0 ms
+Load screen analysis took 2 ms
+Analyze screens took 45 ms
+Save screen analysis took 51 ms
+Save pyanalysis took 1 ms
+Save bytecode took 0 ms
+Running _start took 2 ms
+Interface start took 1049 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 82 ms
+Loading error handling took 134 ms
+Loading script took 943 ms
+Loading save slot metadata took 103 ms
+Loading persistent took 0 ms
+Running init code took 360 ms
+Loading analysis data took 42 ms
+Analyze and compile ATL took 10 ms
+Reloading save slot metadata took 223 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 502 ms
+Cleaning cache took 0 ms
+Making clean stores took 5 ms
+Initial gc took 355 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 0 ms
+Load screen analysis took 2 ms
+Analyze screens took 181 ms
+Save screen analysis took 148 ms
+Save pyanalysis took 0 ms
+Save bytecode took 0 ms
+Running _start took 3 ms
+Interface start took 2509 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 129 ms
+Loading error handling took 286 ms
+Loading script took 1175 ms
+Loading save slot metadata took 159 ms
+Loading persistent took 0 ms
+Running init code took 209 ms
+Loading analysis data took 19 ms
+Analyze and compile ATL took 5 ms
+Reloading save slot metadata took 65 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 227 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 237 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 0 ms
+Load screen analysis took 5 ms
+Analyze screens took 46 ms
+Save screen analysis took 57 ms
+Save pyanalysis took 1 ms
+Save bytecode took 2 ms
+Running _start took 2 ms
+Interface start took 1371 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 35 ms
+Loading error handling took 51 ms
+Loading script took 376 ms
+Loading save slot metadata took 53 ms
+Loading persistent took 0 ms
+Running init code took 112 ms
+Loading analysis data took 12 ms
+Analyze and compile ATL took 4 ms
+Reloading save slot metadata took 33 ms
+Dump and make backups took 146 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 184 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 0 ms
+Load screen analysis took 91 ms
+Analyze screens took 4 ms
+Save screen analysis took 0 ms
+Save pyanalysis took 0 ms
+Save bytecode took 0 ms
+Running _start took 3 ms
+Interface start took 961 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
