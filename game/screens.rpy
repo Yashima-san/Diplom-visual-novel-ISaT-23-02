@@ -345,6 +345,9 @@ screen main_menu():
 
     add "gui/main_menu.png"
 
+    ## Полупрозрачный overlay для затемнения фона
+    add "gui/overlay/confirm.png" alpha 0.3
+
     ## Центрированное меню в виде стикера на доске
     frame:
         style "main_menu_frame"
@@ -353,7 +356,7 @@ screen main_menu():
         xsize 500
         ysize 580
         
-        background Frame("gui/sticker_frame.png", 25, 25, 25, 25)
+        background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
         
         vbox:
             xalign 0.5
@@ -450,7 +453,7 @@ style main_menu_button is button:
     margin (0, 0)
 
 style main_menu_button_text is button_text:
-    color "#CC6600"
+    color "#FF7B4E"
     hover_color "#C3522D"
     size 28
     text_align 0.5

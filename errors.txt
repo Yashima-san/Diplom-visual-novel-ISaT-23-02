@@ -1,0 +1,10 @@
+﻿I'm sorry, but errors were detected in your script. Please correct the
+errors listed below, and try again.
+
+
+File "game/screens.rpy", line 359: 'alpha' is not a keyword argument or valid child of the frame statement.
+    background Frame("gui/overlay/confirm.png", 25, 25, 25, 25) alpha 0.3
+                                                                     ^
+
+Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
+Fri Feb 13 18:31:50 2026
