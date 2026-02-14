@@ -346,7 +346,7 @@ screen main_menu():
     add "gui/main_menu.png"
 
     ## Полупрозрачный overlay для затемнения фона
-    add "gui/overlay/confirm.png" alpha 0.3
+    #add "gui/overlay/confirm.png" alpha 0.3
 
     ## Центрированное меню в виде стикера на доске
     frame:
@@ -445,7 +445,7 @@ style main_menu_vbox:
 
 style main_menu_button is button:
     background Frame("gui/button/choice_idle_background.png", 10, 10, 10, 10)
-    hover_background Frame("gui/button/choice_idle_background.png", 10, 10, 10, 10)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 10, 10, 10, 10)
     xalign 0.5
     padding (20, 10)
     xsize 400
