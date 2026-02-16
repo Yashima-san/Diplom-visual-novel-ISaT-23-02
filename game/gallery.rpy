@@ -122,26 +122,26 @@ screen gallery():
                             
                             if item.is_unlocked():
                                 frame:
-                                    xysize (350, 250)
+                                    xysize (360, 250)
                                     background "#333333"
                                     
                                     vbox:
                                         # Миниатюра
-                                        add Transform(item.image, zoom=0.5, xalign=0.5, yalign=0.5) xysize (350, 200)
+                                        add Transform(item.image, zoom=0.5, xalign=0.5, yalign=0.5) xysize (340, 200)
                                         
                                         # Название
                                         text item.name:
                                             style "gallery_item_name"
                                             xalign 0.5
-                                            yalign 1.0
+                                            yalign 0.5
                             
                             else:
                                 frame:
-                                    xysize (350, 250)
+                                    xysize (340, 250)
                                     background "#222222"
                                     
                                     vbox:
-                                        text "🔒" size 100 xalign 0.5 yalign 0.5
+                                        text "🔒" size 100 xalign 0.6 yalign 1.0
                                         text _("Не разблокировано"):
                                             style "gallery_locked_text"
                                             xalign 0.5
@@ -160,7 +160,7 @@ screen gallery_image_popup(image, title):
     
     frame:
         style "gallery_popup_frame"
-        xysize (1600, 900)
+        xysize (1600, 820)
         xalign 0.5
         yalign 0.5
         
@@ -217,11 +217,11 @@ style gallery_locked_text:
     color "#808080"
     font gui.interface_text_font
     xalign 0.5
-    yalign 0.9
+    yalign 1.0
 
 style gallery_popup_frame:
     background Frame("gui/confirm_frame.png", 25, 25, 25, 25)
-    padding (30, 30)
+    padding (15, 15)
 
 style gallery_popup_title:
     size 32
