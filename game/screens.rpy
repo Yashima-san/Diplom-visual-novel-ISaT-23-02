@@ -415,7 +415,7 @@ screen main_menu():
     tag menu
 
     add "gui/main_menu.png"
-
+    
     ## Центрированное меню в виде стикера на доске
     frame:
         style "main_menu_frame"
@@ -443,17 +443,17 @@ screen main_menu():
                 
                 textbutton _("Сохранения"):
                     style "main_menu_button"
-                    action ShowMenu("save")
+                    action ShowMenu("save")  # Показывает экран сохранения
                     xsize 400
                 
                 textbutton _("Карточки"):
                     style "main_menu_button"
-                    action ShowMenu("gallery")
+                    action ShowMenu("gallery")  # Показывает экран галереи
                     xsize 400
                 
                 textbutton _("Достижения"):
                     style "main_menu_button"
-                    action ShowMenu("achievements")
+                    action ShowMenu("achievements")  # Показывает экран достижений
                     xsize 400
                 
                 textbutton _("Параметры"):

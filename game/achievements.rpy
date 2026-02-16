@@ -108,9 +108,13 @@ screen achievements():
                                         yalign 0.5
                                         spacing 5
                                         
+                                        # Исправлено: вынес условный цвет в отдельную проверку
                                         text ach.name:
                                             style "achievement_name"
-                                            color "#ffffff" if ach.is_unlocked() else gui.insensitive_color
+                                            if ach.is_unlocked():
+                                                color "#ffffff"
+                                            else:
+                                                color gui.insensitive_color
                                         
                                         if ach.is_unlocked():
                                             text ach.description:
@@ -120,7 +124,7 @@ screen achievements():
                                                 text _("Скрытое достижение"):
                                                     style "achievement_description"
                                             else:
-                                                text _("???"):
+                                                text _("???")  # Исправлено: добавлена закрывающая скобка
 
 ## Стили для достижений
 style achievements_vbox:
@@ -139,7 +143,6 @@ style achievement_frame:
 style achievement_name:
     size 28
     font gui.interface_text_font
-    color "#ffffff"
     outlines [(2, "#000000", 0, 0)]
 
 style achievement_description:
