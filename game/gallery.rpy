@@ -13,14 +13,29 @@ init python:
         def is_unlocked(self):
             if self.unlock_condition is None:
                 return True
+            # Проверяем, что persistent._gallery_unlocks - словарь
+            if not isinstance(persistent._gallery_unlocks, dict):
+                return False
             return persistent._gallery_unlocks.get(self.unlock_condition, False)
     
-    # Инициализация persistent
-    if not hasattr(persistent, '_gallery_unlocks'):
+    # Инициализация persistent для галереи
+    if not hasattr(persistent, '_gallery_unlocks') or persistent._gallery_unlocks is None:
         persistent._gallery_unlocks = {}
+    else:
+        # Если уже существует, но это не словарь, конвертируем или создаем новый
+        if not isinstance(persistent._gallery_unlocks, dict):
+            old_data = persistent._gallery_unlocks
+            persistent._gallery_unlocks = {}
+            # Если это было множество с разблокированными элементами
+            if isinstance(old_data, set):
+                for item_key in old_data:
+                    persistent._gallery_unlocks[item_key] = True
     
     # Функция для разблокировки элемента галереи
     def unlock_gallery_item(key):
+        # Проверяем, что persistent._gallery_unlocks - словарь
+        if not isinstance(persistent._gallery_unlocks, dict):
+            persistent._gallery_unlocks = {}
         persistent._gallery_unlocks[key] = True
     
     # Словарь для хранения элементов галереи

@@ -33,7 +33,7 @@ screen input_name_screen():
 
 label start:
     # Устанавливаем музыку главного меню
-    play music main_menu_music fadein 5.0
+    play music config.main_menu_music fadein 5.0
     $ renpy.music.set_volume(0.1, delay=0)
     
     # Вызов экрана и получение имени

@@ -24,6 +24,16 @@ init -1 python:
     # Функция для разблокировки достижения
     def unlock_achievement(id):
         if id in achievements:
+            # Проверяем, что persistent._achievements - словарь
+            if not isinstance(persistent._achievements, dict):
+                # Конвертируем set в dict, если нужно
+                old_data = persistent._achievements
+                persistent._achievements = {}
+                # Если это было множество с разблокированными достижениями
+                if isinstance(old_data, set):
+                    for ach_id in old_data:
+                        persistent._achievements[ach_id] = True
+            
             if not persistent._achievements.get(id, False):
                 persistent._achievements[id] = True
                 if not achievements[id].hidden:
@@ -31,11 +41,23 @@ init -1 python:
     
     # Функция для проверки, разблокировано ли достижение
     def is_achievement_unlocked(id):
+        # Проверяем, что persistent._achievements - словарь
+        if not isinstance(persistent._achievements, dict):
+            return False
         return persistent._achievements.get(id, False)
     
     # Инициализация persistent переменной для хранения достижений
     if not hasattr(persistent, '_achievements'):
-        persistent._achievements = {}
+        persistent._achievements = {}  # Словарь вместо множества
+    else:
+        # Если уже существует, но это не словарь, конвертируем
+        if not isinstance(persistent._achievements, dict):
+            old_data = persistent._achievements
+            persistent._achievements = {}
+            # Если это было множество с разблокированными достижениями
+            if isinstance(old_data, set):
+                for ach_id in old_data:
+                    persistent._achievements[ach_id] = True
 
 # Регистрация достижений
 init -1 python:
