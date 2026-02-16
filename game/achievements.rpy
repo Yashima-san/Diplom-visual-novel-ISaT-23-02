@@ -119,12 +119,14 @@ screen achievements():
                                         if ach.is_unlocked():
                                             text ach.description:
                                                 style "achievement_description"
+                                        
                                         else:
                                             if ach.hidden:
                                                 text _("Скрытое достижение"):
                                                     style "achievement_description"
                                             else:
-                                                text _("???")  # Исправлено: добавлена закрывающая скобка
+                                                text _("???"):
+                                                    style "achievement_description"
 
 ## Стили для достижений
 style achievements_vbox:

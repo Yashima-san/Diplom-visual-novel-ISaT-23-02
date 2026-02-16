@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/achievements.rpy", line 113: The if statement is not a valid child of the text statement.
-    color "#ffffff" if ach.is_unlocked() else gui.insensitive_color
-                      ^
+File "game/achievements.rpy", line 126: vbox expects a non-empty block.
+    else:
+         ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Mon Feb 16 12:31:58 2026
+Mon Feb 16 13:04:25 2026

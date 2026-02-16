@@ -7,10 +7,6 @@ default name = ""
 default entered_name = ""
 default default_name_used = False
 
-# Проигрование музыки в главном меню
-play music main_menu_music fadein 5.0
-$ renpy.music.set_volume(0.1)
-
 # Объявление изображений фона
 image bg room_evening = "images/room_evening.png"
 image bg room_pk = "images/room_pk.png"
@@ -36,6 +32,10 @@ screen input_name_screen():
             text "Нажмите ENTER, чтобы продолжить." size 32 color "#ff7a52"
 
 label start:
+    # Устанавливаем музыку главного меню
+    play music main_menu_music fadein 5.0
+    $ renpy.music.set_volume(0.1, delay=0)
+    
     # Вызов экрана и получение имени
     $ entered_name = renpy.call_screen("input_name_screen")
 
@@ -61,8 +61,10 @@ label start:
     scene bg room_evening at truecenter with fade
 
     # Старт музыки
+    stop music
     play music "song/Audio_soft_1.mp3" fadein 5.0
-    $ renpy.music.set_volume(0.5)
+    $ renpy.music.set_volume(0.5, delay=5)
+
 
     # Повествование
     narrator "Солнечные лучи, пробиваясь сквозь неплотно задернутые шторы, рисовали на полу комнаты девочки причудливые узоры."
