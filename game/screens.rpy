@@ -148,7 +148,7 @@ style scrollbar:
     hover_mouse "hover"
     selected_mouse "selected"
     selected_hover_mouse "selected_hover"
-    
+
 ################################################################################
 ## Внутриигровые экраны
 ################################################################################
@@ -407,10 +407,6 @@ style navigation_button_text:
 
 
 ## Экран главного меню #########################################################
-##
-## Используется, чтобы показать главное меню после запуска игры.
-##
-## https://www.renpy.org/doc/html/screen_special.html#main-menu
 
 screen main_menu():
     
@@ -419,9 +415,6 @@ screen main_menu():
     tag menu
 
     add "gui/main_menu.png"
-
-    ## Полупрозрачный overlay для затемнения фона
-    #add "gui/overlay/confirm.png" alpha 0.3
 
     ## Центрированное меню в виде стикера на доске
     frame:
@@ -473,16 +466,14 @@ screen main_menu():
                     action Quit(confirm=True)
                     xsize 400
 
-    ## Показываем название игры, если нужно
+    ## Название игры по центру с белым контуром
     if gui.show_name:
-        vbox:
-            style "main_menu_vbox"
-            
-            text "[config.name!t]":
-                style "main_menu_title"
-            
-            text "[config.version]":
-                style "main_menu_version"
+        text "[config.name!t]":
+            style "main_menu_title_centered"
+    
+    ## Версия игры в нижнем левом углу
+    text "Версия [config.version]":
+        style "main_menu_version_left"
 
 ## Стили для главного меню
 style main_menu_frame:
@@ -493,30 +484,24 @@ style main_menu_frame:
     background None
     padding (20, 20)
 
-style main_menu_title:
-    color gui.accent_color
+style main_menu_title_centered:
+    color "#ffffff"
     size gui.title_text_size
     font gui.interface_text_font
     xalign 0.5
-    yalign 0.5
+    yalign 0.1
     textalign 0.5
     layout "subtitle"
+    outlines [(5, "#000000", 0, 0)]
 
-style main_menu_version:
-    color gui.idle_small_color
+style main_menu_version_left:
+    color "#ffffff"
     size gui.interface_text_size
     font gui.interface_text_font
-    xalign 0.5
-    yalign 0.5
-    textalign 0.5
-    layout "subtitle"
-
-style main_menu_vbox:
-    xalign 0.5
-    yalign 0.5
-    xfill False
-    ysize 180
-    ypos 100
+    xalign 0.02
+    yalign 0.98
+    textalign 0.0
+    outlines [(2, "#000000", 0, 0)]
 
 style main_menu_button is button:
     background Frame("gui/button/choice_idle_background.png", 10, 10, 10, 10)
@@ -528,12 +513,13 @@ style main_menu_button is button:
     margin (0, 0)
 
 style main_menu_button_text is button_text:
-    color "#FF7B4E"
-    hover_color "#C3522D"
+    color "#ffffff"
+    hover_color "#FF7B4E"
     size 28
     text_align 0.5
     xalign 0.5
     font gui.interface_text_font
+    outlines [(2, "#000000", 0, 0)]
 
 
 ## Экран игрового меню #########################################################
