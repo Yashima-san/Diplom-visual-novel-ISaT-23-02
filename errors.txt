@@ -2,33 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/screens.rpy", line 81: style property alternate_mouse is not known.
-    alternate_mouse "click"
-                   ^
-
-File "game/screens.rpy", line 97: style property alternate_mouse is not known.
-    alternate_mouse "click"
-                   ^
-
-File "game/screens.rpy", line 104: style property alternate_mouse is not known.
-    alternate_mouse "click"
-                   ^
-
-File "game/screens.rpy", line 110: style property alternate_mouse is not known.
-    alternate_mouse "click"
-                   ^
-
-File "game/screens.rpy", line 116: style property alternate_mouse is not known.
-    alternate_mouse "click"
-                   ^
-
-File "game/screens.rpy", line 124: style property alternate_mouse is not known.
-    alternate_mouse "click"
-                   ^
-
-File "game/screens.rpy", line 132: style property alternate_mouse is not known.
-    alternate_mouse "click"
-                   ^
+File "game/achievements.rpy", line 113: The if statement is not a valid child of the text statement.
+    color "#ffffff" if ach.is_unlocked() else gui.insensitive_color
+                      ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Sun Feb 15 00:46:25 2026
+Mon Feb 16 12:30:19 2026
