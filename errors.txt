@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/achievements.rpy", line 126: vbox expects a non-empty block.
-    else:
-         ^
+File "game/script.rpy", line 1: expected statement.
+    ﻿define e = Character('Лина', color="#707ef6")
+            ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Mon Feb 16 13:04:25 2026
+Sat Mar  7 22:51:30 2026
