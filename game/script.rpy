@@ -37,9 +37,7 @@ screen input_name_screen():
             text "Нажмите ENTER, чтобы продолжить." size 32 color "#ff7a52"
 
 label start:
-    # Устанавливаем, что игра была начата (для кнопок в главном меню)
-    $ persistent.game_started = True
-    
+
     # Устанавливаем музыку главного меню
     play music config.main_menu_music fadein 5.0
     $ renpy.music.set_volume(0.1, delay=0)

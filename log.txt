@@ -1,0 +1,41 @@
+2026-03-07 16:43:41 UTC
+Windows-11-10.0.26200-SP0
+Ren'Py 8.5.3.26020901+nightly
+
+Early init took 167 ms
+Loading error handling took 141 ms
+Loading script took 4603 ms
+Loading save slot metadata took 318 ms
+Loading persistent took 0 ms
+Running init code took 454 ms
+Loading analysis data took 6 ms
+Analyze and compile ATL took 8 ms
+Reloading save slot metadata took 36 ms
+Dump and make backups took 128 ms
+Cleaning cache took 0 ms
+Making clean stores took 2 ms
+Initial gc took 559 ms
+DPI scale factor: 1.250000
+nvdrs: Loaded, about to disable thread optimizations.
+nvdrs: b"Couldn't load nvlib." (can be ignored)
+Creating interface object took 327 ms
+Init translation took 0 ms
+Cleaning stores took 2 ms
+Load screen analysis took 189 ms
+Analyze screens took 10 ms
+Save screen analysis took 0 ms
+Save pyanalysis took 0 ms
+Save bytecode took 144 ms
+Running _start took 10 ms
+Interface start took 2395 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
