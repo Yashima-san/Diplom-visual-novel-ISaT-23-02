@@ -385,9 +385,10 @@ screen main_menu():
     # Фон из папки gui
     add "gui/main_menu.png"
     
-    # Версия игры в нижнем левом углу (поверх фона)
-    text "Версия [config.version]":
-        style "main_menu_version"
+    # Название игры сверху по центру
+    if gui.show_name:
+        text "[config.name!t]":
+            style "main_menu_title"
     
     # Центрированное меню на стикере
     frame:
@@ -397,8 +398,8 @@ screen main_menu():
         xsize 500
         ysize 600
         
-        # ИСПРАВЛЕНО: Добавлен видимый фон для рамки
-        background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
+        # Добавлен фон для рамки
+        background Frame("/gui/choice_idle_background.png", 25, 25, 25, 25)
         
         vbox:
             xalign 0.5
@@ -430,10 +431,11 @@ screen main_menu():
                 style "main_menu_button"
                 action Quit(confirm=True)
     
-    # Название игры сверху по центру (поверх всего)
-    if gui.show_name:
-        text "[config.name!t]":
-            style "main_menu_title"
+    # Версия игры в нижнем левом углу
+    text "Версия [config.version]":
+        style "main_menu_version"
+        at transform:
+            alpha 0.5
 
 ## Стили для главного меню
 style main_menu_title:
@@ -441,12 +443,10 @@ style main_menu_title:
     size gui.title_text_size
     font gui.interface_text_font
     xalign 0.5
-    yalign 0.15
+    yalign 0.1
     textalign 0.5
     layout "subtitle"
     outlines [(5, "#000000", 0, 0)]
-    # Добавляем приоритет отображения
-    zorder 10
 
 style main_menu_version:
     color "#ffffff"
@@ -456,21 +456,33 @@ style main_menu_version:
     yalign 0.98
     textalign 0.0
     outlines [(2, "#000000", 0, 0)]
-    # ИСПРАВЛЕНО: Прозрачность 50%
-    alpha 0.5
-    # Добавляем приоритет отображения
-    zorder 5
 
 style main_menu_frame:
     xalign 0.5
     yalign 0.5
     xsize 500
-    ysize 600
-    # Убираем фон, так как он задан через background в экране
-    background None
+    ysize 700
     padding (20, 25)
-    # Добавляем приоритет отображения
-    zorder 2
+
+style main_menu_button:
+    background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
+    hover_background Frame("gui/choice_hover_background_1.png", 25, 25, 25, 25)
+    selected_background Frame("gui/choice_hover_background_1.png", 25, 25, 25, 25)
+    xalign 0.5
+    padding (20, 15)
+    xsize 400
+    ysize None
+    margin (0, 5)
+
+style main_menu_button_text:
+    color "#ffffff"
+    hover_color "#FF7B4E"
+    selected_color "#FF7B4E"
+    size 28
+    font gui.interface_text_font
+    outlines [(2, "#000000", 0, 0)]
+    text_align 0.5
+    xalign 0.5
 
 ## Экран игрового меню #########################################################
 
