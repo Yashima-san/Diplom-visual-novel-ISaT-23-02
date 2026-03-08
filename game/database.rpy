@@ -7,6 +7,15 @@ init -2 python:
     import sys
     import os
     
+    # Инициализация persistent переменных
+    if not hasattr(persistent, 'user_data'):
+        persistent.user_data = {
+            'users': {},
+            'achievements': {},
+            'save_progress': {},
+            'next_id': 1
+        }
+    
     # Проверяем наличие sqlite3
     try:
         import sqlite3
@@ -183,7 +192,7 @@ init -2 python:
         def _add_user_memory(self, user_name):
             """Добавление пользователя в память (альтернативное хранилище)"""
             # Инициализируем persistent.user_data если его нет
-            if not hasattr(persistent, 'user_data'):
+            if not hasattr(persistent, 'user_data') or persistent.user_data is None:
                 persistent.user_data = {
                     'users': {},
                     'achievements': {},
@@ -192,9 +201,10 @@ init -2 python:
                 }
             
             # Проверяем существующего пользователя
-            for user_id, data in persistent.user_data.get('users', {}).items():
-                if data.get('name') == user_name:
-                    return user_id
+            if 'users' in persistent.user_data:
+                for user_id, data in persistent.user_data['users'].items():
+                    if data.get('name') == user_name:
+                        return int(user_id)
             
             # Создаем нового пользователя
             user_id = persistent.user_data.get('next_id', 1)
@@ -250,7 +260,7 @@ init -2 python:
         
         def _get_user_id_memory(self, user_name):
             """Получение ID из памяти"""
-            if hasattr(persistent, 'user_data') and 'users' in persistent.user_data:
+            if hasattr(persistent, 'user_data') and persistent.user_data and 'users' in persistent.user_data:
                 for user_id, data in persistent.user_data['users'].items():
                     if data.get('name') == user_name:
                         return int(user_id)
@@ -279,8 +289,13 @@ init -2 python:
         
         def _save_achievement_memory(self, user_id, achievement_name, description):
             """Сохранение достижения в память"""
-            if not hasattr(persistent, 'user_data'):
-                persistent.user_data = {}
+            if not hasattr(persistent, 'user_data') or persistent.user_data is None:
+                persistent.user_data = {
+                    'users': {},
+                    'achievements': {},
+                    'save_progress': {},
+                    'next_id': 1
+                }
             
             if 'achievements' not in persistent.user_data:
                 persistent.user_data['achievements'] = {}

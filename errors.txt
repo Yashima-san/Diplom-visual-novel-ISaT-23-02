@@ -1,0 +1,10 @@
+﻿I'm sorry, but errors were detected in your script. Please correct the
+errors listed below, and try again.
+
+
+File "game/script.rpy", line 72: expected statement.
+    for uid, data in persistent.user_data['users'].items():
+           ^
+
+Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
+Mon Mar  9 01:23:52 2026

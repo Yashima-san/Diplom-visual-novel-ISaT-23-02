@@ -66,13 +66,16 @@ label start:
     $ persistent.user_name = name
     
     # Если база данных не доступна, но пользователь сохранен в persistent, используем это
-    if user_id is None and hasattr(persistent, 'user_data'):
-        # Пытаемся найти пользователя в persistent
-        if persistent.user_data and 'users' in persistent.user_data:
-            for uid, data in persistent.user_data['users'].items():
-                if data.get('name') == name:
-                    $ persistent.user_id = int(uid)
-                    break
+    if user_id is None:
+        $ found_user = False
+        python:
+            if hasattr(persistent, 'user_data') and persistent.user_data:
+                if 'users' in persistent.user_data:
+                    for uid, data in persistent.user_data['users'].items():
+                        if data.get('name') == name:
+                            persistent.user_id = int(uid)
+                            found_user = True
+                            break
     
     "Ты ничего не забыла, [name]?"
     "Пора просыпаться..."
@@ -84,12 +87,15 @@ label start:
     scene black with dissolve
 
     # Обновляем прогресс в базе данных
-    $ db.update_save_progress(user_id, "Глава 1: Связь")
+    if persistent.user_id:
+        $ db.update_save_progress(persistent.user_id, "Глава Первая: Связь")
     
     # Разблокировка первого достижения
     $ unlock_achievement("wake_up")
     # Сохраняем достижение в базу данных
-    $ db.save_achievement(user_id, "Проснулась?", "Добро пожаловать в игру. Приятной игры!")
+    if persistent.user_id:
+        $ db.save_achievement(persistent.user_id, "Проснулась?", "Добро пожаловать в игру. Приятной игры!")
+ 
     
     # Разблокировка элементов галереи
     $ unlock_gallery_item("room_evening")

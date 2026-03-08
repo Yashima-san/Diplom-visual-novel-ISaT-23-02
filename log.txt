@@ -1,6 +1,159 @@
-2026-03-08 18:19:06 UTC
+2026-03-08 18:27:47 UTC
 Windows-11-10.0.26200-SP0
 Ren'Py 8.5.3.26020901+nightly
 
-Early init took 151 ms
-Loading error handling took 218 ms
+Early init took 141 ms
+Loading error handling took 53 ms
+Loading script took 485 ms
+Loading save slot metadata took 100 ms
+Loading persistent took 0 ms
+
+Full traceback:
+  File "game/gui.rpy", line 12, in script
+    init python:
+  File "renpy/ast.py", line 1187, in execute
+    renpy.python.py_exec_bytecode(self.code.bytecode, self.hide, store=self.store)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/python.py", line 1273, in py_exec_bytecode
+    exec(bytecode, globals, locals)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "game/gui.rpy", line 13, in <module>
+    gui.init(1920, 1080)
+    ~~~~~~~~^^^^^^^^^^^^
+  File "renpy/common/00gui.rpy", line 60, in init
+    renpy.call_in_new_context("_style_reset")
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "renpy/game.py", line 328, in call_in_new_context
+    context = renpy.execution.Context(False, contexts[-1], clear=clear)
+              ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/scenelists.py", line 590, in remove
+    self.hide_or_replace(layer, remove_index, prefix)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/scenelists.py", line 490, in hide_or_replace
+    if not oldsle.displayable._handles_event(prefix):
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^ 
+  File "renpy/display/screen.py", line 553, in _handles_event
+    self.update()
+    ~~~~~~~~~~~^^
+  File "renpy/display/screen.py", line 707, in update
+    renpy.ui.detached()
+    ~~~~~~~~~~~~~~~~~^^
+  File "renpy/ui.py", line 366, in detached
+    rv = Detached(stack[-1].style_prefix)
+                  ~~~~~^^^^              
+IndexError: list index out of range
+
+While running game code:
+  File "game/gui.rpy", line 12, in script
+    init python:
+  File "game/gui.rpy", line 13, in <module>
+    gui.init(1920, 1080)
+    ~~~~~~~~^^^^^^^^^^^^
+IndexError: list index out of range
+DPI scale factor: 1.250000
+nvdrs: Loaded, about to disable thread optimizations.
+nvdrs: b"Couldn't load nvlib." (can be ignored)
+Interface start took 1469 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1738, 977) drawable=(1738, 977)
+Maximum texture size: 4096x4096
+
+Full traceback:
+  File "game/gui.rpy", line 12, in script
+    init python:
+  File "renpy/ast.py", line 1187, in execute
+    renpy.python.py_exec_bytecode(self.code.bytecode, self.hide, store=self.store)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/python.py", line 1273, in py_exec_bytecode
+    exec(bytecode, globals, locals)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "game/gui.rpy", line 13, in <module>
+    gui.init(1920, 1080)
+    ~~~~~~~~^^^^^^^^^^^^
+  File "renpy/common/00gui.rpy", line 60, in init
+    renpy.call_in_new_context("_style_reset")
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "renpy/game.py", line 328, in call_in_new_context
+    context = renpy.execution.Context(False, contexts[-1], clear=clear)
+              ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/scenelists.py", line 590, in remove
+    self.hide_or_replace(layer, remove_index, prefix)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/scenelists.py", line 490, in hide_or_replace
+    if not oldsle.displayable._handles_event(prefix):
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^ 
+  File "renpy/display/screen.py", line 553, in _handles_event
+    self.update()
+    ~~~~~~~~~~~^^
+  File "renpy/display/screen.py", line 707, in update
+    renpy.ui.detached()
+    ~~~~~~~~~~~~~~~~~^^
+  File "renpy/ui.py", line 366, in detached
+    rv = Detached(stack[-1].style_prefix)
+                  ~~~~~^^^^              
+IndexError: list index out of range
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "renpy/bootstrap.py", line 401, in bootstrap
+    renpy.main.main()
+    ~~~~~~~~~~~~~~~^^
+  File "renpy/main.py", line 483, in main
+    node.execute_init()
+    ~~~~~~~~~~~~~~~~~^^
+  File "renpy/ast.py", line 1071, in execute_init
+    renpy.game.context().run(self.block[0])
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+  File "game/gui.rpy", line 12, in script
+    init python:
+  File "game/gui.rpy", line 12, in script
+    init python:
+  File "renpy/display/error.py", line 135, in report_exception
+    renpy.game.invoke_in_new_context(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        call_exception_screen,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        ignore_action=ignore_action,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "renpy/game.py", line 278, in invoke_in_new_context
+    context = renpy.execution.Context(False, contexts[-1], clear=clear)
+              ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/scenelists.py", line 590, in remove
+    self.hide_or_replace(layer, remove_index, prefix)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/scenelists.py", line 490, in hide_or_replace
+    if not oldsle.displayable._handles_event(prefix):
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^ 
+  File "renpy/display/screen.py", line 555, in _handles_event
+    return self.child._handles_event(event)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^       
+AttributeError: 'NoneType' object has no attribute '_handles_event'
+
+While running game code:
+  File "game/gui.rpy", line 12, in script
+    init python:
+  File "game/gui.rpy", line 13, in <module>
+    gui.init(1920, 1080)
+    ~~~~~~~~^^^^^^^^^^^^
+IndexError: list index out of range
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "game/gui.rpy", line 12, in script
+    init python:
+  File "game/gui.rpy", line 12, in script
+    init python:
+AttributeError: 'NoneType' object has no attribute '_handles_event'
