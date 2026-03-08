@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/script.rpy", line 72: expected statement.
-    for uid, data in persistent.user_data['users'].items():
-           ^
+File "game/gui.rpy", line 1: expected statement.
+    ﻿
+    ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Mon Mar  9 01:23:52 2026
+Mon Mar  9 01:44:18 2026
