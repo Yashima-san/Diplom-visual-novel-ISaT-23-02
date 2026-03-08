@@ -2,9 +2,17 @@
 errors listed below, and try again.
 
 
-File "game/gui.rpy", line 1: expected statement.
-    ﻿
-    ^
+File "game/screens.rpy", line 449: style property zorder is not known.
+    zorder 10
+          ^
+
+File "game/screens.rpy", line 460: style property alpha is not known.
+    alpha 0.5
+         ^
+
+File "game/screens.rpy", line 473: style property zorder is not known.
+    zorder 2
+          ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Mon Mar  9 02:16:28 2026
+Mon Mar  9 02:55:01 2026
