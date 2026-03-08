@@ -8,6 +8,9 @@ default entered_name = ""
 default default_name_used = False
 default chapter_one_seen = False
 
+default persistent.user_id = None
+default persistent.user_name = ""
+
 # Объявление изображений фона
 image bg room_evening = "images/room_evening.png"
 image bg room_pk = "images/room_pk.png"
