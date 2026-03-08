@@ -71,6 +71,7 @@ label start:
         python:
             if hasattr(persistent, 'user_data') and persistent.user_data:
                 if 'users' in persistent.user_data:
+                    # ИСПРАВЛЕНО: используем items() для итерации по словарю
                     for uid, data in persistent.user_data['users'].items():
                         if data.get('name') == name:
                             persistent.user_id = int(uid)
@@ -94,6 +95,7 @@ label start:
     $ unlock_achievement("wake_up")
     # Сохраняем достижение в базу данных
     if persistent.user_id:
+        # ИСПРАВЛЕНО: передаем все три аргумента
         $ db.save_achievement(persistent.user_id, "Проснулась?", "Добро пожаловать в игру. Приятной игры!")
  
     
@@ -179,21 +181,27 @@ label start:
             $ choice_1 = 1
             user_char "Привет! Да, готова. Уже жду не дождусь! 😊"
             $ unlock_achievement("first_choice")
-            $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
+            # ИСПРАВЛЕНО: проверяем наличие user_id
+            if persistent.user_id:
+                $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
             jump after_first_choice_1
         
         "Привет! Я тоже очень рада! Немного волнуюсь, но уверена, что с тобой будет весело!":
             $ choice_1 = 2
             user_char "Привет! Я тоже очень рада!{p}Немного волнуюсь, но уверена, что с тобой будет весело! 😊"
             $ unlock_achievement("first_choice")
-            $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
+            # ИСПРАВЛЕНО: проверяем наличие user_id
+            if persistent.user_id:
+                $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
             jump after_first_choice_2
         
         "Привет! Я очень рада, что мы будем учиться вместе. Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг.":
             $ choice_1 = 3
             user_char "Привет! Я очень рада, что мы будем учиться вместе.{p}Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг. ❤️"
             $ unlock_achievement("first_choice")
-            $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
+            # ИСПРАВЛЕНО: проверяем наличие user_id
+            if persistent.user_id:
+                $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
             jump after_first_choice_3
 
 label after_first_choice_1:

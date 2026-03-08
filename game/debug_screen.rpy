@@ -11,7 +11,9 @@ screen debug_database():
             hbox:
                 spacing 50
                 text "Текущий пользователь:" size 30
-                text "[persistent.user_name] (ID: [persistent.user_id])" size 30
+                $ current_user_name = persistent.user_name if hasattr(persistent, 'user_name') and persistent.user_name else "Не задан"
+                $ current_user_id = persistent.user_id if hasattr(persistent, 'user_id') and persistent.user_id else "Не задан"
+                text "[current_user_name] (ID: [current_user_id])" size 30
             
             null height 30
             
@@ -26,9 +28,12 @@ screen debug_database():
                 padding (20, 20)
                 vbox:
                     text "Все пользователи:" size 30
-                    $ users = db.get_all_users()
-                    for user in users:
-                        text "ID: [user['user_ID']], Имя: [user['name']]" size 24
+                    $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
+                    if users:
+                        for user in users:
+                            text "ID: [user['user_ID']], Имя: [user['name']]" size 24
+                    else:
+                        text "Нет пользователей" size 24
             
             null height 20
             
@@ -37,13 +42,16 @@ screen debug_database():
                 xsize 1200
                 padding (20, 20)
                 vbox:
-                    text "Достижения пользователя [persistent.user_name]:" size 30
-                    $ achievements = db.get_user_achievements(persistent.user_id)
-                    if achievements:
-                        for ach in achievements:
-                            text "• [ach['achi_name']]: [ach['description']] ([ach['time_point']])" size 24
+                    text "Достижения пользователя [current_user_name]:" size 30
+                    if current_user_id != "Не задан" and current_user_id is not None:
+                        $ achievements = db.get_user_achievements(current_user_id) if hasattr(db, 'get_user_achievements') else []
+                        if achievements:
+                            for ach in achievements:
+                                text "• [ach.get('achi_name', '')]: [ach.get('description', '')] ([ach.get('time_point', '')])" size 24
+                        else:
+                            text "Нет достижений" size 24
                     else:
-                        text "Нет достижений" size 24
+                        text "Пользователь не выбран" size 24
 
 # Добавим кнопку в главное меню для доступа к отладке (опционально)
 screen main_menu():

@@ -8,7 +8,7 @@ init -2 python:
     import os
     
     # Инициализация persistent переменных
-    if not hasattr(persistent, 'user_data'):
+    if not hasattr(persistent, 'user_data') or persistent.user_data is None:
         persistent.user_data = {
             'users': {},
             'achievements': {},
@@ -141,10 +141,11 @@ init -2 python:
         def add_user(self, user_name):
             """Добавление нового пользователя"""
             # Проверяем, есть ли уже пользователь в persistent
-            if hasattr(persistent, 'user_data') and persistent.user_data:
-                for user_id, data in persistent.user_data.get('users', {}).items():
+            if hasattr(persistent, 'user_data') and persistent.user_data and 'users' in persistent.user_data:
+                # ИСПРАВЛЕНО: используем items() для итерации по словарю
+                for user_id, data in persistent.user_data['users'].items():
                     if data.get('name') == user_name:
-                        return user_id
+                        return int(user_id)
             
             if self.sqlite_available:
                 return self._add_user_sqlite(user_name)
@@ -202,6 +203,7 @@ init -2 python:
             
             # Проверяем существующего пользователя
             if 'users' in persistent.user_data:
+                # ИСПРАВЛЕНО: используем items() для итерации по словарю
                 for user_id, data in persistent.user_data['users'].items():
                     if data.get('name') == user_name:
                         return int(user_id)
@@ -261,6 +263,7 @@ init -2 python:
         def _get_user_id_memory(self, user_name):
             """Получение ID из памяти"""
             if hasattr(persistent, 'user_data') and persistent.user_data and 'users' in persistent.user_data:
+                # ИСПРАВЛЕНО: используем items() для итерации по словарю
                 for user_id, data in persistent.user_data['users'].items():
                     if data.get('name') == user_name:
                         return int(user_id)
@@ -338,7 +341,7 @@ init -2 python:
         
         def _update_save_progress_memory(self, user_id, chapter):
             """Обновление прогресса в памяти"""
-            if not hasattr(persistent, 'user_data'):
+            if not hasattr(persistent, 'user_data') or persistent.user_data is None:
                 persistent.user_data = {}
             
             if 'save_progress' not in persistent.user_data:
@@ -377,7 +380,8 @@ init -2 python:
         def _get_all_users_memory(self):
             """Получение пользователей из памяти"""
             users = []
-            if hasattr(persistent, 'user_data') and 'users' in persistent.user_data:
+            if hasattr(persistent, 'user_data') and persistent.user_data and 'users' in persistent.user_data:
+                # ИСПРАВЛЕНО: используем items() для итерации по словарю
                 for user_id, data in persistent.user_data['users'].items():
                     users.append({
                         'user_ID': int(user_id),
@@ -413,7 +417,7 @@ init -2 python:
         def _get_user_achievements_memory(self, user_id):
             """Получение достижений из памяти"""
             achievements = []
-            if hasattr(persistent, 'user_data') and 'achievements' in persistent.user_data:
+            if hasattr(persistent, 'user_data') and persistent.user_data and 'achievements' in persistent.user_data:
                 str_user_id = str(user_id)
                 if str_user_id in persistent.user_data['achievements']:
                     for ach in persistent.user_data['achievements'][str_user_id]:
