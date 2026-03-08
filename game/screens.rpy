@@ -522,6 +522,7 @@ style main_menu_button_text is button_text:
     outlines [(2, "#000000", 0, 0)]
 
 # ИСПРАВЛЕНО: Добавлен недостающий стиль main_menu_version
+# Этот стиль используется системой при обработке текста версии
 style main_menu_version is main_menu_version_left
 style main_menu_version_text is main_menu_version_left
 
