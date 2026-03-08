@@ -1,25 +1,49 @@
 ################################################################################
-## База данных SQLite
+## База данных SQLite (исправленная версия)
 ################################################################################
 
 init -2 python:
-    import sqlite3
+    # Попытка импорта sqlite3 с обработкой ошибки
+    import sys
     import os
+    
+    # Проверяем наличие sqlite3
+    try:
+        import sqlite3
+        sqlite_available = True
+    except ImportError:
+        sqlite_available = False
+        renpy.notify("Внимание: Модуль sqlite3 не найден. Данные будут сохраняться только в файлах сохранений Ren'Py.")
     
     class Database:
         def __init__(self):
-            # Путь к файлу базы данных
-            self.db_path = os.path.join(config.basedir, "game_data.sqlite")
+            self.db_path = None
             self.connection = None
             self.cursor = None
-            self.init_database()
+            self.sqlite_available = sqlite_available
+            
+            if self.sqlite_available:
+                self.init_database()
+            else:
+                # Создаем альтернативное хранилище в виде словаря
+                self.memory_storage = {
+                    'users': {},
+                    'achievements': {},
+                    'save_progress': {}
+                }
+                self.next_user_id = 1
         
         def init_database(self):
             """Инициализация базы данных и создание таблиц"""
+            if not self.sqlite_available:
+                return
+                
             try:
+                # Путь к файлу базы данных в папке game
+                self.db_path = os.path.join(renpy.config.gamedir, "game_data.sqlite")
                 self.connect()
                 
-                # Создание таблицы users в соответствии с ER-диаграммой
+                # Создание таблицы users
                 self.cursor.execute('''
                     CREATE TABLE IF NOT EXISTS users (
                         user_ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,8 +57,7 @@ init -2 python:
                         save_ID INTEGER PRIMARY KEY AUTOINCREMENT,
                         user_ID INTEGER NOT NULL,
                         chapter CHAR(15),
-                        save_point TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (user_ID) REFERENCES users(user_ID)
+                        save_point TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 ''')
                 
@@ -45,8 +68,7 @@ init -2 python:
                         user_ID INTEGER NOT NULL,
                         achi_name VARCHAR(50) NOT NULL,
                         description VARCHAR(120),
-                        time_point TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (user_ID) REFERENCES users(user_ID)
+                        time_point TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 ''')
                 
@@ -63,8 +85,7 @@ init -2 python:
                     CREATE TABLE IF NOT EXISTS update_version (
                         update_version_ID INTEGER PRIMARY KEY AUTOINCREMENT,
                         game_version_ID INTEGER NOT NULL,
-                        last_release_date DATE,
-                        FOREIGN KEY (game_version_ID) REFERENCES game_versions(game_version_ID)
+                        last_release_date DATE
                     )
                 ''')
                 
@@ -85,24 +106,44 @@ init -2 python:
                 
             except Exception as e:
                 renpy.notify(f"Ошибка инициализации БД: {str(e)}")
+                self.sqlite_available = False
             finally:
                 self.disconnect()
         
         def connect(self):
             """Установка соединения с базой данных"""
-            self.connection = sqlite3.connect(self.db_path)
-            self.connection.row_factory = sqlite3.Row
-            self.cursor = self.connection.cursor()
+            if not self.sqlite_available:
+                return
+            try:
+                self.connection = sqlite3.connect(self.db_path)
+                self.connection.row_factory = sqlite3.Row
+                self.cursor = self.connection.cursor()
+            except Exception as e:
+                renpy.notify(f"Ошибка подключения к БД: {str(e)}")
+                self.sqlite_available = False
         
         def disconnect(self):
             """Закрытие соединения с базой данных"""
-            if self.cursor:
+            if self.sqlite_available and self.cursor:
                 self.cursor.close()
-            if self.connection:
+            if self.sqlite_available and self.connection:
                 self.connection.close()
         
         def add_user(self, user_name):
-            """Добавление нового пользователя в таблицу users"""
+            """Добавление нового пользователя"""
+            # Проверяем, есть ли уже пользователь в persistent
+            if hasattr(persistent, 'user_data') and persistent.user_data:
+                for user_id, data in persistent.user_data.get('users', {}).items():
+                    if data.get('name') == user_name:
+                        return user_id
+            
+            if self.sqlite_available:
+                return self._add_user_sqlite(user_name)
+            else:
+                return self._add_user_memory(user_name)
+        
+        def _add_user_sqlite(self, user_name):
+            """Добавление пользователя в SQLite"""
             user_id = None
             try:
                 self.connect()
@@ -125,7 +166,7 @@ init -2 python:
                     self.connection.commit()
                     user_id = self.cursor.lastrowid
                     
-                    # Добавляем запись о начале игры в save_progress_users
+                    # Добавляем запись о начале игры
                     self.cursor.execute(
                         "INSERT INTO save_progress_users (user_ID, chapter) VALUES (?, ?)",
                         (user_id, "Глава 1: Связь")
@@ -139,8 +180,57 @@ init -2 python:
             
             return user_id
         
+        def _add_user_memory(self, user_name):
+            """Добавление пользователя в память (альтернативное хранилище)"""
+            # Инициализируем persistent.user_data если его нет
+            if not hasattr(persistent, 'user_data'):
+                persistent.user_data = {
+                    'users': {},
+                    'achievements': {},
+                    'save_progress': {},
+                    'next_id': 1
+                }
+            
+            # Проверяем существующего пользователя
+            for user_id, data in persistent.user_data.get('users', {}).items():
+                if data.get('name') == user_name:
+                    return user_id
+            
+            # Создаем нового пользователя
+            user_id = persistent.user_data.get('next_id', 1)
+            if 'users' not in persistent.user_data:
+                persistent.user_data['users'] = {}
+            
+            persistent.user_data['users'][str(user_id)] = {
+                'name': user_name,
+                'created_at': renpy.time.time()
+            }
+            
+            # Добавляем прогресс
+            if 'save_progress' not in persistent.user_data:
+                persistent.user_data['save_progress'] = {}
+            
+            if str(user_id) not in persistent.user_data['save_progress']:
+                persistent.user_data['save_progress'][str(user_id)] = []
+            
+            persistent.user_data['save_progress'][str(user_id)].append({
+                'chapter': "Глава 1: Связь",
+                'save_point': renpy.time.time()
+            })
+            
+            persistent.user_data['next_id'] = user_id + 1
+            
+            return user_id
+        
         def get_user_id(self, user_name):
             """Получение ID пользователя по имени"""
+            if self.sqlite_available:
+                return self._get_user_id_sqlite(user_name)
+            else:
+                return self._get_user_id_memory(user_name)
+        
+        def _get_user_id_sqlite(self, user_name):
+            """Получение ID из SQLite"""
             user_id = None
             try:
                 self.connect()
@@ -158,8 +248,23 @@ init -2 python:
             
             return user_id
         
+        def _get_user_id_memory(self, user_name):
+            """Получение ID из памяти"""
+            if hasattr(persistent, 'user_data') and 'users' in persistent.user_data:
+                for user_id, data in persistent.user_data['users'].items():
+                    if data.get('name') == user_name:
+                        return int(user_id)
+            return None
+        
         def save_achievement(self, user_id, achievement_name, description=""):
-            """Сохранение достижения в базу данных"""
+            """Сохранение достижения"""
+            if self.sqlite_available:
+                self._save_achievement_sqlite(user_id, achievement_name, description)
+            else:
+                self._save_achievement_memory(user_id, achievement_name, description)
+        
+        def _save_achievement_sqlite(self, user_id, achievement_name, description):
+            """Сохранение достижения в SQLite"""
             try:
                 self.connect()
                 self.cursor.execute('''
@@ -172,8 +277,38 @@ init -2 python:
             finally:
                 self.disconnect()
         
+        def _save_achievement_memory(self, user_id, achievement_name, description):
+            """Сохранение достижения в память"""
+            if not hasattr(persistent, 'user_data'):
+                persistent.user_data = {}
+            
+            if 'achievements' not in persistent.user_data:
+                persistent.user_data['achievements'] = {}
+            
+            str_user_id = str(user_id)
+            if str_user_id not in persistent.user_data['achievements']:
+                persistent.user_data['achievements'][str_user_id] = []
+            
+            # Проверяем, не было ли уже такого достижения
+            for ach in persistent.user_data['achievements'][str_user_id]:
+                if ach.get('name') == achievement_name:
+                    return
+            
+            persistent.user_data['achievements'][str_user_id].append({
+                'name': achievement_name,
+                'description': description,
+                'time_point': renpy.time.time()
+            })
+        
         def update_save_progress(self, user_id, chapter):
             """Обновление прогресса сохранения"""
+            if self.sqlite_available:
+                self._update_save_progress_sqlite(user_id, chapter)
+            else:
+                self._update_save_progress_memory(user_id, chapter)
+        
+        def _update_save_progress_sqlite(self, user_id, chapter):
+            """Обновление прогресса в SQLite"""
             try:
                 self.connect()
                 self.cursor.execute('''
@@ -186,8 +321,32 @@ init -2 python:
             finally:
                 self.disconnect()
         
+        def _update_save_progress_memory(self, user_id, chapter):
+            """Обновление прогресса в памяти"""
+            if not hasattr(persistent, 'user_data'):
+                persistent.user_data = {}
+            
+            if 'save_progress' not in persistent.user_data:
+                persistent.user_data['save_progress'] = {}
+            
+            str_user_id = str(user_id)
+            if str_user_id not in persistent.user_data['save_progress']:
+                persistent.user_data['save_progress'][str_user_id] = []
+            
+            persistent.user_data['save_progress'][str_user_id].append({
+                'chapter': chapter,
+                'save_point': renpy.time.time()
+            })
+        
         def get_all_users(self):
-            """Получение всех пользователей (для отладки)"""
+            """Получение всех пользователей"""
+            if self.sqlite_available:
+                return self._get_all_users_sqlite()
+            else:
+                return self._get_all_users_memory()
+        
+        def _get_all_users_sqlite(self):
+            """Получение пользователей из SQLite"""
             users = []
             try:
                 self.connect()
@@ -200,8 +359,26 @@ init -2 python:
                 self.disconnect()
             return users
         
+        def _get_all_users_memory(self):
+            """Получение пользователей из памяти"""
+            users = []
+            if hasattr(persistent, 'user_data') and 'users' in persistent.user_data:
+                for user_id, data in persistent.user_data['users'].items():
+                    users.append({
+                        'user_ID': int(user_id),
+                        'name': data.get('name', '')
+                    })
+            return users
+        
         def get_user_achievements(self, user_id):
             """Получение всех достижений пользователя"""
+            if self.sqlite_available:
+                return self._get_user_achievements_sqlite(user_id)
+            else:
+                return self._get_user_achievements_memory(user_id)
+        
+        def _get_user_achievements_sqlite(self, user_id):
+            """Получение достижений из SQLite"""
             achievements = []
             try:
                 self.connect()
@@ -217,6 +394,20 @@ init -2 python:
             finally:
                 self.disconnect()
             return achievements
+        
+        def _get_user_achievements_memory(self, user_id):
+            """Получение достижений из памяти"""
+            achievements = []
+            if hasattr(persistent, 'user_data') and 'achievements' in persistent.user_data:
+                str_user_id = str(user_id)
+                if str_user_id in persistent.user_data['achievements']:
+                    for ach in persistent.user_data['achievements'][str_user_id]:
+                        achievements.append({
+                            'achi_name': ach.get('name', ''),
+                            'description': ach.get('description', ''),
+                            'time_point': ach.get('time_point', '')
+                        })
+            return achievements
     
     # Глобальный экземпляр базы данных
     db = Database()
@@ -224,27 +415,28 @@ init -2 python:
 # Инициализация версии игры
 init -1 python:
     def init_game_version():
-        try:
-            db.connect()
-            # Проверяем, есть ли уже запись о версии
-            db.cursor.execute("SELECT * FROM game_versions")
-            if not db.cursor.fetchone():
-                # Добавляем текущую версию
-                db.cursor.execute(
-                    "INSERT INTO game_versions (release_date) VALUES (date('now'))"
-                )
-                game_version_id = db.cursor.lastrowid
-                
-                # Добавляем запись об обновлении
-                db.cursor.execute(
-                    "INSERT INTO update_version (game_version_ID, last_release_date) VALUES (?, date('now'))",
-                    (game_version_id,)
-                )
-                db.connection.commit()
-        except Exception as e:
-            renpy.notify(f"Ошибка при инициализации версии: {str(e)}")
-        finally:
-            db.disconnect()
+        if db.sqlite_available:
+            try:
+                db.connect()
+                # Проверяем, есть ли уже запись о версии
+                db.cursor.execute("SELECT * FROM game_versions")
+                if not db.cursor.fetchone():
+                    # Добавляем текущую версию
+                    db.cursor.execute(
+                        "INSERT INTO game_versions (release_date) VALUES (date('now'))"
+                    )
+                    game_version_id = db.cursor.lastrowid
+                    
+                    # Добавляем запись об обновлении
+                    db.cursor.execute(
+                        "INSERT INTO update_version (game_version_ID, last_release_date) VALUES (?, date('now'))",
+                        (game_version_id,)
+                    )
+                    db.connection.commit()
+            except Exception as e:
+                renpy.notify(f"Ошибка при инициализации версии: {str(e)}")
+            finally:
+                db.disconnect()
     
     # Вызываем инициализацию версии
     init_game_version()

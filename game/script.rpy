@@ -8,8 +8,10 @@ default entered_name = ""
 default default_name_used = False
 default chapter_one_seen = False
 
+# Добавляем persistent переменные для хранения данных пользователя
 default persistent.user_id = None
 default persistent.user_name = ""
+default persistent.user_data = None
 
 # Объявление изображений фона
 image bg room_evening = "images/room_evening.png"
@@ -56,12 +58,21 @@ label start:
         $ name = entered_name.strip()
         $ default_name_used = False
     
-    # Сохраняем имя пользователя в базу данных
+    # Сохраняем имя пользователя
     $ user_id = db.add_user(name)
     
     # Сохраняем user_id в persistent для использования в других частях игры
     $ persistent.user_id = user_id
     $ persistent.user_name = name
+    
+    # Если база данных не доступна, но пользователь сохранен в persistent, используем это
+    if user_id is None and hasattr(persistent, 'user_data'):
+        # Пытаемся найти пользователя в persistent
+        if persistent.user_data and 'users' in persistent.user_data:
+            for uid, data in persistent.user_data['users'].items():
+                if data.get('name') == name:
+                    $ persistent.user_id = int(uid)
+                    break
     
     "Ты ничего не забыла, [name]?"
     "Пора просыпаться..."
