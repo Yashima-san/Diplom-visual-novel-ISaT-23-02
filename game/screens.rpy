@@ -390,6 +390,12 @@ screen main_menu():
         text "[config.name!t]":
             style "main_menu_title"
     
+    # Версия игры в нижнем левом углу
+    text "Версия [config.version]":
+        style "main_menu_version"
+        at transform:
+            alpha 0.5
+    
     # Центрированное меню на стикере
     frame:
         style "main_menu_frame"
@@ -398,8 +404,8 @@ screen main_menu():
         xsize 500
         ysize 600
         
-        # Добавлен фон для рамки
-        background Frame("/gui/choice_idle_background.png", 25, 25, 25, 25)
+        # Фон для рамки - стикер
+        background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
         
         vbox:
             xalign 0.5
@@ -430,12 +436,6 @@ screen main_menu():
             textbutton _("Выход"):
                 style "main_menu_button"
                 action Quit(confirm=True)
-    
-    # Версия игры в нижнем левом углу
-    text "Версия [config.version]":
-        style "main_menu_version"
-        at transform:
-            alpha 0.5
 
 ## Стили для главного меню
 style main_menu_title:
@@ -443,36 +443,36 @@ style main_menu_title:
     size gui.title_text_size
     font gui.interface_text_font
     xalign 0.5
-    yalign 0.1
+    yalign 0.1  # Сверху, но не в центре
     textalign 0.5
     layout "subtitle"
-    outlines [(5, "#000000", 0, 0)]
+    outlines [(5, "#000000", 0, 0)]  # Черная обводка
 
 style main_menu_version:
     color "#ffffff"
     size gui.interface_text_size
     font gui.interface_text_font
-    xalign 0.02
-    yalign 0.98
+    xalign 0.02  # Слева
+    yalign 0.98  # Снизу
     textalign 0.0
-    outlines [(2, "#000000", 0, 0)]
+    outlines [(2, "#000000", 0, 0)]  # Черная обводка
 
 style main_menu_frame:
     xalign 0.5
     yalign 0.5
     xsize 500
-    ysize 700
-    padding (20, 25)
+    ysize 600
+    # Убираем всякие фоны и рамки - они будут из изображения
+    background None
 
 style main_menu_button:
-    background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
-    hover_background Frame("gui/choice_hover_background_1.png", 25, 25, 25, 25)
-    selected_background Frame("gui/choice_hover_background_1.png", 25, 25, 25, 25)
     xalign 0.5
     padding (20, 15)
     xsize 400
     ysize None
     margin (0, 5)
+    # Убираем фон кнопки - он будет из изображения
+    background None
 
 style main_menu_button_text:
     color "#ffffff"
@@ -480,7 +480,7 @@ style main_menu_button_text:
     selected_color "#FF7B4E"
     size 28
     font gui.interface_text_font
-    outlines [(2, "#000000", 0, 0)]
+    outlines [(2, "#000000", 0, 0)]  # Черная обводка текста
     text_align 0.5
     xalign 0.5
 

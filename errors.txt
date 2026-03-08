@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/screens.rpy", line 391: 'alpha' is not a keyword argument or valid child of the text statement.
-    alpha 0.5
-         ^
+File "game/screens.rpy", line 477: style property outline is not known.
+    outline None
+           ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Mon Mar  9 02:58:29 2026
+Mon Mar  9 03:24:54 2026
