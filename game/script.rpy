@@ -37,7 +37,6 @@ screen input_name_screen():
             text "Нажмите ENTER, чтобы продолжить." size 32 color "#ff7a52"
 
 label start:
-
     # Устанавливаем музыку главного меню
     play music config.main_menu_music fadein 5.0
     $ renpy.music.set_volume(0.1, delay=0)
@@ -53,7 +52,14 @@ label start:
     else:
         $ name = entered_name.strip()
         $ default_name_used = False
-
+    
+    # Сохраняем имя пользователя в базу данных
+    $ user_id = db.add_user(name)
+    
+    # Сохраняем user_id в persistent для использования в других частях игры
+    $ persistent.user_id = user_id
+    $ persistent.user_name = name
+    
     "Ты ничего не забыла, [name]?"
     "Пора просыпаться..."
     
@@ -63,8 +69,13 @@ label start:
     pause 3.0
     scene black with dissolve
 
+    # Обновляем прогресс в базе данных
+    $ db.update_save_progress(user_id, "Глава 1: Связь")
+    
     # Разблокировка первого достижения
     $ unlock_achievement("wake_up")
+    # Сохраняем достижение в базу данных
+    $ db.save_achievement(user_id, "Проснулась?", "Добро пожаловать в игру. Приятной игры!")
     
     # Разблокировка элементов галереи
     $ unlock_gallery_item("room_evening")
@@ -148,18 +159,21 @@ label start:
             $ choice_1 = 1
             user_char "Привет! Да, готова. Уже жду не дождусь! 😊"
             $ unlock_achievement("first_choice")
+            $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
             jump after_first_choice_1
-            
+        
         "Привет! Я тоже очень рада! Немного волнуюсь, но уверена, что с тобой будет весело!":
             $ choice_1 = 2
             user_char "Привет! Я тоже очень рада!{p}Немного волнуюсь, но уверена, что с тобой будет весело! 😊"
             $ unlock_achievement("first_choice")
+            $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
             jump after_first_choice_2
-            
+        
         "Привет! Я очень рада, что мы будем учиться вместе. Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг.":
             $ choice_1 = 3
             user_char "Привет! Я очень рада, что мы будем учиться вместе.{p}Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг. ❤️"
             $ unlock_achievement("first_choice")
+            $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
             jump after_first_choice_3
 
 label after_first_choice_1:
