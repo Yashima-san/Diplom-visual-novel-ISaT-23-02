@@ -1601,7 +1601,7 @@ screen input_name_screen():
         xalign 0.5
         yalign 0.5
         xsize 600
-        ysize 300
+        ysize 350
         padding (30, 30)
         
         vbox:
@@ -1618,7 +1618,7 @@ screen input_name_screen():
             # Поле ввода с закругленными углами
             frame:
                 style "input_field_frame"
-                xysize (450, 60)
+                xysize (550, 60)
                 xalign 0.5
                 
                 input:
@@ -1626,7 +1626,7 @@ screen input_name_screen():
                     value ScreenVariableInputValue("input_name")
                     length 20
                     pixel_width 400
-                    color "#000000"
+                    color "#ffffff"
                     font gui.interface_text_font
                     size 32
                     xalign 0.5
@@ -1655,11 +1655,11 @@ init -1 python:
     style.input_frame.yalign = 0.5
     
     style.create("input_field_frame", "default")
-    style.input_field_frame.background = Frame("gui/input_field.png", 15, 15, 15, 15)
-    style.input_field_frame.xysize = (450, 60)
+    style.input_field_frame.background = Frame("gui/button/choice_idle_background_1.png", 15, 15, 15, 15)
+    style.input_field_frame.xysize = (500, 60)
     
     style.create("input_confirm_button", "button")
-    style.input_confirm_button.background = Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
+    style.input_confirm_button.background = Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
     style.input_confirm_button.hover_background = Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
     style.input_confirm_button.xsize = 450
     style.input_confirm_button.padding = (20, 10)
