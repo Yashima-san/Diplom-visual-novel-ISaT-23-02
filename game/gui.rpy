@@ -16,24 +16,10 @@ define config.check_conflicting_properties = True
 
 ## Курсоры #####################################################################
 
-## Определяем изображения для разных состояний курсора
-define gui.default_cursor = "gui/cursor/default.png"
-define gui.hover_cursor = "gui/cursor/hover.png"
-define gui.click_cursor = "gui/cursor/click.png"
+## Временно отключаем пользовательские курсоры до создания файлов
+## Используем стандартные курсоры Ren'Py
+define config.mouse = None
 
-## Задаем hotspot (область нажатия) для каждого курсора, если нужно
-## Обычно hotspot - это точка, которая считается "кончиком" курсора
-define gui.cursor_hotspot = (0, 0)  # (x, y) координаты точки нажатия
-
-## Включаем пользовательский курсор с поддержкой нажатия
-define config.mouse = {
-    "default": [ ("gui/cursor/default.png", 0, 0) ],
-    "hover": [ ("gui/cursor/hover.png", 0, 0) ],
-    "selected_hover": [ ("gui/cursor/click.png", 0, 0) ],  # Для нажатых кнопок
-    "selected": [ ("gui/cursor/click.png", 0, 0) ],        # Для выбранных элементов
-    "insensitive": [ ("gui/cursor/default.png", 0, 0) ],   # Для неактивных элементов
-    "busy": [ ("gui/cursor/click.png", 0, 0) ],            # Для занятого состояния
-}
 
 ################################################################################
 ## Конфигурируемые Переменные GUI
@@ -47,7 +33,7 @@ define config.mouse = {
 define gui.accent_color = '#cc6600'
 
 ## Цвет, используемый в текстовой кнопке, когда она не выбрана и не наведена.
-define gui.idle_color = '#e15555ff'
+define gui.idle_color = '#e15555'
 
 ## Small_color используется в маленьком тексте, который должен быть ярче/
 ## темнее, для того, чтобы выделяться.
@@ -62,7 +48,7 @@ define gui.hover_color = '#cc6600'
 define gui.selected_color = '#555555'
 
 ## Цвет, используемый текстовой кнопкой, когда она не может быть выбрана.
-define gui.insensitive_color = '#7070707f'
+define gui.insensitive_color = '#707070'
 
 ## Цвета, используемые для частей панелей, которые не заполняются. Они
 ## используются не напрямую, а только при воссоздании файлов изображений.
@@ -70,8 +56,8 @@ define gui.muted_color = '#e0a366'
 define gui.hover_muted_color = '#eac199'
 
 ## Цвета, используемые в тексте диалогов и выборов.
-define gui.text_color = '#5b5b5bff'
-define gui.interface_text_color = '#ff832bff'
+define gui.text_color = '#5b5b5b'
+define gui.interface_text_color = '#ff832b'
 
 
 ## Шрифты и их размеры #########################################################
@@ -236,7 +222,7 @@ define gui.choice_button_text_size = gui.text_size
 define gui.choice_button_text_xalign = 0.5
 define gui.choice_button_text_idle_color = '#707070'
 define gui.choice_button_text_hover_color = "#ffffff"
-define gui.choice_button_text_insensitive_color = '#7070707f'
+define gui.choice_button_text_insensitive_color = '#707070'
 
 
 ## Кнопки Слотов ###############################################################

@@ -92,7 +92,7 @@ screen achievements():
                 $ total = len(achievements)
                 
                 text _("Разблокировано: [unlocked]/[total]") size 30
-                text _("Прогресс: [unlocked*100/total]%") size 30
+                text _("Прогресс: [unlocked*100/total if total>0 else 0]%") size 30
             
             null height 30
             
@@ -130,18 +130,19 @@ screen achievements():
                                         yalign 0.5
                                         spacing 5
                                         
-                                        # Исправлено: вынес условный цвет в отдельную проверку
-                                        text ach.name:
-                                            style "achievement_name"
-                                            if ach.is_unlocked():
+                                        # ИСПРАВЛЕНО: разделено на два отдельных текстовых элемента
+                                        if ach.is_unlocked():
+                                            text ach.name:
+                                                style "achievement_name"
                                                 color "#ffffff"
-                                            else:
+                                        else:
+                                            text ach.name:
+                                                style "achievement_name"
                                                 color gui.insensitive_color
                                         
                                         if ach.is_unlocked():
                                             text ach.description:
                                                 style "achievement_description"
-                                        
                                         else:
                                             if ach.hidden:
                                                 text _("Скрытое достижение"):

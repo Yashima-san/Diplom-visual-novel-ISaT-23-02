@@ -1,5 +1,5 @@
 ﻿define e = Character('Лина', color="#707ef6")
-define user_char = Character("[persistent.user_name]", color="#ff9e5eff")
+define user_char = Character("[persistent.user_name]", color="#ff9e5e")
 define thought_user = Character("[persistent.user_name]", what_italic=True)
 define narrator = Character(None, what_italic=True)
 
@@ -22,70 +22,39 @@ image bg kitchen = "images/kitchen.png"
 image bg street = "images/street.png"
 image bg night_room = "images/night_room.png"
 
-# Экран для ввода имени
-screen input_name_screen():
-    modal True
+# ВРЕМЕННЫЙ КОД ДЛЯ ОЧИСТКИ - удалите после исправления
+#init python:
+    # Очищаем save_json_callbacks при запуске
+#    if hasattr(config, 'save_json_callbacks'):
+#        config.save_json_callbacks = []
+#    
+#    # Добавляем правильную функцию
+#    def add_user_info_to_save(json_data):
+#        json_data["user_name"] = persistent.user_name
+#        json_data["user_id"] = persistent.user_id
+#        return json_data
+#    
+#    config.save_json_callbacks.append(add_user_info_to_save)
+
+
+# Добавить функцию для сохранения информации о пользователе в слот
+init python:
+    def save_user_info():
+        """Сохраняет информацию о текущем пользователе в файл сохранения"""
+        renpy.save_persistent()
+        return
     
-    # Затемненный фон
-    add "#00000080"
+    # Функция должна принимать аргумент (словарь для сохранения)
+    def add_user_info_to_save(json_data):
+        """Добавляет информацию о пользователе в JSON сохранения"""
+        json_data["user_name"] = persistent.user_name
+        json_data["user_id"] = persistent.user_id
+        return json_data
     
-    # Создаем переменную для хранения введенного текста
-    default input_name = ""
-    
-    frame:
-        style "menu_frame"
-        xalign 0.5
-        yalign 0.5
-        xsize 600
-        ysize 300
-        padding (30, 30)
-        
-        vbox:
-            spacing 25
-            xalign 0.5
-            
-            text "Как тебя зовут?":
-                size 36
-                color "#ff7171"
-                font gui.interface_text_font
-                xalign 0.5
-                outlines [(2, "#a83c1fff", 0, 0)]
-            
-            # Правильное использование поля ввода
-            input:
-                id "name_input"
-                value ScreenVariableInputValue("input_name")
-                length 20
-                pixel_width 400
-                color "#ffffff"
-                font gui.interface_text_font
-                size 32
-                xalign 0.5
-                outlines [(2, "#ff832bff", 0, 0)]
-                allow "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
-            
-            # Кнопка для подтверждения
-            textbutton "Продолжить":
-                xalign 0.5
-                background Frame("gui/button/choice_idle_background_0.png", 10, 10, 10, 10)
-                hover_background Frame("gui/button/choice_hover_background_1.png", 10, 10, 10, 10)
-                padding (20, 10)
-                xsize 450
-                text_size 24
-                text_color "#ffbf92ff"
-                text_hover_color "#ffffff"
-                text_outlines [(2, "#ff832bff", 0, 0)]
-                action Return(input_name)
-            
-            text "Нажмите ENTER, чтобы продолжить":
-                size 20
-                color "#ff9083"
-                font gui.interface_text_font
-                xalign 0.5
-                outlines [(2, "#de5d21ff", 0, 0)]
-    
-    # ИСПРАВЛЕНО: Обработка нажатия Enter
-    key "K_RETURN" action Return(input_name)
+    # Добавляем функцию в колбэки
+    if hasattr(config, 'save_json_callbacks'):
+        config.save_json_callbacks.append(add_user_info_to_save)
+
 
 label start:
     # Устанавливаем музыку главного меню

@@ -51,27 +51,52 @@ init python:
     
     gallery_items.append(GalleryItem(
         "Комната вечером", 
-        "images/room_evening.png", 
+        "images/room_evening.png",
         "backgrounds",
         "room_evening"
     ))
     
     gallery_items.append(GalleryItem(
         "Комната закат", 
-        "images/room_pk_light.png", 
+        "images/room_pk_light.png",
         "backgrounds",
         "room_pk_light"
     ))
     
     gallery_items.append(GalleryItem(
         "Комната", 
-        "images/room_pk.png", 
+        "images/room_pk.png",
         "backgrounds",
         "room_pk"
     ))
     
-    # CG-арты можно добавить позже
-    # gallery_items.append(GalleryItem("CG Название", "images/cg/example.png", "cg", "cg_unlock_key"))
+    gallery_items.append(GalleryItem(
+        "Школа", 
+        "images/school_entrance.png",
+        "backgrounds",
+        None
+    ))
+    
+    gallery_items.append(GalleryItem(
+        "Кухня", 
+        "images/kitchen.png",
+        "backgrounds",
+        None
+    ))
+    
+    gallery_items.append(GalleryItem(
+        "Улица", 
+        "images/street.png",
+        "backgrounds",
+        None
+    ))
+    
+    gallery_items.append(GalleryItem(
+        "Ночная комната", 
+        "images/night_room.png",
+        "backgrounds",
+        None
+    ))
 
 # Экран галереи
 screen gallery():
@@ -89,17 +114,14 @@ screen gallery():
                 xalign 0.5
                 
                 textbutton _("Персонажи"):
-                    style "gallery_tab_button"
                     action SetScreenVariable("selected_category", "characters")
                     selected (selected_category == "characters")
                 
                 textbutton _("Фоны"):
-                    style "gallery_tab_button"
                     action SetScreenVariable("selected_category", "backgrounds")
                     selected (selected_category == "backgrounds")
                 
                 textbutton _("CG-арты"):
-                    style "gallery_tab_button"
                     action SetScreenVariable("selected_category", "cg")
                     selected (selected_category == "cg")
             
@@ -117,25 +139,37 @@ screen gallery():
                     draggable True
                     
                     for item in category_items:
-                        button:
-                            style "gallery_item_button"
-                            
-                            if item.is_unlocked():
+                        # ИСПРАВЛЕНО: убраны вложенные стили
+                        if item.is_unlocked():
+                            button:
+                                xysize (350, 250)
+                                background None
+                                action Show("gallery_image_popup", image=item.image, title=item.name)
+                                
                                 frame:
                                     xysize (360, 250)
                                     background "#333333"
                                     
                                     vbox:
-                                        # Миниатюра
-                                        add Transform(item.image, zoom=0.5, xalign=0.5, yalign=0.5) xysize (340, 200)
+                                        # Проверяем существование файла перед отображением
+                                        $ image_exists = renpy.loadable(item.image) if item.image else False
+                                        if image_exists:
+                                            add Transform(item.image, zoom=0.5, xalign=0.5, yalign=0.5) xysize (340, 200)
+                                        else:
+                                            text "Изображение\nне найдено" size 20 xalign 0.5 yalign 0.5
                                         
                                         # Название
                                         text item.name:
-                                            style "gallery_item_name"
+                                            color "#ffffff"
+                                            size 20
+                                            font gui.interface_text_font
+                                            outlines [(1, "#000000", 0, 0)]
                                             xalign 0.5
-                                            yalign 0.5
-                            
-                            else:
+                        else:
+                            button:
+                                xysize (350, 250)
+                                background None
+                                
                                 frame:
                                     xysize (340, 250)
                                     background "#222222"
@@ -143,13 +177,11 @@ screen gallery():
                                     vbox:
                                         text "🔒" size 100 xalign 0.6 yalign 1.0
                                         text _("Не разблокировано"):
-                                            style "gallery_locked_text"
+                                            color "#808080"
+                                            size 18
+                                            font gui.interface_text_font
                                             xalign 0.5
                                             yalign 1.0
-                            
-                            # Действие при клике
-                            if item.is_unlocked():
-                                action Show("gallery_image_popup", image=item.image, title=item.name)
             else:
                 text _("В этой категории пока нет изображений.") xalign 0.5
 
@@ -159,7 +191,8 @@ screen gallery_image_popup(image, title):
     zorder 200
     
     frame:
-        style "gallery_popup_frame"
+        background Frame("gui/confirm_frame.png", 25, 25, 25, 25)
+        padding (15, 15)
         xysize (1600, 820)
         xalign 0.5
         yalign 0.5
@@ -167,17 +200,28 @@ screen gallery_image_popup(image, title):
         vbox:
             # Заголовок
             text title:
-                style "gallery_popup_title"
+                color "#ffffff"
+                size 32
+                font gui.interface_text_font
+                outlines [(2, "#000000", 0, 0)]
                 xalign 0.5
             
             # Изображение
-            add Transform(image, zoom=0.8, xalign=0.5, yalign=0.5) ysize 700
+            $ image_exists = renpy.loadable(image) if image else False
+            if image_exists:
+                add Transform(image, zoom=0.8, xalign=0.5, yalign=0.5) ysize 700
+            else:
+                text "Изображение не найдено:\n[image]" size 30 xalign 0.5 yalign 0.5
             
             # Кнопка закрытия
             textbutton _("Закрыть"):
-                style "gallery_close_button"
                 xalign 0.5
+                background Frame("gui/button/choice_idle_background.png", 10, 10, 10, 10)
+                hover_background Frame("gui/button/choice_hover_background_1.png", 10, 10, 10, 10)
+                padding (30, 10)
+                xsize 200
                 action Hide("gallery_image_popup")
+                text_style "gallery_close_button_text"
     
     # Закрытие по клику вне окна
     key "game_menu" action Hide("gallery_image_popup")
@@ -189,8 +233,6 @@ style gallery_tab_button:
     selected_background Frame("gui/button/choice_hover_background_1.png", 10, 10, 10, 10)
     padding (20, 10)
     xysize (200, 50)
-    mouse "hover"
-    hover_mouse "hover"
 
 style gallery_tab_button_text:
     color "#ffffff"
@@ -199,41 +241,6 @@ style gallery_tab_button_text:
     size 24
     outlines [(2, "#000000", 0, 0)]
     text_align 0.5
-
-style gallery_item_button:
-    xysize (350, 250)
-    padding (0, 0)
-    background None
-
-style gallery_item_name:
-    size 20
-    color "#ffffff"
-    font gui.interface_text_font
-    outlines [(1, "#000000", 0, 0)]
-    xalign 0.5
-
-style gallery_locked_text:
-    size 18
-    color "#808080"
-    font gui.interface_text_font
-    xalign 0.5
-    yalign 1.0
-
-style gallery_popup_frame:
-    background Frame("gui/confirm_frame.png", 25, 25, 25, 25)
-    padding (15, 15)
-
-style gallery_popup_title:
-    size 32
-    color "#ffffff"
-    font gui.interface_text_font
-    outlines [(2, "#000000", 0, 0)]
-
-style gallery_close_button:
-    background Frame("gui/button/choice_idle_background.png", 10, 10, 10, 10)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 10, 10, 10, 10)
-    padding (30, 10)
-    xsize 200
 
 style gallery_close_button_text:
     color "#ffffff"

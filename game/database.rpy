@@ -6,6 +6,7 @@ init -2 python:
     # Попытка импорта sqlite3 с обработкой ошибки
     import sys
     import os
+    import time
     
     # Инициализация persistent переменных
     if not hasattr(persistent, 'user_data') or persistent.user_data is None:
@@ -142,7 +143,6 @@ init -2 python:
             """Добавление нового пользователя"""
             # Проверяем, есть ли уже пользователь в persistent
             if hasattr(persistent, 'user_data') and persistent.user_data and 'users' in persistent.user_data:
-                # ИСПРАВЛЕНО: используем items() для итерации по словарю
                 for user_id, data in persistent.user_data['users'].items():
                     if data.get('name') == user_name:
                         return int(user_id)
@@ -203,7 +203,6 @@ init -2 python:
             
             # Проверяем существующего пользователя
             if 'users' in persistent.user_data:
-                # ИСПРАВЛЕНО: используем items() для итерации по словарю
                 for user_id, data in persistent.user_data['users'].items():
                     if data.get('name') == user_name:
                         return int(user_id)
@@ -215,7 +214,7 @@ init -2 python:
             
             persistent.user_data['users'][str(user_id)] = {
                 'name': user_name,
-                'created_at': renpy.time.time()
+                'created_at': time.time()
             }
             
             # Добавляем прогресс
@@ -227,7 +226,7 @@ init -2 python:
             
             persistent.user_data['save_progress'][str(user_id)].append({
                 'chapter': "Глава 1: Связь",
-                'save_point': renpy.time.time()
+                'save_point': time.time()
             })
             
             persistent.user_data['next_id'] = user_id + 1
@@ -263,7 +262,6 @@ init -2 python:
         def _get_user_id_memory(self, user_name):
             """Получение ID из памяти"""
             if hasattr(persistent, 'user_data') and persistent.user_data and 'users' in persistent.user_data:
-                # ИСПРАВЛЕНО: используем items() для итерации по словарю
                 for user_id, data in persistent.user_data['users'].items():
                     if data.get('name') == user_name:
                         return int(user_id)
@@ -315,7 +313,7 @@ init -2 python:
             persistent.user_data['achievements'][str_user_id].append({
                 'name': achievement_name,
                 'description': description,
-                'time_point': renpy.time.time()
+                'time_point': time.time()
             })
         
         def update_save_progress(self, user_id, chapter):
@@ -353,7 +351,7 @@ init -2 python:
             
             persistent.user_data['save_progress'][str_user_id].append({
                 'chapter': chapter,
-                'save_point': renpy.time.time()
+                'save_point': time.time()
             })
         
         def get_all_users(self):
@@ -381,7 +379,6 @@ init -2 python:
             """Получение пользователей из памяти"""
             users = []
             if hasattr(persistent, 'user_data') and persistent.user_data and 'users' in persistent.user_data:
-                # ИСПРАВЛЕНО: используем items() для итерации по словарю
                 for user_id, data in persistent.user_data['users'].items():
                     users.append({
                         'user_ID': int(user_id),

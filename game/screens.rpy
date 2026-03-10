@@ -76,14 +76,9 @@ style frame:
 
 ###### Стили курсоров ######
 
-# Базовый стиль для всех кнопок
+# Временно отключаем пользовательские курсоры
 style button:
     properties gui.button_properties("button")
-    mouse "hover"
-    hover_mouse "hover"
-    selected_mouse "selected"
-    selected_hover_mouse "selected_hover"
-    insensitive_mouse "insensitive"
 
 # Для кнопок главного меню
 style main_menu_button:
@@ -95,11 +90,6 @@ style main_menu_button:
     xsize 400
     ysize None
     margin (0, 5)
-    mouse "hover"
-    hover_mouse "hover"
-    selected_mouse "selected"
-    selected_hover_mouse "selected_hover"
-    insensitive_mouse "insensitive"
 
 style main_menu_button_text:
     color "#ffffff"
@@ -115,49 +105,26 @@ style main_menu_button_text:
 style navigation_button:
     size_group "navigation"
     properties gui.button_properties("navigation_button")
-    mouse "hover"
-    hover_mouse "hover"
-    selected_mouse "selected"
-    selected_hover_mouse "selected_hover"
-    insensitive_mouse "insensitive"
 
 # Для кнопок быстрого меню
 style quick_button:
     properties gui.button_properties("quick_button")
-    mouse "hover"
-    hover_mouse "hover"
-    selected_mouse "selected"
-    selected_hover_mouse "selected_hover"
-    insensitive_mouse "insensitive"
 
 # Для кнопок выбора
 style choice_button:
     properties gui.button_properties("choice_button")
-    mouse "hover"
-    hover_mouse "hover"
-    selected_mouse "selected"
-    selected_hover_mouse "selected_hover"
-    insensitive_mouse "insensitive"
 
 # Для ползунков
 style slider:
     ysize gui.slider_size
     base_bar Frame("gui/slider/horizontal_[prefix_]bar.png", gui.slider_borders, tile=gui.slider_tile)
     thumb "gui/slider/horizontal_[prefix_]thumb.png"
-    mouse "hover"
-    hover_mouse "hover"
-    selected_mouse "selected"
-    selected_hover_mouse "selected_hover"
 
 # Для полос прокрутки
 style scrollbar:
     ysize gui.scrollbar_size
     base_bar Frame("gui/scrollbar/horizontal_[prefix_]bar.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
     thumb Frame("gui/scrollbar/horizontal_[prefix_]thumb.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
-    mouse "hover"
-    hover_mouse "hover"
-    selected_mouse "selected"
-    selected_hover_mouse "selected_hover"
 
 ################################################################################
 ## Внутриигровые экраны
@@ -404,13 +371,13 @@ screen main_menu():
         xsize 500
         ysize 600
         
-        # Фон для рамки - стикер
+        # Фон для рамки - стикер с правильным путем
         background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
         
         vbox:
             xalign 0.5
-            yalign 0.5
-            spacing 10
+            yalign 0.7
+            spacing 1
             
             # Кнопки меню
             textbutton _("Начать игру"):
@@ -433,6 +400,10 @@ screen main_menu():
                 style "main_menu_button"
                 action ShowMenu("preferences")
             
+            textbutton _("Отладка БД"):
+                style "main_menu_button"
+                action ShowMenu("debug_database")
+            
             textbutton _("Выход"):
                 style "main_menu_button"
                 action Quit(confirm=True)
@@ -443,26 +414,26 @@ style main_menu_title:
     size gui.title_text_size
     font gui.interface_text_font
     xalign 0.5
-    yalign 0.1  # Сверху, но не в центре
+    yalign 0.1
     textalign 0.5
     layout "subtitle"
-    outlines [(5, "#000000", 0, 0)]  # Черная обводка
+    outlines [(5, "#a43c13", 0, 0)]
 
 style main_menu_version:
     color "#ffffff"
     size gui.interface_text_size
     font gui.interface_text_font
-    xalign 0.02  # Слева
-    yalign 0.98  # Снизу
+    xalign 0.02
+    yalign 0.98
     textalign 0.0
-    outlines [(2, "#000000", 0, 0)]  # Черная обводка
+    outlines [(2, "#000000", 0, 0)]
 
 style main_menu_frame:
     xalign 0.5
     yalign 0.5
     xsize 500
     ysize 600
-    # Убираем всякие фоны и рамки - они будут из изображения
+    # Убираем фон, чтобы использовался background из экрана
     background None
 
 style main_menu_button:
@@ -471,16 +442,16 @@ style main_menu_button:
     xsize 400
     ysize None
     margin (0, 5)
-    # Убираем фон кнопки - он будет из изображения
-    background None
+    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
 
 style main_menu_button_text:
     color "#ffffff"
     hover_color "#FF7B4E"
     selected_color "#FF7B4E"
-    size 28
+    size 18
     font gui.interface_text_font
-    outlines [(2, "#000000", 0, 0)]  # Черная обводка текста
+    outlines [(2, "#b64520", 0, 0)]
     text_align 0.5
     xalign 0.5
 
@@ -620,8 +591,7 @@ screen about():
             if gui.about:
                 text "[gui.about!t]\n"
 
-            text _("Игровой проект был сделан для обучения понимания чувств и личности человека. "
-                "Сделано с помощью {a=https://www.renpy.org/}Ren'Py{/a} [renpy.version_only].\n\n[renpy.license!t]")
+            text _("Сделано с помощью {a=https://www.renpy.org/}Ren'Py{/a} [renpy.version_only].\n\n[renpy.license!t]")
 
 
 style about_label is gui_label
@@ -636,88 +606,107 @@ style about_label_text:
 
 screen save():
     tag menu
-
-    use file_slots(_("Сохранить"))
-
+    use file_slots_with_user(_("Сохранить"))
 
 screen load():
     tag menu
+    use file_slots_with_user(_("Загрузить"))
 
-    use file_slots(_("Загрузить"))
-
-
-screen file_slots(title):
+screen file_slots_with_user(title):
     default page_name_value = FilePageNameInputValue(pattern=_("{} страница"), auto=_("Автосохранения"), quick=_("Быстрые сохранения"))
-
+    
+    # Отображаем информацию о текущем пользователе
+    frame:
+        style "user_info_frame"
+        xalign 0.5
+        yalign 0.05
+        xsize 600
+        padding (15, 10)
+        
+        hbox:
+            spacing 10
+            xalign 0.5
+            text "Игрок:" size 24 color "#ffffff"
+            text "[persistent.user_name]" size 24 color "#ff832b" bold True
+            if persistent.user_id:
+                text "(ID: [persistent.user_id])" size 18 color "#cccccc"
+    
     use game_menu(title):
         fixed:
-
+            yoffset 80  # Сдвигаем вниз, чтобы не перекрывать информацию о пользователе
+            
             order_reverse True
-
+            
             button:
                 style "page_label"
-
+                
                 key_events True
                 xalign 0.5
                 action page_name_value.Toggle()
-
+                
                 input:
                     style "page_label_text"
                     value page_name_value
-
+            
             grid gui.file_slot_cols gui.file_slot_rows:
                 style_prefix "slot"
-
+                
                 xalign 0.5
                 yalign 0.5
-
+                
                 spacing gui.slot_spacing
-
+                
                 for i in range(gui.file_slot_cols * gui.file_slot_rows):
-
+                    
                     $ slot = i + 1
-
+                    
                     button:
                         action FileAction(slot)
-
+                        
                         has vbox
-
+                        
                         add FileScreenshot(slot) xalign 0.5
-
+                        
                         text FileTime(slot, format=_("{#file_time}%A, %d %B %Y, %H:%M"), empty=_("Пустой слот")):
                             style "slot_time_text"
-
+                        
                         text FileSaveName(slot):
                             style "slot_name_text"
-
+                        
+                        # Добавляем информацию о пользователе в слот
+                        $ save_user = FileJson(slot, "user_name", empty="")
+                        if save_user:
+                            text "Игрок: [save_user]":
+                                style "slot_user_text"
+                        
                         key "save_delete" action FileDelete(slot)
-
+            
             vbox:
                 style_prefix "page"
-
+                
                 xalign 0.5
                 yalign 1.0
-
+                
                 hbox:
                     xalign 0.5
-
+                    
                     spacing gui.page_spacing
-
+                    
                     textbutton _("<") action FilePagePrevious()
                     key "save_page_prev" action FilePagePrevious()
-
+                    
                     if config.has_autosave:
                         textbutton _("{#auto_page}А") action FilePage("auto")
-
+                    
                     if config.has_quicksave:
                         textbutton _("{#quick_page}Б") action FilePage("quick")
-
+                    
                     for page in range(1, 10):
                         textbutton "[page]" action FilePage(page)
-
+                    
                     textbutton _(">") action FilePageNext()
                     key "save_page_next" action FilePageNext()
-
+                
                 if config.has_sync:
                     if CurrentScreenName() == "save":
                         textbutton _("Загрузить Sync"):
@@ -727,7 +716,6 @@ screen file_slots(title):
                         textbutton _("Скачать Sync"):
                             action DownloadSync()
                             xalign 0.5
-
 
 style page_label is gui_label
 style page_label_text is gui_label_text
@@ -761,6 +749,18 @@ style slot_button:
 style slot_button_text:
     properties gui.text_properties("slot_button")
 
+style user_info_frame:
+    background Frame("gui/frame.png", 15, 15, 15, 15)
+    xalign 0.5
+    yalign 0.05
+    xsize 600
+    padding (15, 10)
+
+style slot_user_text:
+    size 16
+    color "#ff832b"
+    font gui.interface_text_font
+    xalign 0.5
 
 ## Экран настроек ##############################################################
 
@@ -1585,3 +1585,89 @@ style slider_vbox:
 style slider_slider:
     variant "small"
     xsize 900
+
+# Экран для ввода имени
+screen input_name_screen():
+    modal True
+    
+    # Затемненный фон
+    add "#00000080"
+    
+    # Создаем переменную для хранения введенного текста
+    default input_name = ""
+    
+    frame:
+        style "input_frame"
+        xalign 0.5
+        yalign 0.5
+        xsize 600
+        ysize 300
+        padding (30, 30)
+        
+        vbox:
+            spacing 25
+            xalign 0.5
+            
+            text "Как тебя зовут?":
+                size 36
+                color "#ff7171"
+                font gui.interface_text_font
+                xalign 0.5
+                outlines [(2, "#a83c1f", 0, 0)]
+            
+            # Поле ввода с закругленными углами
+            frame:
+                style "input_field_frame"
+                xysize (450, 60)
+                xalign 0.5
+                
+                input:
+                    id "name_input"
+                    value ScreenVariableInputValue("input_name")
+                    length 20
+                    pixel_width 400
+                    color "#000000"
+                    font gui.interface_text_font
+                    size 32
+                    xalign 0.5
+                    yalign 0.5
+            
+            # Кнопка для подтверждения
+            textbutton "Продолжить":
+                xalign 0.5
+                style "input_confirm_button"
+                action Return(input_name)
+            
+            text "Нажмите ENTER, чтобы продолжить":
+                size 20
+                color "#ff9083"
+                font gui.interface_text_font
+                xalign 0.5
+                outlines [(2, "#de5d21", 0, 0)]
+    
+    key "K_RETURN" action Return(input_name)
+
+init -1 python:
+    # Добавляем стили для экрана ввода имени
+    style.create("input_frame", "default")
+    style.input_frame.background = Frame("gui/frame.png", 25, 25, 25, 25)
+    style.input_frame.xalign = 0.5
+    style.input_frame.yalign = 0.5
+    
+    style.create("input_field_frame", "default")
+    style.input_field_frame.background = Frame("gui/input_field.png", 15, 15, 15, 15)
+    style.input_field_frame.xysize = (450, 60)
+    
+    style.create("input_confirm_button", "button")
+    style.input_confirm_button.background = Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
+    style.input_confirm_button.hover_background = Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    style.input_confirm_button.xsize = 450
+    style.input_confirm_button.padding = (20, 10)
+    
+    style.create("input_confirm_button_text", "button_text")
+    style.input_confirm_button_text.color = "#ffbf92"
+    style.input_confirm_button_text.hover_color = "#ffffff"
+    style.input_confirm_button_text.size = 24
+    style.input_confirm_button_text.outlines = [(2, "#ff832b", 0, 0)]
+    style.input_confirm_button_text.text_align = 0.5
+    style.input_confirm_button_text.xalign = 0.5
