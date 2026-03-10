@@ -23,18 +23,18 @@ image bg street = "images/street.png"
 image bg night_room = "images/night_room.png"
 
 # ВРЕМЕННЫЙ КОД ДЛЯ ОЧИСТКИ - удалите после исправления
-#init python:
+init python:
     # Очищаем save_json_callbacks при запуске
-#    if hasattr(config, 'save_json_callbacks'):
-#        config.save_json_callbacks = []
+    if hasattr(config, 'save_json_callbacks'):
+        config.save_json_callbacks = []
 #    
 #    # Добавляем правильную функцию
-#    def add_user_info_to_save(json_data):
-#        json_data["user_name"] = persistent.user_name
-#        json_data["user_id"] = persistent.user_id
-#        return json_data
+    def add_user_info_to_save(json_data):
+        json_data["user_name"] = persistent.user_name
+        json_data["user_id"] = persistent.user_id
+        return json_data
 #    
-#    config.save_json_callbacks.append(add_user_info_to_save)
+    config.save_json_callbacks.append(add_user_info_to_save)
 
 
 # Добавить функцию для сохранения информации о пользователе в слот

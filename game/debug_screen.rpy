@@ -1,50 +1,77 @@
+################################################################################
+## Экран отладки базы данных
+################################################################################
+
 screen debug_database():
     tag menu
-    use game_menu(_("Отладка БД"), scroll="viewport"):
+    use game_menu(_("Игроки"), scroll="viewport"):
         style_prefix "debug"
         
         vbox:
             spacing 20
             
-            text "Информация о базе данных" size 40 xalign 0.5
+            # Заголовок
+            text "Информация об игроках" size 40 xalign 0.5 color gui.accent_color outlines [(2, "#000000", 0, 0)]
             
-            hbox:
-                spacing 50
-                text "Текущий пользователь:" size 30
-                $ current_user_name = persistent.user_name if hasattr(persistent, 'user_name') and persistent.user_name else "Не задан"
-                $ current_user_id = persistent.user_id if hasattr(persistent, 'user_id') and persistent.user_id else "Не задан"
-                text "[current_user_name] (ID: [current_user_id])" size 30
+            # Информация о текущем пользователе
+            frame:
+                style "debug_info_frame"
+                xalign 0.5
+                xsize 1200
+                padding (20, 15)
+                
+                hbox:
+                    spacing 30
+                    xalign 0.5
+                    text "Текущий игрок:" size 28 color "#ffffff"
+                    $ current_user_name = persistent.user_name if hasattr(persistent, 'user_name') and persistent.user_name else "Не задан"
+                    $ current_user_id = persistent.user_id if hasattr(persistent, 'user_id') and persistent.user_id else "Не задан"
+                    text "[current_user_name]" size 28 color gui.accent_color bold True
+                    text "(ID: [current_user_id])" size 28 color "#cccccc"
             
-            null height 30
+            null height 10
             
             # Кнопки управления
             hbox:
                 spacing 20
                 xalign 0.5
-                textbutton "Обновить данные" action Show("debug_database")
-                textbutton "Сбросить все достижения" action Function(reset_all_achievements)
-                textbutton "Очистить БД" action Show("confirm_clear_db")
+                textbutton "🔄 Обновить" action Show("debug_database")
+                textbutton "🏆 Сбросить достижения" action Function(reset_all_achievements)
+                textbutton "🗑️ Очистить БД" action Show("confirm_clear_db")
             
-            null height 30
+            null height 20
             
             # Список всех пользователей с прогрессом
             frame:
+                style "debug_table_frame"
                 xsize 1400
                 padding (20, 20)
+                
                 vbox:
-                    text "Все пользователи (нажмите на строку для просмотра деталей):" size 30
+                    spacing 15
+                    
+                    text "Все игроки (нажмите на строку для просмотра деталей):" size 28 color gui.accent_color
+                    
+                    # ИСПРАВЛЕНО: получаем список пользователей ДО его использования
                     $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
+                    
                     if users:
                         # Заголовок таблицы
-                        hbox:
-                            spacing 20
-                            text "ID" size 24 bold True xsize 80
-                            text "Имя" size 24 bold True xsize 200
-                            text "Прогресс (главы)" size 24 bold True xsize 400
-                            text "Достижений" size 24 bold True xsize 150
-                            text "Последнее сохранение" size 24 bold True xsize 300
-                        
-                        null height 10
+                        frame:
+                            style "debug_table_header"
+                            xfill True
+                            padding (10, 12)
+                            
+                            hbox:
+                                spacing 20
+                                xfill True
+                                
+                                # Заголовки столбцов с фиксированной шириной
+                                text "ID" size 22 bold True color gui.accent_color xsize 80 text_align 0.5
+                                text "Имя" size 22 bold True color gui.accent_color xsize 200 text_align 0.5
+                                text "Прогресс (главы)" size 22 bold True color gui.accent_color xsize 400 text_align 0.5
+                                text "Достижений" size 22 bold True color gui.accent_color xsize 150 text_align 0.5
+                                text "Последнее сохранение" size 22 bold True color gui.accent_color xsize 300 text_align 0.5
                         
                         # Строки пользователей
                         for user in users:
@@ -62,91 +89,166 @@ screen debug_database():
                             # Получаем время последнего сохранения
                             $ last_save = get_last_save_time(user_id)
                             
+                            # Кнопка-строка с данными
                             button:
-                                style "debug_user_button"
+                                style "debug_table_row"
+                                xfill True
                                 action Show("user_details", user_id=user_id, user_name=user_name)
                                 
                                 hbox:
                                     spacing 20
-                                    text "[user_id]" size 22 xsize 80
-                                    text "[user_name]" size 22 xsize 200
-                                    text "[progress_text]" size 22 xsize 400
-                                    text "[ach_count]" size 22 xsize 150
-                                    text "[last_save]" size 22 xsize 300
+                                    xfill True
+                                    
+                                    # Данные с фиксированной шириной и выравниванием по центру
+                                    text "[user_id]" size 22 color "#ffffff" xsize 80 text_align 0.5
+                                    text "[user_name]" size 22 color "#ffffff" xsize 200 text_align 0.5
+                                    text "[progress_text]" size 22 color "#ffffff" xsize 400 text_align 0.5
+                                    text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
+                                    text "[last_save]" size 22 color "#ffffff" xsize 300 text_align 0.5
                     else:
-                        text "Нет пользователей" size 24
+                        text "Нет пользователей в базе данных" size 24 xalign 0.5 color "#cccccc"
 
-# Экран детальной информации о пользователе
+################################################################################
+## Экран детальной информации о пользователе
+################################################################################
+
 screen user_details(user_id, user_name):
     tag menu
-    use game_menu(_("Детали пользователя: [user_name] (ID: [user_id])"), scroll="viewport"):
+    
+    # Создаем заголовок без интерполяции
+    $ title_text = "Детали пользователя: " + user_name + " (ID: " + str(user_id) + ")"
+    
+    use game_menu(_(title_text), scroll="viewport"):
+        style_prefix "debug"
+        
         vbox:
             spacing 20
             
             # Кнопка возврата
-            textbutton "← Назад к списку" action Show("debug_database")
+            button:
+                style "debug_back_button"
+                xalign 0.0
+                action Show("debug_database")
+                
+                hbox:
+                    spacing 10
+                    text "←" size 30
+                    text "Назад к списку игроков" size 24
             
-            null height 20
+            null height 10
             
             # Информация о пользователе
             frame:
-                xsize 1400
-                padding (20, 20)
+                style "debug_detail_frame"
+                xfill True
+                padding (25, 20)
+                
                 vbox:
-                    text "Информация о пользователе:" size 30
-                    null height 10
-                    text "Имя: [user_name]" size 24
-                    text "ID: [user_id]" size 24
+                    spacing 15
+                    
+                    text "📋 Информация об игроке" size 30 color gui.accent_color
+                    
+                    grid 2 2:
+                        spacing 20
+                        xalign 0.0
+                        
+                        # Левая колонка - метки
+                        text "ID:" size 24 color "#cccccc" xalign 1.0
+                        text "Имя:" size 24 color "#cccccc" xalign 1.0
+                        
+                        # Правая колонка - значения
+                        text "[user_id]" size 24 color "#ffffff" bold True xalign 0.0
+                        text "[user_name]" size 24 color gui.accent_color bold True xalign 0.0
             
-            null height 20
+            null height 10
             
             # Прогресс прохождения
             frame:
-                xsize 1400
-                padding (20, 20)
+                style "debug_detail_frame"
+                xfill True
+                padding (25, 20)
+                
                 vbox:
-                    text "Прогресс прохождения:" size 30
-                    null height 10
+                    spacing 15
+                    
+                    text "📖 Прогресс прохождения" size 30 color gui.accent_color
+                    
                     $ progress = get_user_progress(user_id)
                     if progress:
                         for i, chapter in enumerate(progress):
-                            text "• Глава [i+1]: [chapter]" size 24
+                            hbox:
+                                spacing 15
+                                text "✓" size 24 color "#00ff00"
+                                text "Глава [i+1]:" size 22 color "#cccccc" xsize 80
+                                text "[chapter]" size 22 color "#ffffff"
                     else:
-                        text "Нет данных о прогрессе" size 24
+                        text "Нет данных о прогрессе" size 22 color "#cccccc" italic True
             
-            null height 20
+            null height 10
             
             # Достижения
             frame:
-                xsize 1400
-                padding (20, 20)
+                style "debug_detail_frame"
+                xfill True
+                padding (25, 20)
+                
                 vbox:
-                    text "Достижения:" size 30
-                    null height 10
+                    spacing 15
+                    
+                    text "🏆 Достижения" size 30 color gui.accent_color
+                    
                     $ achievements = db.get_user_achievements(user_id) if hasattr(db, 'get_user_achievements') else []
                     if achievements:
                         for ach in achievements:
                             $ ach_name = ach.get('achi_name', ach.get('name', 'Неизвестно'))
                             $ ach_desc = ach.get('description', '')
                             $ ach_time = ach.get('time_point', '')
-                            text "• [ach_name]: [ach_desc] ([ach_time])" size 22
+                            
+                            frame:
+                                style "debug_achievement_item"
+                                xfill True
+                                padding (15, 10)
+                                
+                                vbox:
+                                    spacing 5
+                                    hbox:
+                                        spacing 10
+                                        text "🏅" size 22
+                                        text "[ach_name]" size 22 color gui.accent_color bold True
+                                    text "[ach_desc]" size 18 color "#cccccc"
+                                    text "[ach_time]" size 16 color "#888888" italic True
                     else:
-                        text "Нет достижений" size 24
+                        text "Нет достижений" size 22 color "#cccccc" italic True
             
             null height 20
             
             # Кнопка загрузки
-            textbutton "Загрузить игру за этого пользователя" action [Function(set_current_user, user_id, user_name), Start()]
-            null height 10
-            text "При загрузке игра начнется с сохраненным прогрессом пользователя" size 18 color "#808080"
+            frame:
+                style "debug_action_frame"
+                xalign 0.5
+                xsize 600
+                padding (20, 15)
+                
+                vbox:
+                    spacing 10
+                    
+                    textbutton "▶️ Загрузить игру за этого пользователя" style "debug_action_button" action [Function(set_current_user, user_id, user_name), Start()]
+                    text "При загрузке игра начнется с сохраненным прогрессом пользователя" size 16 color "#888888" xalign 0.5
 
-# Экран подтверждения очистки БД
+################################################################################
+## Экран подтверждения очистки БД
+################################################################################
+
 screen confirm_clear_db():
     modal True
     zorder 200
     
+    style_prefix "confirm"
+    
+    add "gui/overlay/confirm.png"
+    
     frame:
-        style "confirm_frame"
+        style "debug_confirm_frame"
         xalign 0.5
         yalign 0.5
         xsize 600
@@ -157,24 +259,32 @@ screen confirm_clear_db():
             spacing 25
             xalign 0.5
             
-            text "Очистить базу данных?":
-                size 20
+            text "⚠️ ОЧИСТКА БАЗЫ ДАННЫХ ⚠️":
+                size 24
                 color "#ff7171"
+                bold True
                 xalign 0.5
+                text_align 0.5
             
-            text "Все пользователи и их прогресс будут удалены!":
-                size 20
+            text "Все пользователи и их прогресс будут безвозвратно удалены!":
+                size 18
                 color "#ffffff"
                 xalign 0.5
+                text_align 0.5
+            
+            null height 10
             
             hbox:
                 spacing 50
                 xalign 0.5
                 
-                textbutton "Да" action [Function(clear_database), Show("debug_database")]
-                textbutton "Нет" action Hide("confirm_clear_db")
+                textbutton "✅ Да, очистить" style "debug_confirm_button_danger" action [Function(clear_database), Show("debug_database")]
+                textbutton "❌ Нет, отмена" style "debug_confirm_button_cancel" action Hide("confirm_clear_db")
 
-# Добавить функции для работы с данными
+################################################################################
+## Функции для работы с данными
+################################################################################
+
 init python:
     import time
     
@@ -219,7 +329,10 @@ init python:
                     last_save = saves[-1].get('save_point', '')
                     if last_save:
                         try:
-                            last_time = time.ctime(float(last_save)) if isinstance(last_save, (int, float)) else str(last_save)
+                            if isinstance(last_save, (int, float)):
+                                last_time = time.strftime("%d.%m.%Y %H:%M", time.localtime(float(last_save)))
+                            else:
+                                last_time = str(last_save)
                         except:
                             last_time = str(last_save)
         
@@ -229,11 +342,12 @@ init python:
         """Установка текущего пользователя для загрузки"""
         persistent.user_id = user_id
         persistent.user_name = user_name
+        renpy.notify(f"Выбран игрок: {user_name}")
     
     def reset_all_achievements():
         """Сброс всех достижений"""
         persistent._achievements = {}
-        renpy.notify("Все достижения сброшены")
+        renpy.notify("✅ Все достижения сброшены")
     
     def clear_database():
         """Очистка базы данных"""
@@ -262,12 +376,95 @@ init python:
             finally:
                 db.disconnect()
         
-        renpy.notify("База данных очищена")
+        renpy.notify("🗑️ База данных полностью очищена")
 
+################################################################################
 ## Стили для отладки
-style debug_user_button:
-    xsize 1380
-    padding (10, 10)
+################################################################################
+
+style debug_info_frame:
+    background Frame("gui/frame.png", 15, 15, 15, 15)
+    xmaximum 1200
+
+style debug_table_frame:
+    background Frame("gui/frame.png", 15, 15, 15, 15)
+
+style debug_table_header:
+    background "#2a2a2a"
+    xfill True
+
+style debug_table_row:
     background "#333333"
     hover_background "#444444"
+    selected_background "#555555"
+    xfill True
+    padding (10, 8)
     margin (0, 2)
+
+style debug_detail_frame:
+    background Frame("gui/frame.png", 15, 15, 15, 15)
+
+style debug_achievement_item:
+    background "#2a2a2a"
+    xfill True
+    margin (0, 2)
+
+style debug_action_frame:
+    background Frame("gui/frame.png", 15, 15, 15, 15)
+
+style debug_action_button:
+    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    padding (30, 15)
+    xsize 500
+    xalign 0.5
+
+style debug_action_button_text:
+    color "#ffffff"
+    hover_color gui.hover_color
+    size 22
+    font gui.interface_text_font
+    outlines [(2, "#000000", 0, 0)]
+    text_align 0.5
+
+style debug_back_button:
+    background None
+    hover_background None
+    padding (10, 5)
+
+style debug_back_button_text:
+    color "#cccccc"
+    hover_color gui.hover_color
+    size 24
+    font gui.interface_text_font
+    outlines [(1, "#000000", 0, 0)]
+
+style debug_confirm_frame:
+    background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
+    padding (25, 25)
+
+style debug_confirm_button_danger:
+    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
+    hover_background Frame("gui/button/choice_hover_background.png", 15, 15, 15, 15)
+    padding (20, 10)
+    xsize 200
+
+style debug_confirm_button_danger_text:
+    color "#ff8d67"
+    hover_color "#ffffff"
+    size 18
+    font gui.interface_text_font
+    text_align 0.5
+
+style debug_confirm_button_cancel:
+    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
+    hover_background Frame("gui/button/choice_hover_background.png", 15, 15, 15, 15)
+    padding (20, 10)
+    xsize 200
+
+style debug_confirm_button_cancel_text:
+    color "#ff8d67"
+    hover_color "#ffffff"
+    size 18
+    font gui.interface_text_font
+    text_align 0.5

@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/screens.rpy", line 1656: invalid syntax
-    style.input_frame.
-                          ^
+File "game/debug_screen.rpy", line 461: expected 'simple_expression' not found.
+    hover_background
+                     ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Tue Mar 10 16:36:07 2026
+Tue Mar 10 19:20:14 2026

@@ -74,11 +74,13 @@ style frame:
     padding gui.frame_borders.padding
     background Frame("gui/frame.png", gui.frame_borders, tile=gui.frame_tile)
 
+
 ###### Стили курсоров ######
 
 # Временно отключаем пользовательские курсоры
 style button:
     properties gui.button_properties("button")
+
 
 # Для кнопок главного меню
 style main_menu_button:
@@ -400,7 +402,7 @@ screen main_menu():
                 style "main_menu_button"
                 action ShowMenu("preferences")
             
-            textbutton _("Отладка БД"):
+            textbutton _("Игроки"):
                 style "main_menu_button"
                 action ShowMenu("debug_database")
             
