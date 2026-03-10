@@ -158,12 +158,12 @@ screen confirm_clear_db():
             xalign 0.5
             
             text "Очистить базу данных?":
-                size 36
+                size 20
                 color "#ff7171"
                 xalign 0.5
             
             text "Все пользователи и их прогресс будут удалены!":
-                size 24
+                size 20
                 color "#ffffff"
                 xalign 0.5
             
