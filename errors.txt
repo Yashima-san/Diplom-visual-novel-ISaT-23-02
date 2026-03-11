@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/debug_screen.rpy", line 461: expected 'simple_expression' not found.
-    hover_background
-                     ^
+File "game/debug_screen.rpy", line 276: the outlines keyword argument was not given a value.
+    outlines
+            ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Tue Mar 10 19:20:14 2026
+Wed Mar 11 18:25:42 2026

@@ -153,12 +153,12 @@ screen user_details(user_id, user_name):
                         xalign 0.0
                         
                         # Левая колонка - метки
-                        text "ID:" size 24 color "#cccccc" xalign 1.0
-                        text "Имя:" size 24 color "#cccccc" xalign 1.0
+                        text "ID:" size 24 color "#5e5e5e" xalign 1.0
+                        text "Имя:" size 24 color "#5e5e5e" xalign 1.0
                         
                         # Правая колонка - значения
-                        text "[user_id]" size 24 color "#ffffff" bold True xalign 0.0
-                        text "[user_name]" size 24 color gui.accent_color bold True xalign 0.0
+                        text "[user_id]" size 24 color gui.accent_color xalign 0.0
+                        text "[user_name]" size 24 color gui.accent_color xalign 0.0
             
             null height 10
             
@@ -179,10 +179,10 @@ screen user_details(user_id, user_name):
                             hbox:
                                 spacing 15
                                 text "✓" size 24 color "#00ff00"
-                                text "Глава [i+1]:" size 22 color "#cccccc" xsize 80
-                                text "[chapter]" size 22 color "#ffffff"
+                                text "Глава [i+1]:" size 22 color "#939393" xsize 80
+                                text "[chapter]" size 22 color "#5e5e5e"
                     else:
-                        text "Нет данных о прогрессе" size 22 color "#cccccc" italic True
+                        text "Нет данных о прогрессе" size 22 color "#939393" italic True
             
             null height 10
             
@@ -215,10 +215,10 @@ screen user_details(user_id, user_name):
                                         spacing 10
                                         text "🏅" size 22
                                         text "[ach_name]" size 22 color gui.accent_color bold True
-                                    text "[ach_desc]" size 18 color "#cccccc"
-                                    text "[ach_time]" size 16 color "#888888" italic True
+                                    text "[ach_desc]" size 18 color "#939393"
+                                    text "[ach_time]" size 16 color "#5e5e5e" italic True
                     else:
-                        text "Нет достижений" size 22 color "#cccccc" italic True
+                        text "Нет достижений" size 22 color "#939393" italic True
             
             null height 20
             
@@ -251,13 +251,14 @@ screen confirm_clear_db():
         style "debug_confirm_frame"
         xalign 0.5
         yalign 0.5
-        xsize 600
-        ysize 300
+        xsize 450
+        ysize 500
         padding (30, 30)
         
         vbox:
             spacing 25
             xalign 0.5
+            yalign 0.5
             
             text "⚠️ ОЧИСТКА БАЗЫ ДАННЫХ ⚠️":
                 size 24
@@ -265,17 +266,19 @@ screen confirm_clear_db():
                 bold True
                 xalign 0.5
                 text_align 0.5
+                outlines [(2, "#a84343", 0, 0)]
             
             text "Все пользователи и их прогресс будут безвозвратно удалены!":
                 size 18
                 color "#ffffff"
                 xalign 0.5
                 text_align 0.5
+                outlines [(2, "#855133", 0, 0)]
             
             null height 10
             
             hbox:
-                spacing 50
+                spacing 10
                 xalign 0.5
                 
                 textbutton "✅ Да, очистить" style "debug_confirm_button_danger" action [Function(clear_database), Show("debug_database")]
@@ -384,19 +387,19 @@ init python:
 
 style debug_info_frame:
     background Frame("gui/frame.png", 15, 15, 15, 15)
-    xmaximum 1200
+    xmaximum 1000
 
 style debug_table_frame:
     background Frame("gui/frame.png", 15, 15, 15, 15)
 
 style debug_table_header:
-    background "#2a2a2a"
+    background "#ffa46f"
     xfill True
 
 style debug_table_row:
-    background "#333333"
-    hover_background "#444444"
-    selected_background "#555555"
+    background "#ffbc95"
+    hover_background "#b8754d"
+    selected_background "#ffd8c1"
     xfill True
     padding (10, 8)
     margin (0, 2)
@@ -405,7 +408,7 @@ style debug_detail_frame:
     background Frame("gui/frame.png", 15, 15, 15, 15)
 
 style debug_achievement_item:
-    background "#2a2a2a"
+    background "#ffbc95"
     xfill True
     margin (0, 2)
 
@@ -424,7 +427,7 @@ style debug_action_button_text:
     hover_color gui.hover_color
     size 22
     font gui.interface_text_font
-    outlines [(2, "#000000", 0, 0)]
+    outlines [(2, "#482918", 0, 0)]
     text_align 0.5
 
 style debug_back_button:
@@ -433,38 +436,38 @@ style debug_back_button:
     padding (10, 5)
 
 style debug_back_button_text:
-    color "#cccccc"
+    color "#494949"
     hover_color gui.hover_color
     size 24
     font gui.interface_text_font
-    outlines [(1, "#000000", 0, 0)]
+    outlines [(1, "#855133", 0, 0)]
 
 style debug_confirm_frame:
-    background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
+    background Frame("gui/choice_idle_background_0.png", 25, 25, 25, 25)
     padding (25, 25)
 
 style debug_confirm_button_danger:
     background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
     hover_background Frame("gui/button/choice_hover_background.png", 15, 15, 15, 15)
-    padding (20, 10)
+    padding (50, 10)
     xsize 200
 
 style debug_confirm_button_danger_text:
     color "#ff8d67"
     hover_color "#ffffff"
-    size 18
+    size 14
     font gui.interface_text_font
     text_align 0.5
 
 style debug_confirm_button_cancel:
     background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
     hover_background Frame("gui/button/choice_hover_background.png", 15, 15, 15, 15)
-    padding (20, 10)
+    padding (50, 10)
     xsize 200
 
 style debug_confirm_button_cancel_text:
     color "#ff8d67"
     hover_color "#ffffff"
-    size 18
+    size 14
     font gui.interface_text_font
     text_align 0.5
