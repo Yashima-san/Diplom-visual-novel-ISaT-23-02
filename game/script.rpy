@@ -100,7 +100,7 @@ init python:
             return
         else:
             # Если нет сохранений, начинаем новую игру
-            renpy.start()
+            renpy.call_in_new_context("start")  # Используем call_in_new_context вместо renpy.start()
     
     def custom_file_action(slot):
         """Кастомное действие для загрузки с проверкой пользователя"""

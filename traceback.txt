@@ -31,4 +31,4 @@ Exception: Could not load the game. Perhaps the script changed in an incompatibl
 Windows-11-10.0.26200-SP0 AMD64
 Ren'Py 8.5.3.26020901+nightly
 За гранью чувств 0.0
-Thu Mar 12 16:29:15 2026
+Thu Mar 12 16:31:08 2026

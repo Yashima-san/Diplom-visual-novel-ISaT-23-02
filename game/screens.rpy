@@ -373,12 +373,12 @@ screen main_menu():
         xsize 500
         ysize 650
         
-        # Фон для рамки - стикер с правильным путем
-        background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
+        # Фон для рамки - стикер
+        background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)  # Исправлен путь
         
         vbox:
             xalign 0.5
-            yalign 0.7
+            yalign 0.5
             spacing 1
             
             # Кнопки меню
@@ -406,13 +406,16 @@ screen main_menu():
                 style "main_menu_button"
                 action ShowMenu("preferences")
             
-            textbutton _("Игроки"):
-                style "main_menu_button"
-                action ShowMenu("debug_database")
-            
             textbutton _("Выход"):
                 style "main_menu_button"
                 action Quit(confirm=True)
+    
+    # Добавляем отдельную кнопку "Игроки" под стикером
+    textbutton _(""):
+        style "players_button"
+        action ShowMenu("debug_database")
+        xalign 0
+        ypos 0.5  # Расположение под стикером
 
 ## Стили для главного меню
 style main_menu_title:
@@ -458,6 +461,34 @@ style main_menu_button_text:
     size 18
     font gui.interface_text_font
     outlines [(2, "#b64520", 0, 0)]
+    text_align 0.5
+    xalign 0.5
+
+style main_menu_button_players_text:
+    color "#ffffff"
+    hover_color "#FF7B4E"
+    selected_color "#FF7B4E"
+    size 18
+    font gui.interface_text_font
+    outlines [(2, "#b64520", 0, 0)]
+    text_align 0.5
+    xalign 0.5
+
+style players_button:
+    xalign -1
+    ypos 0.4
+    padding (15, 10)
+    xsize 200
+    ysize 140
+    background Frame("gui/button/choice_idle_background_3.png", 15, 15, 15, 15)
+    hover_background Frame("gui/button/choice_idle_background_2.png", 15, 15, 15, 15)
+
+style players_button_text:
+    color "#ffffff"
+    hover_color "#FF7B4E"
+    size 16
+    font gui.interface_text_font
+    outlines [(1, "#000000", 0, 0)]
     text_align 0.5
     xalign 0.5
 
