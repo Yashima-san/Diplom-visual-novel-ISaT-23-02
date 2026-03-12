@@ -1,4 +1,4 @@
-﻿################################################################################
+﻿﻿################################################################################
 ## Инициализация
 ################################################################################
 
@@ -371,7 +371,7 @@ screen main_menu():
         xalign 0.5
         yalign 0.5
         xsize 500
-        ysize 600
+        ysize 650
         
         # Фон для рамки - стикер с правильным путем
         background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
@@ -382,6 +382,10 @@ screen main_menu():
             spacing 1
             
             # Кнопки меню
+            textbutton _("Продолжить"):
+                style "main_menu_button"
+                action Function(continue_game)
+            
             textbutton _("Начать игру"):
                 style "main_menu_button"
                 action Start()
@@ -434,7 +438,7 @@ style main_menu_frame:
     xalign 0.5
     yalign 0.5
     xsize 500
-    ysize 600
+    ysize 650
     # Убираем фон, чтобы использовался background из экрана
     background None
 
@@ -482,15 +486,21 @@ screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
 
                     viewport:
                         yinitial yinitial
-                        scrollbars "vertical"
+                        scrollbars "vertical"  # Только вертикальные полосы
                         mousewheel True
                         draggable True
                         pagekeys True
+                        edgescroll (300, 500)
+                        
+                        # Запрещаем горизонтальный скролл
+                        xadjustment None
+                        yadjustment True
 
                         side_yfill True
 
                         vbox:
                             spacing spacing
+                            xfill True  # Растягиваем по ширине
 
                             transclude
 
@@ -500,10 +510,14 @@ screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
                         cols 1
                         yinitial yinitial
 
-                        scrollbars "vertical"
+                        scrollbars "vertical"  # Только вертикальные полосы
                         mousewheel True
                         draggable True
                         pagekeys True
+                        
+                        # Запрещаем горизонтальный скролл
+                        xadjustment None
+                        yadjustment True
 
                         side_yfill True
 
@@ -663,7 +677,7 @@ screen file_slots_with_user(title):
                     $ slot = i + 1
                     
                     button:
-                        action FileAction(slot)
+                        action Function(custom_file_action, slot)
                         
                         has vbox
                         
@@ -763,6 +777,44 @@ style slot_user_text:
     color "#ff832b"
     font gui.interface_text_font
     xalign 0.5
+
+## Экран подтверждения смены пользователя ######################################
+
+screen confirm_user_switch(slot):
+    modal True
+    zorder 200
+    
+    style_prefix "confirm"
+    
+    add "gui/overlay/confirm.png"
+    
+    frame:
+        vbox:
+            xalign .5
+            yalign .5
+            spacing 45
+            
+            label _("Это сохранение принадлежит другому игроку. Загрузить?"):
+                style "confirm_prompt"
+                xalign 0.5
+                text_align 0.5
+                xsize 600
+            
+            hbox:
+                xalign 0.5
+                spacing 150
+                
+                textbutton _("Да") action Function(load_other_user_save, slot)
+                textbutton _("Нет") action Hide("confirm_user_switch")
+
+init python:
+    def load_other_user_save(slot):
+        """Загружает сохранение другого пользователя и обновляет persistent"""
+        save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
+        if save_json:
+            persistent.user_id = save_json.get("user_id")
+            persistent.user_name = save_json.get("user_name", "")
+        renpy.load(str(slot))
 
 ## Экран настроек ##############################################################
 

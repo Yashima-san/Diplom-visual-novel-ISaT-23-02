@@ -54,6 +54,67 @@ init python:
     # Добавляем функцию в колбэки
     if hasattr(config, 'save_json_callbacks'):
         config.save_json_callbacks.append(add_user_info_to_save)
+    
+    # Функция для загрузки последнего сохранения пользователя
+    def load_last_save_for_user(user_id):
+        """Загружает последнее сохранение для указанного пользователя"""
+        import os
+        
+        # Получаем список всех сохранений
+        saves = []
+        for i in range(1, 10):  # Проверяем слоты 1-9
+            if renpy.can_load(str(i)):
+                # Проверяем, принадлежит ли сохранение этому пользователю
+                try:
+                    save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
+                    if save_json and save_json.get("user_id") == user_id:
+                        timestamp = save_json.get("_timestamp", 0)
+                        saves.append((i, timestamp))
+                except:
+                    continue
+        
+        # Сортируем по времени (самое новое последнее)
+        saves.sort(key=lambda x: x[1], reverse=True)
+        
+        if saves:
+            # Загружаем самое новое сохранение
+            renpy.load(str(saves[0][0]))
+            return True
+        return False
+    
+    # Функция для сохранения прогресса пользователя
+    def save_user_progress():
+        """Сохраняет текущий прогресс пользователя"""
+        if persistent.user_id:
+            # Сохраняем в базу данных
+            if hasattr(db, 'update_save_progress'):
+                db.update_save_progress(persistent.user_id, "Глава Первая: Связь")
+            
+            # Также сохраняем информацию в файл сохранения
+            renpy.take_screenshot()
+            renpy.save("quick-save", "Быстрое сохранение")
+    
+    def continue_game():
+        """Продолжает игру с последнего сохранения"""
+        if persistent.user_id and load_last_save_for_user(persistent.user_id):
+            return
+        else:
+            # Если нет сохранений, начинаем новую игру
+            renpy.start()
+    
+    def custom_file_action(slot):
+        """Кастомное действие для загрузки с проверкой пользователя"""
+        if renpy.can_load(str(slot)):
+            try:
+                save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
+                if save_json and save_json.get("user_id") != persistent.user_id:
+                    # Если сохранение принадлежит другому пользователю
+                    renpy.show_screen("confirm_user_switch", slot=slot)
+                    return
+            except:
+                pass
+        # Если сохранение пустое или принадлежит текущему пользователю
+        renpy.load(str(slot))
 
 
 label start:

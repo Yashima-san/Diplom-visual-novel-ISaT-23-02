@@ -9,6 +9,7 @@ screen debug_database():
         
         vbox:
             spacing 20
+            xfill True  # Растягиваем по ширине
             
             # Заголовок
             text "Информация об игроках" size 40 xalign 0.5 color gui.accent_color outlines [(2, "#000000", 0, 0)]
@@ -49,6 +50,7 @@ screen debug_database():
                 
                 vbox:
                     spacing 15
+                    xfill True
                     
                     text "Все игроки (нажмите на строку для просмотра деталей):" size 28 color gui.accent_color
                     
@@ -74,37 +76,46 @@ screen debug_database():
                                 text "Последнее сохранение" size 22 bold True color gui.accent_color xsize 300 text_align 0.5
                         
                         # Строки пользователей
-                        for user in users:
-                            $ user_id = user['user_ID']
-                            $ user_name = user['name']
+                        vpgrid:
+                            cols 1
+                            spacing 2
+                            yinitial 0.0
+                            mousewheel True
+                            draggable True
+                            xadjustment None  # Запрет горизонтального скролла
+                            yadjustment True  # Разрешение вертикального скролла
                             
-                            # Получаем прогресс пользователя
-                            $ user_progress = get_user_progress(user_id)
-                            $ progress_text = ", ".join(user_progress) if user_progress else "Нет данных"
-                            
-                            # Получаем количество достижений
-                            $ user_achievements = db.get_user_achievements(user_id) if hasattr(db, 'get_user_achievements') else []
-                            $ ach_count = len(user_achievements)
-                            
-                            # Получаем время последнего сохранения
-                            $ last_save = get_last_save_time(user_id)
-                            
-                            # Кнопка-строка с данными
-                            button:
-                                style "debug_table_row"
-                                xfill True
-                                action Show("user_details", user_id=user_id, user_name=user_name)
+                            for user in users:
+                                $ user_id = user['user_ID']
+                                $ user_name = user['name']
                                 
-                                hbox:
-                                    spacing 20
+                                # Получаем прогресс пользователя
+                                $ user_progress = get_user_progress(user_id)
+                                $ progress_text = ", ".join(user_progress) if user_progress else "Нет данных"
+                                
+                                # Получаем количество достижений
+                                $ user_achievements = db.get_user_achievements(user_id) if hasattr(db, 'get_user_achievements') else []
+                                $ ach_count = len(user_achievements)
+                                
+                                # Получаем время последнего сохранения
+                                $ last_save = get_last_save_time(user_id)
+                                
+                                # Кнопка-строка с данными
+                                button:
+                                    style "debug_table_row"
                                     xfill True
+                                    action Show("user_details", user_id=user_id, user_name=user_name)
                                     
-                                    # Данные с фиксированной шириной и выравниванием по центру
-                                    text "[user_id]" size 22 color "#ffffff" xsize 80 text_align 0.5
-                                    text "[user_name]" size 22 color "#ffffff" xsize 200 text_align 0.5
-                                    text "[progress_text]" size 22 color "#ffffff" xsize 400 text_align 0.5
-                                    text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
-                                    text "[last_save]" size 22 color "#ffffff" xsize 300 text_align 0.5
+                                    hbox:
+                                        spacing 20
+                                        xfill True
+                                        
+                                        # Данные с фиксированной шириной и выравниванием по центру
+                                        text "[user_id]" size 22 color "#ffffff" xsize 80 text_align 0.5
+                                        text "[user_name]" size 22 color "#ffffff" xsize 200 text_align 0.5
+                                        text "[progress_text]" size 22 color "#ffffff" xsize 400 text_align 0.5
+                                        text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
+                                        text "[last_save]" size 22 color "#ffffff" xsize 300 text_align 0.5
                     else:
                         text "Нет пользователей в базе данных" size 24 xalign 0.5 color "#cccccc"
 
@@ -123,6 +134,7 @@ screen user_details(user_id, user_name):
         
         vbox:
             spacing 20
+            xfill True
             
             # Кнопка возврата
             button:
@@ -145,6 +157,7 @@ screen user_details(user_id, user_name):
                 
                 vbox:
                     spacing 15
+                    xfill True
                     
                     text "📋 Информация об игроке" size 30 color gui.accent_color
                     
@@ -170,17 +183,28 @@ screen user_details(user_id, user_name):
                 
                 vbox:
                     spacing 15
+                    xfill True
                     
                     text "📖 Прогресс прохождения" size 30 color gui.accent_color
                     
                     $ progress = get_user_progress(user_id)
                     if progress:
-                        for i, chapter in enumerate(progress):
-                            hbox:
-                                spacing 15
-                                text "✓" size 24 color "#00ff00"
-                                text "Глава [i+1]:" size 22 color "#939393" xsize 80
-                                text "[chapter]" size 22 color "#5e5e5e"
+                        vpgrid:
+                            cols 1
+                            spacing 10
+                            yinitial 0.0
+                            mousewheel True
+                            draggable True
+                            xadjustment None  # Запрет горизонтального скролла
+                            yadjustment True  # Разрешение вертикального скролла
+                            
+                            for i, chapter in enumerate(progress):
+                                hbox:
+                                    spacing 15
+                                    xfill True
+                                    text "✓" size 24 color "#00ff00"
+                                    text "Глава [i+1]:" size 22 color "#939393" xsize 80
+                                    text "[chapter]" size 22 color "#5e5e5e"
                     else:
                         text "Нет данных о прогрессе" size 22 color "#939393" italic True
             
@@ -194,29 +218,40 @@ screen user_details(user_id, user_name):
                 
                 vbox:
                     spacing 15
+                    xfill True
                     
                     text "🏆 Достижения" size 30 color gui.accent_color
                     
                     $ achievements = db.get_user_achievements(user_id) if hasattr(db, 'get_user_achievements') else []
                     if achievements:
-                        for ach in achievements:
-                            $ ach_name = ach.get('achi_name', ach.get('name', 'Неизвестно'))
-                            $ ach_desc = ach.get('description', '')
-                            $ ach_time = ach.get('time_point', '')
+                        vpgrid:
+                            cols 1
+                            spacing 10
+                            yinitial 0.0
+                            mousewheel True
+                            draggable True
+                            xadjustment None  # Запрет горизонтального скролла
+                            yadjustment True  # Разрешение вертикального скролла
                             
-                            frame:
-                                style "debug_achievement_item"
-                                xfill True
-                                padding (15, 10)
+                            for ach in achievements:
+                                $ ach_name = ach.get('achi_name', ach.get('name', 'Неизвестно'))
+                                $ ach_desc = ach.get('description', '')
+                                $ ach_time = ach.get('time_point', '')
                                 
-                                vbox:
-                                    spacing 5
-                                    hbox:
-                                        spacing 10
-                                        text "🏅" size 22
-                                        text "[ach_name]" size 22 color gui.accent_color bold True
-                                    text "[ach_desc]" size 18 color "#939393"
-                                    text "[ach_time]" size 16 color "#5e5e5e" italic True
+                                frame:
+                                    style "debug_achievement_item"
+                                    xfill True
+                                    padding (15, 10)
+                                    
+                                    vbox:
+                                        spacing 5
+                                        xfill True
+                                        hbox:
+                                            spacing 10
+                                            text "🏅" size 22
+                                            text "[ach_name]" size 22 color gui.accent_color bold True
+                                        text "[ach_desc]" size 18 color "#939393"
+                                        text "[ach_time]" size 16 color "#5e5e5e" italic True
                     else:
                         text "Нет достижений" size 22 color "#939393" italic True
             
@@ -231,9 +266,10 @@ screen user_details(user_id, user_name):
                 
                 vbox:
                     spacing 10
+                    xfill True
                     
-                    textbutton "▶️ Загрузить игру за этого пользователя" style "debug_action_button" action [Function(set_current_user, user_id, user_name), Start()]
-                    text "При загрузке игра начнется с сохраненным прогрессом пользователя" size 16 color "#888888" xalign 0.5
+                    textbutton "▶️ Загрузить игру за этого пользователя" style "debug_action_button" action [Function(set_current_user, user_id, user_name), Function(load_last_save_for_user, user_id)]
+                    text "При загрузке игра начнется с последнего сохранения пользователя" size 16 color "#888888" xalign 0.5
 
 ################################################################################
 ## Экран подтверждения очистки БД
