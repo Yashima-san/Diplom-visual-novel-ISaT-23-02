@@ -77,31 +77,26 @@ style frame:
 
 ###### Стили курсоров ######
 
-# Временно отключаем пользовательские курсоры
+# Базовый стиль для всех кнопок с правильными курсорами
 style button:
     properties gui.button_properties("button")
+    mouse "default"                     # Обычное состояние
+    hover_mouse "hover"                  # Наведение
+    selected_mouse "click"              # Выбранное состояние
+    selected_hover_mouse "click"          # Наведение на выбранном состоянии
+    insensitive_mouse "default"           # Неактивное состояние
 
+# Стили для курсоров (определяем их один раз)
+init python:
+    # Создаем курсоры если нужно (опционально)
+    config.mouse = {
+        "default": [ ("gui/cursor/default.png", 0, 0) ],
+        "hover": [ ("gui/cursor/hover.png", 0, 0) ],
+        "selected": [ ("gui/cursor/click.png", 0, 0) ],
+        "selected_hover": [ ("gui/cursor/click.png", 0, 0) ],
+        "insensitive": [ ("gui/cursor/default.png", 0, 0) ],
+    }
 
-# Для кнопок главного меню
-style main_menu_button:
-    background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
-    hover_background Frame("gui/choice_hover_background_1.png", 25, 25, 25, 25)
-    selected_background Frame("gui/choice_hover_background_1.png", 25, 25, 25, 25)
-    xalign 0.5
-    padding (20, 15)
-    xsize 400
-    ysize None
-    margin (0, 5)
-
-style main_menu_button_text:
-    color "#ffffff"
-    hover_color "#FF7B4E"
-    selected_color "#FF7B4E"
-    size 28
-    font gui.interface_text_font
-    outlines [(2, "#000000", 0, 0)]
-    text_align 0.5
-    xalign 0.5
 
 # Для кнопок навигации
 style navigation_button:
@@ -115,18 +110,6 @@ style quick_button:
 # Для кнопок выбора
 style choice_button:
     properties gui.button_properties("choice_button")
-
-# Для ползунков
-style slider:
-    ysize gui.slider_size
-    base_bar Frame("gui/slider/horizontal_[prefix_]bar.png", gui.slider_borders, tile=gui.slider_tile)
-    thumb "gui/slider/horizontal_[prefix_]thumb.png"
-
-# Для полос прокрутки
-style scrollbar:
-    ysize gui.scrollbar_size
-    base_bar Frame("gui/scrollbar/horizontal_[prefix_]bar.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
-    thumb Frame("gui/scrollbar/horizontal_[prefix_]thumb.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
 
 ################################################################################
 ## Внутриигровые экраны
@@ -278,7 +261,7 @@ style quick_button_text is button_text
 
 style quick_menu:
     xalign 0.5
-    yalign 1.0
+    yalign 0.97
 
 style quick_button:
     properties gui.button_properties("quick_button")
@@ -374,7 +357,7 @@ screen main_menu():
         ysize 650
         
         # Фон для рамки - стикер
-        background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)  # Исправлен путь
+        background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
         
         vbox:
             xalign 0.5
@@ -410,12 +393,10 @@ screen main_menu():
                 style "main_menu_button"
                 action Quit(confirm=True)
     
-    # Добавляем отдельную кнопку "Игроки" под стикером
-    textbutton _(""):
+    # Кнопка "Игроки" слева от стикера
+    button:
         style "players_button"
         action ShowMenu("debug_database")
-        xalign 0
-        ypos 0.5  # Расположение под стикером
 
 ## Стили для главного меню
 style main_menu_title:
@@ -464,33 +445,14 @@ style main_menu_button_text:
     text_align 0.5
     xalign 0.5
 
-style main_menu_button_players_text:
-    color "#ffffff"
-    hover_color "#FF7B4E"
-    selected_color "#FF7B4E"
-    size 18
-    font gui.interface_text_font
-    outlines [(2, "#b64520", 0, 0)]
-    text_align 0.5
-    xalign 0.5
-
 style players_button:
-    xalign -1
-    ypos 0.4
-    padding (15, 10)
-    xsize 200
-    ysize 140
+    xpos 0.22
+    ypos 0.55
+    xsize 295
+    ysize 139
     background Frame("gui/button/choice_idle_background_3.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_idle_background_2.png", 15, 15, 15, 15)
-
-style players_button_text:
-    color "#ffffff"
-    hover_color "#FF7B4E"
-    size 16
-    font gui.interface_text_font
-    outlines [(1, "#000000", 0, 0)]
-    text_align 0.5
-    xalign 0.5
+    hover_background Frame("gui/button/choice_hover_background_2.png", 15, 15, 15, 15)
+    padding (20, 20)
 
 ## Экран игрового меню #########################################################
 
@@ -517,22 +479,18 @@ screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
 
                     viewport:
                         yinitial yinitial
-                        scrollbars "vertical"  # Только вертикальные полосы
+                        scrollbars "vertical"
                         mousewheel True
                         draggable True
                         pagekeys True
                         edgescroll (300, 500)
                         
-                        # Запрещаем горизонтальный скролл
                         xadjustment None
-                        # yadjustment не нужно указывать, используется по умолчанию
-
                         side_yfill True
 
                         vbox:
                             spacing spacing
-                            xfill True  # Растягиваем по ширине
-
+                            xfill True
                             transclude
 
                 elif scroll == "vpgrid":
@@ -540,24 +498,17 @@ screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
                     vpgrid:
                         cols 1
                         yinitial yinitial
-
-                        scrollbars "vertical"  # Только вертикальные полосы
+                        scrollbars "vertical"
                         mousewheel True
                         draggable True
                         pagekeys True
                         
-                        # Запрещаем горизонтальный скролл
                         xadjustment None
-                        # yadjustment не нужно указывать, используется по умолчанию
-
                         side_yfill True
-
                         spacing spacing
-
                         transclude
 
                 else:
-
                     transclude
 
     use navigation
@@ -585,7 +536,6 @@ style return_button_text is navigation_button_text
 style game_menu_outer_frame:
     bottom_padding 45
     top_padding 180
-
     background "gui/overlay/game_menu.png"
 
 style game_menu_navigation_frame:
@@ -680,7 +630,7 @@ screen file_slots_with_user(title):
     
     use game_menu(title):
         fixed:
-            yoffset 80  # Сдвигаем вниз, чтобы не перекрывать информацию о пользователе
+            yoffset 80
             
             order_reverse True
             
