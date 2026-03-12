@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/debug_screen.rpy", line 276: the outlines keyword argument was not given a value.
-    outlines
-            ^
+File "game/screens.rpy", line 1: expected statement.
+    ﻿
+    ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Wed Mar 11 18:25:42 2026
+Thu Mar 12 16:22:17 2026

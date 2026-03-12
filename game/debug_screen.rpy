@@ -83,8 +83,7 @@ screen debug_database():
                             mousewheel True
                             draggable True
                             xadjustment None  # Запрет горизонтального скролла
-                            yadjustment True  # Разрешение вертикального скролла
-                            
+
                             for user in users:
                                 $ user_id = user['user_ID']
                                 $ user_name = user['name']
@@ -196,8 +195,8 @@ screen user_details(user_id, user_name):
                             mousewheel True
                             draggable True
                             xadjustment None  # Запрет горизонтального скролла
-                            yadjustment True  # Разрешение вертикального скролла
-                            
+                            # Удалите yadjustment True
+
                             for i, chapter in enumerate(progress):
                                 hbox:
                                     spacing 15
@@ -231,8 +230,8 @@ screen user_details(user_id, user_name):
                             mousewheel True
                             draggable True
                             xadjustment None  # Запрет горизонтального скролла
-                            yadjustment True  # Разрешение вертикального скролла
-                            
+                            # Удалите yadjustment True
+
                             for ach in achievements:
                                 $ ach_name = ach.get('achi_name', ach.get('name', 'Неизвестно'))
                                 $ ach_desc = ach.get('description', '')
