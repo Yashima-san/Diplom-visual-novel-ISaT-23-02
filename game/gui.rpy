@@ -30,34 +30,34 @@ define config.mouse = None
 ## Цвета текста в интерфейсе.
 
 ## Акцентный цвет используется в заголовках и подчёркнутых текстах.
-define gui.accent_color = '#cc6600'
+define gui.accent_color = '#da5820'
 
 ## Цвет, используемый в текстовой кнопке, когда она не выбрана и не наведена.
-define gui.idle_color = '#e15555'
+define gui.idle_color = '#cb7d4f'
 
 ## Small_color используется в маленьком тексте, который должен быть ярче/
 ## темнее, для того, чтобы выделяться.
-define gui.idle_small_color = '#606060'
+define gui.idle_small_color = '#924c32'
 
 ## Цвет, используемых в кнопках и панелях, когда они наведены.
-define gui.hover_color = '#cc6600'
+define gui.hover_color = '#d07632'
 
 ## Цвет, используемый текстовой кнопкой, когда она выбрана, но не наведена.
 ## Кнопка может быть выбрана, если это текущий экран или текущее значение
 ## настройки.
-define gui.selected_color = '#555555'
+define gui.selected_color = '#a74429'
 
 ## Цвет, используемый текстовой кнопкой, когда она не может быть выбрана.
-define gui.insensitive_color = '#707070'
+define gui.insensitive_color = '#934d2c'
 
 ## Цвета, используемые для частей панелей, которые не заполняются. Они
 ## используются не напрямую, а только при воссоздании файлов изображений.
-define gui.muted_color = '#e0a366'
-define gui.hover_muted_color = '#eac199'
+define gui.muted_color = '#bc723d'
+define gui.hover_muted_color = '#8f4c29'
 
 ## Цвета, используемые в тексте диалогов и выборов.
-define gui.text_color = '#5b5b5b'
-define gui.interface_text_color = '#ff832b'
+define gui.text_color = '#ee9c6c'
+define gui.interface_text_color = '#ea8e60'
 
 
 ## Шрифты и их размеры #########################################################
@@ -75,13 +75,13 @@ define gui.interface_text_font = "FOT-YurukaStd-UB.otf"
 define gui.text_size = 30
 
 ## Размер имён персонажей.
-define gui.name_text_size = 45
+define gui.name_text_size = 40
 
 ## Размер текста в пользовательском интерфейсе.
-define gui.interface_text_size = 30
+define gui.interface_text_size = 28
 
 ## Размер заголовков в пользовательском интерфейсе.
-define gui.label_text_size = 35
+define gui.label_text_size = 32
 
 ## Размер текста на экране уведомлений.
 define gui.notify_text_size = 24
@@ -92,7 +92,7 @@ define gui.title_text_size = 72
 
 ## Главное и игровое меню. #####################################################
 
-## ИЗМЕНЕНО: Указываем правильные пути к фоновым изображениям
+## Указываем правильные пути к фоновым изображениям
 define gui.main_menu_background = "gui/main_menu.png"
 define gui.game_menu_background = "gui/game_menu.png"
 
@@ -187,6 +187,7 @@ define gui.button_text_xalign = 0.5
 ## посмотрите документацию по gui для просмотра всех вариаций кнопок и для чего
 ## каждая из них нужна.
 ##
+
 ## Эти настройки используются стандартным интерфейсом:
 
 define gui.radio_button_borders = Borders(27, 6, 6, 6)

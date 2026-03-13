@@ -1,55 +1,33 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
-While loading <renpy.display.im.Image object ('cursor/click.png') at 0x0000000009cd0680>:
-FileNotFoundError: Couldn't find file 'cursor/click.png'.
+While running game code:
+AttributeError: 'Interface' object has no attribute 'surftree'
 
 -- Full Traceback ------------------------------------------------------------
 
 Traceback (most recent call last):
-  File "renpy/common/00start.rpy", line 229, in script call
-    call _gl_test
-  File "renpy/common/00gltest.rpy", line 348, in script
-    $ __gl_test()
+  File "renpy/common/00keymap.rpy", line 504, in script
+    python hide:
   File "renpy/ast.py", line 1187, in execute
     renpy.python.py_exec_bytecode(self.code.bytecode, self.hide, store=self.store)
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "renpy/python.py", line 1273, in py_exec_bytecode
     exec(bytecode, globals, locals)
     ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/common/00gltest.rpy", line 348, in <module>
-    $ __gl_test()
-      ~~~~~~~~~^^
-  File "renpy/common/00gltest.rpy", line 282, in _m1_00gltest__gl_test
-    _gl_performance_test()
-    ~~~~~~~~~~~~~~~~~~~~^^
-  File "renpy/common/00gltest.rpy", line 305, in _gl_performance_test
-    ui.interact(suppress_underlay=True, suppress_overlay=True)
-    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/ui.py", line 306, in interact
-    rv = renpy.game.interface.interact(roll_forward=roll_forward, **kwargs)
-         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/core.py", line 2110, in interact
-    self.start()
-    ~~~~~~~~~~^^
-  File "renpy/display/core.py", line 960, in start
-    surf = renpy.display.im.load_surface(fn)
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^
-  File "renpy/display/im.py", line 1102, in load_surface
-    return cache.get(image(im))
-           ~~~~~~~~~^^^^^^^^^^^
-  File "renpy/display/im.py", line 309, in get
-    surf = image.load()
-           ~~~~~~~~~~^^
-  File "renpy/display/im.py", line 832, in load
-    raise e
-  File "renpy/display/im.py", line 786, in load
-    filelike = renpy.loader.load(self.filename, directory="images")
-               ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/loader.py", line 712, in load
-    raise FileNotFoundError("Couldn't find file '%s'." % name)
-FileNotFoundError: Couldn't find file 'cursor/click.png'.
+  File "renpy/common/00keymap.rpy", line 504, in <module>
+    python hide:
+  File "renpy/common/00keymap.rpy", line 519, in _execute_python_hide
+    renpy.take_screenshot((config.thumbnail_width, config.thumbnail_height))
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/exports/displayexports.py", line 617, in take_screenshot
+    renpy.game.interface.take_screenshot(scale, background=background, keep_existing=keep_existing)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/core.py", line 1341, in take_screenshot
+    surf = renpy.display.draw.screenshot(self.surftree)
+                                         ^^^^^^^^^^^^^ 
+AttributeError: 'Interface' object has no attribute 'surftree'
 
 Windows-11-10.0.26200-SP0 AMD64
 Ren'Py 8.5.3.26020901+nightly
 За гранью чувств 0.0
-Thu Mar 12 23:02:49 2026
+Fri Mar 13 16:39:04 2026

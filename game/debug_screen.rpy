@@ -12,13 +12,13 @@ screen debug_database():
             xfill True  # Растягиваем по ширине
             
             # Заголовок
-            text "Информация об игроках" size 40 xalign 0.5 color gui.accent_color outlines [(2, "#000000", 0, 0)]
+            text "Информация об игроках" size 40 xalign 0.5 color gui.accent_color outlines [(2, "#3e2005", 0, 0)]
             
             # Информация о текущем пользователе
             frame:
                 style "debug_info_frame"
                 xalign 0.5
-                xsize 1200
+                xsize 1100
                 padding (20, 15)
                 
                 hbox:
@@ -45,7 +45,7 @@ screen debug_database():
             # Список всех пользователей с прогрессом
             frame:
                 style "debug_table_frame"
-                xsize 1400
+                xsize 1380
                 padding (20, 20)
                 
                 vbox:
@@ -142,7 +142,7 @@ screen user_details(user_id, user_name):
                 action Show("debug_database")
                 
                 hbox:
-                    spacing 10
+                    spacing 8
                     text "←" size 30
                     text "Назад к списку игроков" size 24
             

@@ -8,51 +8,39 @@ default entered_name = ""
 default default_name_used = False
 default chapter_one_seen = False
 
-# Добавляем persistent переменные для хранения данных пользователя
-default persistent.user_id = None
+# Определяем persistent переменные ДО всего остального кода
 default persistent.user_name = ""
+default persistent.user_id = None
 default persistent.user_data = None
 
 # Объявление изображений фона
 image bg room_evening = "images/room_evening.png"
+image bg night_room = "images/night_room.png"
 image bg room_pk = "images/room_pk.png"
 image bg bg_room_pk_light = "images/room_pk_light.png"
 image bg school_entrance = "images/school_entrance.png"
 image bg kitchen = "images/kitchen.png"
 image bg street = "images/street.png"
-image bg night_room = "images/night_room.png"
 
-# ВРЕМЕННЫЙ КОД ДЛЯ ОЧИСТКИ - удалите после исправления
+
+# Единый init python блок со всеми функциями
 init python:
-    # Очищаем save_json_callbacks при запуске
-    if hasattr(config, 'save_json_callbacks'):
-        config.save_json_callbacks = []
-#    
-#    # Добавляем правильную функцию
-    def add_user_info_to_save(json_data):
-        json_data["user_name"] = persistent.user_name
-        json_data["user_id"] = persistent.user_id
-        return json_data
-#    
-    config.save_json_callbacks.append(add_user_info_to_save)
-
-
-# Добавить функцию для сохранения информации о пользователе в слот
-init python:
+    # Функция для сохранения информации о пользователе
     def save_user_info():
         """Сохраняет информацию о текущем пользователе в файл сохранения"""
         renpy.save_persistent()
         return
     
-    # Функция должна принимать аргумент (словарь для сохранения)
+    # Функция для добавления информации о пользователе в JSON сохранения
     def add_user_info_to_save(json_data):
         """Добавляет информацию о пользователе в JSON сохранения"""
         json_data["user_name"] = persistent.user_name
         json_data["user_id"] = persistent.user_id
         return json_data
     
-    # Добавляем функцию в колбэки
+    # Очищаем и добавляем функцию в колбэки
     if hasattr(config, 'save_json_callbacks'):
+        config.save_json_callbacks = []
         config.save_json_callbacks.append(add_user_info_to_save)
     
     # Функция для загрузки последнего сохранения пользователя
@@ -100,7 +88,7 @@ init python:
             return
         else:
             # Если нет сохранений, начинаем новую игру
-            renpy.call_in_new_context("start")  # Используем call_in_new_context вместо renpy.start()
+            renpy.call_in_new_context("start")
     
     def custom_file_action(slot):
         """Кастомное действие для загрузки с проверкой пользователя"""
@@ -137,7 +125,7 @@ label start:
     $ persistent.user_name = name
     
     # Сохраняем имя пользователя в базу данных
-    $ user_id = db.add_user(name)
+    $ user_id = db.add_user(name) if 'db' in globals() and hasattr(db, 'add_user') else None
     
     # Сохраняем user_id в persistent
     $ persistent.user_id = user_id
@@ -164,17 +152,17 @@ label start:
     scene black with dissolve
 
     # Обновляем прогресс в базе данных
-    if persistent.user_id:
+    if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
         $ db.update_save_progress(persistent.user_id, "Глава Первая: Связь")
     
     # Разблокировка первого достижения
-    $ unlock_achievement("wake_up")
+    $ unlock_achievement("wake_up") if 'unlock_achievement' in globals() else None
     # Сохраняем достижение в базу данных
-    if persistent.user_id:
+    if persistent.user_id and 'db' in globals() and hasattr(db, 'save_achievement'):
         $ db.save_achievement(persistent.user_id, "Проснулась?", "Добро пожаловать в игру. Приятной игры!")
     
     # Разблокировка элементов галереи
-    $ unlock_gallery_item("room_evening")
+    $ unlock_gallery_item("room_evening") if 'unlock_gallery_item' in globals() else None
 
     # Показываем фон
     scene bg room_evening at truecenter with fade
@@ -198,7 +186,7 @@ label start:
     thought_user "А как вести себя хорошо, когда ты не понимаешь, что чувствуют другие?{p}Когда их улыбки кажутся мне масками, а слезы – просто мокрыми пятнами на лице?"
 
     show bg bg_room_pk_light with dissolve
-    $ unlock_gallery_item("room_pk_light")
+    $ unlock_gallery_item("room_pk_light") if 'unlock_gallery_item' in globals() else None
 
     narrator "На стене висел постер с изображением какого-то аниме-персонажа, его глаза, широко распахнутые, казалось, смотрели куда-то вдаль, в мир, полный ярких красок и бурных эмоций."
     narrator "[persistent.user_name] часто смотрела на него, пытаясь уловить хоть что-то, что могло бы помочь ей понять."
@@ -228,7 +216,7 @@ label start:
     narrator "Она медленно протянула руку к мышке, ее пальцы дрожали от легкого волнения."
 
     show bg room_pk with dissolve
-    $ unlock_gallery_item("room_pk")
+    $ unlock_gallery_item("room_pk") if 'unlock_gallery_item' in globals() else None
 
     thought_user "Новая школа. Новые люди. Родители думают, что это поможет. Может быть. Там учится Лина. Это хорошо. Хоть кто-то знакомый."
     thought_user "...Но… что, если я опять не смогу? Что, если я опять буду стоять в стороне, наблюдая, как другие смеются, общаются, живут? Я боюсь…"
@@ -253,24 +241,24 @@ label start:
         "Привет! Да, готова. Уже жду не дождусь!":
             $ choice_1 = 1
             user_char "Привет! Да, готова. Уже жду не дождусь! 😊"
-            $ unlock_achievement("first_choice")
-            if persistent.user_id:
+            $ unlock_achievement("first_choice") if 'unlock_achievement' in globals() else None
+            if persistent.user_id and 'db' in globals() and hasattr(db, 'save_achievement'):
                 $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
             jump after_first_choice_1
         
         "Привет! Я тоже очень рада! Немного волнуюсь, но уверена, что с тобой будет весело!":
             $ choice_1 = 2
             user_char "Привет! Я тоже очень рада!{p}Немного волнуюсь, но уверена, что с тобой будет весело! 😊"
-            $ unlock_achievement("first_choice")
-            if persistent.user_id:
+            $ unlock_achievement("first_choice") if 'unlock_achievement' in globals() else None
+            if persistent.user_id and 'db' in globals() and hasattr(db, 'save_achievement'):
                 $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
             jump after_first_choice_2
         
         "Привет! Я очень рада, что мы будем учиться вместе. Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг.":
             $ choice_1 = 3
             user_char "Привет! Я очень рада, что мы будем учиться вместе.{p}Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг. ❤️"
-            $ unlock_achievement("first_choice")
-            if persistent.user_id:
+            $ unlock_achievement("first_choice") if 'unlock_achievement' in globals() else None
+            if persistent.user_id and 'db' in globals() and hasattr(db, 'save_achievement'):
                 $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
             jump after_first_choice_3
 

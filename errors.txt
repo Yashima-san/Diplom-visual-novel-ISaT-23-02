@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/screens.rpy", line 1: expected statement.
-    ﻿
-    ^
+File "game/script.rpy", line 1: expected statement.
+    ﻿define e = Character('Лина', color="#707ef6")
+            ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Thu Mar 12 16:22:17 2026
+Fri Mar 13 13:38:05 2026
