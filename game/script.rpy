@@ -332,6 +332,7 @@ label after_first_choice_3:
     jump night_scene
 
 label night_scene:
+    stop music
     scene bg night_room with fade
     play sound "song/night_ambient.mp3" fadein 3.0
     
@@ -347,6 +348,7 @@ label night_scene:
     pause 1.0
 
 label morning_scene:
+    stop music
     scene bg room_evening with fade
     play music "song/Audio_soft_1.mp3" fadein 3.0
     
@@ -403,7 +405,7 @@ label morning_scene:
     thought_user "Она здесь. И она меня видит. Это уже что-то."
 
     narrator "[persistent.user_name] почувствовала, как напряжение немного отступает. Она ускорила шаг, направляясь к Лине."
-
+    
     e "[persistent.user_name]! Привет!"
     e "Я так рада тебя видеть!{p}Ты не опоздала ни на секунду!"
 

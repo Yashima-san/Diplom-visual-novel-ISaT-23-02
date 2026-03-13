@@ -437,8 +437,8 @@ style main_menu_button:
 
 style main_menu_button_text:
     color "#ffffff"
-    hover_color "#FF7B4E"
-    selected_color "#FF7B4E"
+    hover_color "#fb906d"
+    selected_color "#da6037"
     size 18
     font gui.interface_text_font
     outlines [(2, "#b64520", 0, 0)]
@@ -543,12 +543,12 @@ style game_menu_navigation_frame:
     yfill True
 
 style game_menu_content_frame:
-    left_margin 60
-    right_margin 30
+    left_margin 100
+    right_margin 40
     top_margin 15
 
 style game_menu_viewport:
-    xsize 1380
+    xsize 1340
 
 style game_menu_vscrollbar:
     unscrollable gui.unscrollable
@@ -557,7 +557,7 @@ style game_menu_side:
     spacing 15
 
 style game_menu_label:
-    xpos 75
+    xpos 65
     ysize 180
 
 style game_menu_label_text:
@@ -805,18 +805,17 @@ screen preferences():
     use game_menu(_("Настройки"), scroll="viewport"):
 
         vbox:
-
+            # Первая строка - режим экрана и пропуск
             hbox:
-                box_wrap True
-
+                spacing 100  # Добавляем расстояние между колонками
+                
                 if renpy.variant("pc") or renpy.variant("web"):
-
                     vbox:
                         style_prefix "radio"
                         label _("Режим экрана")
                         textbutton _("Оконный") action Preference("display", "window")
                         textbutton _("Полный") action Preference("display", "fullscreen")
-
+                
                 vbox:
                     style_prefix "check"
                     label _("Пропуск")
@@ -826,51 +825,46 @@ screen preferences():
 
             null height (4 * gui.pref_spacing)
 
+            # Вторая строка - слайдеры в две колонки
             hbox:
                 style_prefix "slider"
-                box_wrap True
-
+                spacing 100  # Расстояние между колонками
+                
+                # Левая колонка
                 vbox:
-
+                    xsize 300  # Фиксированная ширина для левой колонки
+                    
                     label _("Скорость текста")
-
                     bar value Preference("text speed")
-
+                    
                     label _("Скорость авточтения")
-
                     bar value Preference("auto-forward time")
-
+                
+                # Правая колонка
                 vbox:
-
+                    xsize 400  # Фиксированная ширина для правой колонки
+                    
                     if config.has_music:
                         label _("Громкость музыки")
-
                         hbox:
                             bar value Preference("music volume")
 
                     if config.has_sound:
-
                         label _("Громкость звуков")
-
                         hbox:
                             bar value Preference("sound volume")
-
                             if config.sample_sound:
                                 textbutton _("Тест") action Play("sound", config.sample_sound)
 
-
                     if config.has_voice:
                         label _("Громкость голоса")
-
                         hbox:
                             bar value Preference("voice volume")
-
                             if config.sample_voice:
                                 textbutton _("Тест") action Play("voice", config.sample_voice)
 
                     if config.has_music or config.has_sound or config.has_voice:
                         null height gui.pref_spacing
-
                         textbutton _("Без звука"):
                             action Preference("all mute", "toggle")
                             style "mute_all_button"
@@ -1188,9 +1182,7 @@ style help_label_text:
 
 screen confirm(message, yes_action, no_action):
     modal True
-
     zorder 200
-
     style_prefix "confirm"
 
     add "gui/overlay/confirm.png"

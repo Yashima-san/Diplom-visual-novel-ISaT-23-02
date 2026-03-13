@@ -48,7 +48,14 @@ init python:
         "characters",
         "meet_lina"
     ))
-    
+
+    gallery_items.append(GalleryItem(
+        "[persistent.user_name]", 
+        "images/characters/user.png", 
+        "characters",
+        "meet_user"
+    ))
+
     gallery_items.append(GalleryItem(
         "Комната вечером", 
         "images/room_evening.png",
@@ -111,7 +118,7 @@ screen gallery():
             # Вкладки категорий
             hbox:
                 spacing 10
-                xalign 0.5
+                xalign 0.72
                 
                 textbutton _("Персонажи"):
                     action SetScreenVariable("selected_category", "characters")
@@ -133,13 +140,14 @@ screen gallery():
             if category_items:
                 vpgrid:
                     cols 3
-                    spacing 30
-                    yinitial 0.0
+                    spacing 40
+                    yinitial 0.5
                     mousewheel True
                     draggable True
+                    xpos 50
                     
                     for item in category_items:
-                        # ИСПРАВЛЕНО: убраны вложенные стили
+                        # Убраны вложенные стили
                         if item.is_unlocked():
                             button:
                                 xysize (350, 250)
@@ -148,7 +156,7 @@ screen gallery():
                                 
                                 frame:
                                     xysize (360, 250)
-                                    background "#333333"
+                                    background Frame("#cb6048", 20, 20)
                                     
                                     vbox:
                                         # Проверяем существование файла перед отображением
@@ -163,8 +171,9 @@ screen gallery():
                                             color "#ffffff"
                                             size 20
                                             font gui.interface_text_font
-                                            outlines [(1, "#000000", 0, 0)]
+                                            outlines [(2, "#5e1414", 0, 0)]
                                             xalign 0.5
+                                            yalign 0.3
                         else:
                             button:
                                 xysize (350, 250)
@@ -172,16 +181,16 @@ screen gallery():
                                 
                                 frame:
                                     xysize (340, 250)
-                                    background "#222222"
+                                    background Frame("#cb6048", 20, 20)
                                     
                                     vbox:
                                         text "🔒" size 100 xalign 0.6 yalign 1.0
                                         text _("Не разблокировано"):
-                                            color "#808080"
+                                            color "#8f4e36"
                                             size 18
                                             font gui.interface_text_font
                                             xalign 0.5
-                                            yalign 1.0
+                                            yalign 0.5
             else:
                 text _("В этой категории пока нет изображений.") xalign 0.5
 
@@ -191,9 +200,9 @@ screen gallery_image_popup(image, title):
     zorder 200
     
     frame:
-        background Frame("gui/confirm_frame.png", 25, 25, 25, 25)
-        padding (15, 15)
-        xysize (1600, 820)
+        background Frame("gui/confirm_frame.png", 25, 25)
+        padding (25, 25)
+        xysize (1600, 920)
         xalign 0.5
         yalign 0.5
         
@@ -203,7 +212,7 @@ screen gallery_image_popup(image, title):
                 color "#ffffff"
                 size 32
                 font gui.interface_text_font
-                outlines [(2, "#000000", 0, 0)]
+                outlines [(2, "#711b1b", 0, 0)]
                 xalign 0.5
             
             # Изображение
@@ -216,10 +225,11 @@ screen gallery_image_popup(image, title):
             # Кнопка закрытия
             textbutton _("Закрыть"):
                 xalign 0.5
+                ypos 50
                 background Frame("gui/button/choice_idle_background.png", 10, 10, 10, 10)
                 hover_background Frame("gui/button/choice_hover_background_1.png", 10, 10, 10, 10)
                 padding (30, 10)
-                xsize 200
+                xsize 250
                 action Hide("gallery_image_popup")
                 text_style "gallery_close_button_text"
     
@@ -239,12 +249,12 @@ style gallery_tab_button_text:
     hover_color "#FF7B4E"
     selected_color "#FF7B4E"
     size 24
-    outlines [(2, "#000000", 0, 0)]
+    outlines [(2, "#671a1a", 0, 0)]
     text_align 0.5
 
 style gallery_close_button_text:
     color "#ffffff"
     hover_color "#FF7B4E"
     size 24
-    outlines [(2, "#000000", 0, 0)]
+    outlines [(2, "#671a1a", 0, 0)]
     text_align 0.5

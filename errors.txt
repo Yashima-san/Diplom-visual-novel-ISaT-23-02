@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/script.rpy", line 1: expected statement.
-    ﻿define e = Character('Лина', color="#707ef6")
-            ^
+File "game/screens.rpy", line 823: Line is indented, but the preceding spacing statement does not expect a block. Please check this line's indentation. You may have forgotten a colon (:).
+    vbox:
+    ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Fri Mar 13 13:38:05 2026
+Fri Mar 13 20:34:11 2026

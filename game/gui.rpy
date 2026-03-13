@@ -30,17 +30,17 @@ define config.mouse = None
 ## Цвета текста в интерфейсе.
 
 ## Акцентный цвет используется в заголовках и подчёркнутых текстах.
-define gui.accent_color = '#da5820'
+define gui.accent_color = '#c66b2f'
 
 ## Цвет, используемый в текстовой кнопке, когда она не выбрана и не наведена.
-define gui.idle_color = '#cb7d4f'
+define gui.idle_color = '#af6d47'
 
 ## Small_color используется в маленьком тексте, который должен быть ярче/
 ## темнее, для того, чтобы выделяться.
 define gui.idle_small_color = '#924c32'
 
 ## Цвет, используемых в кнопках и панелях, когда они наведены.
-define gui.hover_color = '#d07632'
+define gui.hover_color = '#97321b'
 
 ## Цвет, используемый текстовой кнопкой, когда она выбрана, но не наведена.
 ## Кнопка может быть выбрана, если это текущий экран или текущее значение
@@ -48,16 +48,16 @@ define gui.hover_color = '#d07632'
 define gui.selected_color = '#a74429'
 
 ## Цвет, используемый текстовой кнопкой, когда она не может быть выбрана.
-define gui.insensitive_color = '#934d2c'
+define gui.insensitive_color = '#4c2f22'
 
 ## Цвета, используемые для частей панелей, которые не заполняются. Они
 ## используются не напрямую, а только при воссоздании файлов изображений.
-define gui.muted_color = '#bc723d'
-define gui.hover_muted_color = '#8f4c29'
+define gui.muted_color = '#d9874d'
+define gui.hover_muted_color = '#874927'
 
 ## Цвета, используемые в тексте диалогов и выборов.
-define gui.text_color = '#ee9c6c'
-define gui.interface_text_color = '#ea8e60'
+define gui.text_color = '#b4744e'
+define gui.interface_text_color = '#976147'
 
 
 ## Шрифты и их размеры #########################################################
@@ -221,9 +221,9 @@ define gui.choice_button_borders = Borders(150, 8, 150, 8)
 define gui.choice_button_text_font = gui.text_font
 define gui.choice_button_text_size = gui.text_size
 define gui.choice_button_text_xalign = 0.5
-define gui.choice_button_text_idle_color = '#707070'
+define gui.choice_button_text_idle_color = '#aa5f25'
 define gui.choice_button_text_hover_color = "#ffffff"
-define gui.choice_button_text_insensitive_color = '#707070'
+define gui.choice_button_text_insensitive_color = '#ac5032'
 
 
 ## Кнопки Слотов ###############################################################
