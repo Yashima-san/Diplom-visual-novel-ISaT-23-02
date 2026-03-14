@@ -281,7 +281,7 @@ init -2 python:
                 self.cursor.execute('''
                     INSERT INTO achievements (user_ID, achi_name, description)
                     VALUES (?, ?, ?)
-                ''', (user_id, achievement_name, description))
+                ''', (user_id, achievement_name, description));
                 self.connection.commit()
             except Exception as e:
                 renpy.notify(f"Ошибка при сохранении достижения: {str(e)}")
@@ -354,12 +354,25 @@ init -2 python:
                 'save_point': time.time()
             })
         
+        # В database.rpy, обновите метод get_all_users
+
         def get_all_users(self):
             """Получение всех пользователей"""
             if self.sqlite_available:
                 return self._get_all_users_sqlite()
             else:
                 return self._get_all_users_memory()
+        
+        def _get_all_users_memory(self):
+            """Получение пользователей из памяти"""
+            users = []
+            if hasattr(persistent, 'user_data') and persistent.user_data and 'users' in persistent.user_data:
+                for user_id, data in persistent.user_data['users'].items():
+                    users.append({
+                        'user_ID': int(user_id),
+                        'name': data.get('name', '')
+                    })
+            return users
         
         def _get_all_users_sqlite(self):
             """Получение пользователей из SQLite"""
@@ -373,17 +386,6 @@ init -2 python:
                 renpy.notify(f"Ошибка при получении пользователей: {str(e)}")
             finally:
                 self.disconnect()
-            return users
-        
-        def _get_all_users_memory(self):
-            """Получение пользователей из памяти"""
-            users = []
-            if hasattr(persistent, 'user_data') and persistent.user_data and 'users' in persistent.user_data:
-                for user_id, data in persistent.user_data['users'].items():
-                    users.append({
-                        'user_ID': int(user_id),
-                        'name': data.get('name', '')
-                    })
             return users
         
         def get_user_achievements(self, user_id):
@@ -424,6 +426,48 @@ init -2 python:
                             'time_point': ach.get('time_point', '')
                         })
             return achievements
+
+        def get_user_progress(user_id):
+            """Получение прогресса пользователя по главам"""
+            progress = []
+            
+            # Словарь для форматирования названий глав
+            chapter_formats = {
+                "Глава Первая: Связь": "Глава 1 - Связь",
+                "Глава Вторая: Новые знакомства": "Глава 2 - Новые знакомства",
+                "Глава Третья: Испытание дружбой": "Глава 3 - Испытание дружбой",
+            }
+            
+            # Получаем прогресс из persistent
+            if hasattr(persistent, 'user_data') and persistent.user_data:
+                str_user_id = str(user_id)
+                if 'save_progress' in persistent.user_data and str_user_id in persistent.user_data['save_progress']:
+                    for save in persistent.user_data['save_progress'][str_user_id]:
+                        chapter = save.get('chapter', '')
+                        if chapter and chapter not in progress:
+                            # Форматируем название главы
+                            formatted_chapter = chapter_formats.get(chapter, chapter)
+                            progress.append(formatted_chapter)
+            
+            # Если используем SQLite
+            if hasattr(db, 'sqlite_available') and db.sqlite_available:
+                try:
+                    db.connect()
+                    db.cursor.execute('''
+                        SELECT DISTINCT chapter FROM save_progress_users 
+                        WHERE user_ID = ? ORDER BY save_point
+                    ''', (user_id,))
+                    for row in db.cursor.fetchall():
+                        chapter = row['chapter']
+                        if chapter and chapter not in progress:
+                            formatted_chapter = chapter_formats.get(chapter, chapter)
+                            progress.append(formatted_chapter)
+                except:
+                    pass
+                finally:
+                    db.disconnect()
+        
+            return progress
     
     # Глобальный экземпляр базы данных
     db = Database()

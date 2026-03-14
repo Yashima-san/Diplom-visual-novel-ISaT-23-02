@@ -157,7 +157,7 @@ style namebox:
     xpos gui.name_xpos
     xanchor gui.name_xalign
     xsize gui.namebox_width
-    ypos gui.name_ypos
+    ypos 18 
     ysize gui.namebox_height
 
     background Frame("gui/namebox.png", gui.namebox_borders, tile=gui.namebox_tile, xalign=gui.name_xalign)
@@ -234,7 +234,8 @@ screen quick_menu():
 
     zorder 100
 
-    if quick_menu:
+    # Убираем условие quick_menu или делаем его всегда True во время диалогов
+    if True:  # Всегда показываем quick_menu
 
         hbox:
             style_prefix "quick"
@@ -253,7 +254,8 @@ screen quick_menu():
 init python:
     config.overlay_screens.append("quick_menu")
 
-default quick_menu = True
+# Убираем или комментируем эту строку, так как она не нужна
+# default quick_menu = True
 
 style quick_menu is hbox
 style quick_button is default
@@ -326,6 +328,223 @@ style navigation_button:
 
 style navigation_button_text:
     properties gui.text_properties("navigation_button")
+
+
+################################################################################
+## Экран выбора пользователя для продолжения игры
+################################################################################
+
+screen select_user_screen():
+    modal True
+    zorder 200
+    
+    style_prefix "select_user"
+    
+    add "gui/overlay/confirm.png"
+    
+    frame:
+        style "select_user_frame"
+        xalign 0.5
+        yalign 0.5
+        xsize 1100
+        ysize 700
+        padding (70, 70)
+        
+        vbox:
+            spacing 20
+            xfill True
+            
+            text "Выберите пользователя для продолжения:":
+                size 32
+                color "#ffffff"
+                font gui.interface_text_font
+                xalign 0.5
+                yalign 0.5
+                outlines [(2, "#a43c13", 0, 0)]
+            
+            null height 10
+            
+            # Получаем список всех пользователей
+            $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
+            
+            if users:
+                # Заголовок таблицы
+                frame:
+                    style "select_user_header"
+                    xfill True
+                    padding (10, 12)
+                    
+                    hbox:
+                        spacing 20
+                        xfill True
+                        
+                        text "Имя" size 22 color "#ffffff" xsize 200 text_align 0.5
+                        text "Последнее сохранение" size 22 color "#ffffff" xsize 400 text_align 0.5
+                        text "Глава" size 22 color "#ffffff" xsize 250 text_align 0.5
+                        text "Достижений" size 22 color "#ffffff" xsize 150 text_align 0.5
+                
+                # Список пользователей
+                vpgrid:
+                    cols 1
+                    spacing 5
+                    yinitial 0.0
+                    mousewheel True
+                    draggable True
+                    xadjustment None
+                    ysize 400
+                    
+                    for user in users:
+                        $ user_id = user['user_ID']
+                        $ user_name = user['name']
+                        
+                        # Получаем информацию о последнем сохранении
+                        $ last_save_info = get_last_save_info(user_id)
+                        $ last_save_time = last_save_info['time']
+                        $ last_save_chapter = last_save_info['chapter']
+                        
+                        # Получаем количество достижений
+                        $ user_achievements = db.get_user_achievements(user_id) if hasattr(db, 'get_user_achievements') else []
+                        $ ach_count = len(user_achievements)
+                        
+                        # Кнопка выбора пользователя
+                        button:
+                            style "select_user_row"
+                            xfill True
+                            action [Function(set_current_user, user_id, user_name), Function(load_last_save_for_user, user_id), Hide("select_user_screen")]
+                            
+                            hbox:
+                                spacing 20
+                                xfill True
+                                
+                                text "[user_name]" size 22 color "#ffffff" xsize 200 text_align 0.5
+                                text "[last_save_time]" size 22 color "#ffffff" xsize 400 text_align 0.5
+                                text "[last_save_chapter]" size 22 color "#ffffff" xsize 250 text_align 0.5
+                                text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
+            else:
+                text "Нет сохраненных пользователей" size 24 xalign 0.5 color "#cccccc"
+                null height 30
+                text "Начните новую игру, чтобы создать профиль" size 20 xalign 0.5 color "#aaaaaa"
+            
+            null height 20
+            
+            # Кнопки действий
+            hbox:
+                spacing 5
+                xalign 0.5
+                
+                textbutton "Новая игра" style "select_user_button" action [Start(), Hide("select_user_screen")]
+                textbutton "Отмена" style "select_user_button" action Hide("select_user_screen")
+    
+    key "game_menu" action Hide("select_user_screen")
+    key "K_ESCAPE" action Hide("select_user_screen")
+
+# Стили для экрана выбора пользователя
+style select_user_frame:
+    background Frame("gui/confirm_frame.png", 25, 25, 25, 25)
+    padding (30, 30)
+
+style select_user_header:
+    background "#c66b2f"
+    xfill True
+
+style select_user_row:
+    background "#d9874d"
+    hover_background "#97321b"
+    xfill True
+    padding (10, 8)
+    margin (0, 2)
+
+style select_user_button:
+    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    padding (30, 15)
+    xsize 250
+
+style select_user_button_text:
+    color "#ffffff"
+    hover_color "#ffffff"
+    size 22
+    font gui.interface_text_font
+    text_align 0.5
+    outlines [(2, "#803e1a", 0, 0)]
+
+
+init python:
+    def get_user_last_chapter(user_id):
+        """Получение последней главы пользователя"""
+        last_chapter = None
+        last_time = 0
+        
+        # Проверяем сохранения в файлах
+        for i in range(1, 10):
+            if renpy.can_load(str(i)):
+                try:
+                    save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
+                    if save_json and save_json.get("user_id") == user_id:
+                        timestamp = save_json.get("_timestamp", 0)
+                        if timestamp > last_time:
+                            last_time = timestamp
+                            # Пытаемся получить название главы из сохранения
+                            last_chapter = save_json.get("chapter", "Глава 1")
+                except:
+                    continue
+        
+        # Если не нашли в сохранениях, проверяем в БД
+        if not last_chapter and hasattr(db, 'sqlite_available') and db.sqlite_available:
+            try:
+                db.connect()
+                db.cursor.execute('''
+                    SELECT chapter FROM save_progress_users 
+                    WHERE user_ID = ? ORDER BY save_point DESC LIMIT 1
+                ''', (user_id,))
+                row = db.cursor.fetchone()
+                if row:
+                    last_chapter = row['chapter']
+            except:
+                pass
+            finally:
+                db.disconnect()
+        
+        # Если все еще нет, проверяем в persistent
+        if not last_chapter and hasattr(persistent, 'user_data') and persistent.user_data:
+            str_user_id = str(user_id)
+            if 'save_progress' in persistent.user_data and str_user_id in persistent.user_data['save_progress']:
+                saves = persistent.user_data['save_progress'][str_user_id]
+                if saves:
+                    last_chapter = saves[-1].get('chapter', 'Глава 1')
+        
+        return last_chapter if last_chapter else "Нет сохранений"
+    
+    def load_last_save_or_start():
+        """Загружает последнее сохранение или начинает новую игру"""
+        if persistent.user_id and load_last_save_for_user(persistent.user_id):
+            return
+        else:
+            # Если нет сохранений, начинаем новую игру
+            renpy.call_in_new_context("start")
+
+
+    def continue_game():
+        """Показывает экран выбора пользователя для продолжения игры"""
+        # Проверяем, есть ли вообще пользователи
+        users = db.get_all_users() if hasattr(db, 'get_all_users') else []
+        
+        if users:
+            # Если есть пользователи, показываем экран выбора
+            renpy.show_screen("select_user_screen")
+        else:
+            # Если пользователей нет, предлагаем начать новую игру
+            renpy.show_screen("confirm", 
+                _("Нет сохраненных игроков. Начать новую игру?"), 
+                yes_action=[Start(), Hide("confirm")], 
+                no_action=Hide("confirm"))
+
+
+    def set_current_user(user_id, user_name):
+        """Установка текущего пользователя"""
+        persistent.user_id = user_id
+        persistent.user_name = user_name
+        renpy.notify(f"Выбран игрок: {user_name}")
 
 
 ## Экран главного меню #########################################################
@@ -453,6 +672,8 @@ style players_button:
     background Frame("gui/button/choice_idle_background_3.png", 15, 15, 15, 15)
     hover_background Frame("gui/button/choice_hover_background_2.png", 15, 15, 15, 15)
     padding (20, 20)
+
+
 
 ## Экран игрового меню #########################################################
 
@@ -1615,6 +1836,9 @@ style slider_slider:
     variant "small"
     xsize 900
 
+##############################################
+##############################################
+
 # Экран для ввода имени
 screen input_name_screen():
     modal True
@@ -1700,3 +1924,75 @@ init -1 python:
     style.input_confirm_button_text.outlines = [(2, "#ff832b", 0, 0)]
     style.input_confirm_button_text.text_align = 0.5
     style.input_confirm_button_text.xalign = 0.5
+
+################################################################################
+## Экран перехода между главами
+################################################################################
+
+screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
+    modal True
+    zorder 200
+    
+    style_prefix "chapter_transition"
+    
+    # Затемненный фон
+    add "#000000CC"
+    
+    frame:
+        style "chapter_transition_frame"
+        xalign 0.5
+        yalign 0.5
+        xsize 800
+        ysize 500
+        
+        vbox:
+            spacing 25
+            xalign 0.5
+            yalign 0.5
+            
+            text "Глава завершена" size 40 color "#ffffff" outlines "#652a13" xalign 0.5
+            
+            if old_chapter:
+                text "[old_chapter]" size 30 color "#ffffff" xalign 0.5
+            
+            null height 20
+            
+            text "Сохраняем ваш прогресс..." size 28 color "#ffffff" xalign 0.5
+            
+            text "Убедитесь, что у вас достаточно места для сохранений" size 16 color "#888888" xalign 0.5
+            
+            null height 30
+            
+            hbox:
+                spacing 30
+                xalign 0.5
+                
+                textbutton "Да, продолжить":
+                    style "chapter_transition_button"
+                    action [Function(save_progress_and_continue, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")]
+                
+                textbutton "Нет, выйти в главное меню":
+                    style "chapter_transition_button"
+                    action [Function(save_progress_and_exit), MainMenu()]
+    
+    key "K_RETURN" action [Function(save_progress_and_continue, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")]
+    key "K_ESCAPE" action MainMenu()
+
+## Стили для экрана перехода
+style chapter_transition_frame:
+    background Frame("gui/confirm_frame.png", 25, 25, 25, 25)
+    padding (40, 40)
+
+style chapter_transition_button:
+    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    padding (30, 15)
+    xsize 250
+
+style chapter_transition_button_text:
+    color "#ffffff"
+    hover_color "#ff9e5e"
+    size 22
+    font gui.interface_text_font
+    text_align 0.5
+    outlines [(2, "#803e1a", 0, 0)]

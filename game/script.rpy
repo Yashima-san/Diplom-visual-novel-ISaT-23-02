@@ -1,7 +1,15 @@
-﻿define e = Character('Лина', color="#707ef6")
+﻿# script.rpy - исправленная версия
+
+define e = Character('Лина', color="#707ef6")
 define user_char = Character("[persistent.user_name]", color="#ff9e5e")
 define thought_user = Character("[persistent.user_name]", what_italic=True)
 define narrator = Character(None, what_italic=True)
+
+# Добавляем новых персонажей для второй главы
+define a = Character('Алекс', color="#6b8e23")
+define t = Character('Анна Сергеевна', color="#9370db")
+define k = Character('Катя', color="#fe7d90")
+define lib = Character('Библиотекарь', color="#a0522d")
 
 default name = ""
 default entered_name = ""
@@ -13,6 +21,23 @@ default persistent.user_name = ""
 default persistent.user_id = None
 default persistent.user_data = None
 
+# Объявление изображений персонажей
+image lina neutral = "images/characters/lina.png"
+image lina happy = "images/characters/lina_happy.png"
+image lina smile = "images/characters/lina_smile.png"
+
+image alex neutral = "images/characters/alex.png"
+image alex smile = "images/characters/alex_smile.png"
+
+image katia neutral = "images/characters/katia.png"
+image katia smile = "images/characters/katia_smile.png"
+
+image teacher neutral = "images/characters/teacher.png"
+image teacher kind = "images/characters/teacher_kind.png"
+
+image librarian neutral = "images/characters/librarian.png"
+image librarian kind = "images/characters/librarian_kind.png"
+
 # Объявление изображений фона
 image bg room_evening = "images/room_evening.png"
 image bg night_room = "images/night_room.png"
@@ -21,10 +46,16 @@ image bg bg_room_pk_light = "images/room_pk_light.png"
 image bg school_entrance = "images/school_entrance.png"
 image bg kitchen = "images/kitchen.png"
 image bg street = "images/street.png"
+image bg school_hallway = "images/school_hallway.png"
+image bg classroom = "images/classroom.png"
+image bg music_room = "images/music_room.png"
+image bg library = "images/library.png"
 
 
 # Единый init python блок со всеми функциями
 init python:
+    import time
+
     # Функция для сохранения информации о пользователе
     def save_user_info():
         """Сохраняет информацию о текущем пользователе в файл сохранения"""
@@ -83,28 +114,40 @@ init python:
             renpy.save("quick-save", "Быстрое сохранение")
     
     def continue_game():
-        """Продолжает игру с последнего сохранения"""
-        if persistent.user_id and load_last_save_for_user(persistent.user_id):
-            return
+        """Показывает экран выбора пользователя для продолжения игры"""
+        # Проверяем, есть ли вообще пользователи
+        users = []
+        if hasattr(db, 'get_all_users'):
+            users = db.get_all_users()
+        
+        if users:
+            # Если есть пользователи, показываем экран выбора
+            renpy.show_screen("select_user_screen")
         else:
-            # Если нет сохранений, начинаем новую игру
-            renpy.call_in_new_context("start")
+            # Если пользователей нет, предлагаем начать новую игру
+            renpy.call_screen("confirm", 
+                _("Нет сохраненных игроков. Начать новую игру?"), 
+                yes_action=[Start(), Hide("confirm")], 
+                no_action=Hide("confirm"))
     
     def custom_file_action(slot):
         """Кастомное действие для загрузки с проверкой пользователя"""
-        if renpy.can_load(str(slot)):
-            try:
-                save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
-                if save_json and save_json.get("user_id") != persistent.user_id:
-                    # Если сохранение принадлежит другому пользователю
-                    renpy.show_screen("confirm_user_switch", slot=slot)
-                    return
-            except:
-                pass
+        # Проверяем, существует ли сохранение
+        if not renpy.can_load(str(slot)):
+            return
         
-        # Используем FileAction для загрузки вместо прямого renpy.load
+        try:
+            save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
+            if save_json and save_json.get("user_id") != persistent.user_id:
+                # Если сохранение принадлежит другому пользователю
+                renpy.show_screen("confirm_user_switch", slot=slot)
+                return
+        except:
+            pass
+        
+        # Используем FileAction для загрузки
         renpy.run(FileAction(slot))
-    
+        
     def load_other_user_save(slot):
         """Загружает сохранение другого пользователя и обновляет persistent"""
         try:
@@ -118,6 +161,179 @@ init python:
         # Используем FileAction для загрузки
         renpy.run(FileAction(slot))
 
+    # Функция для сохранения прогресса и перехода к следующей главе
+    def save_progress_and_continue(old_chapter, new_chapter_title, new_chapter_subtitle):
+        """Сохраняет прогресс и запускает следующую главу"""
+        # Сохраняем прогресс в базе данных
+        if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+            db.update_save_progress(persistent.user_id, new_chapter_title)
+        
+        # Делаем быстрое сохранение
+        renpy.take_screenshot()
+        renpy.save(f"chapter-{new_chapter_title}", f"Автосохранение перед главой {new_chapter_title}")
+        
+        # Запускаем следующую главу
+        if new_chapter_title == "Вторая. Новые знакомства":
+            renpy.call_in_new_context("chapter_two")
+        elif new_chapter_title == "Третья. Испытание дружбой":
+            renpy.call_in_new_context("chapter_three")
+    
+    def save_progress_and_exit():
+        """Сохраняет прогресс и выходит в главное меню"""
+        if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+            db.update_save_progress(persistent.user_id, "Глава Первая: Связь (завершена)")
+        
+        renpy.take_screenshot()
+        renpy.save("chapter-1-complete", "Завершение первой главы")
+        renpy.notify("Прогресс сохранен!")
+        
+    def get_last_save_info(user_id):
+        """Получение информации о последнем сохранении пользователя"""
+        result = {
+            'time': "Нет сохранений",
+            'chapter': "—"
+        }
+        last_time = 0
+        last_chapter = "—"
+        
+        # Проверяем автосохранения (слоты auto)
+        for i in range(1, 10):
+            slot_name = "auto-" + str(i)
+            if renpy.can_load(slot_name):
+                try:
+                    save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                    if save_json and save_json.get("user_id") == user_id:
+                        timestamp = save_json.get("_timestamp", 0)
+                        if timestamp > last_time:
+                            last_time = timestamp
+                            # Форматируем время
+                            if timestamp:
+                                try:
+                                    time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
+                                    result['time'] = time_str
+                                except:
+                                    result['time'] = "Недавно"
+                            # Получаем главу
+                            last_chapter = save_json.get("chapter", "Глава 1")
+                            # Форматируем название главы
+                            if "Глава Первая" in last_chapter or "Связь" in last_chapter:
+                                result['chapter'] = "Глава 1"
+                            elif "Глава Вторая" in last_chapter or "Новые знакомства" in last_chapter:
+                                result['chapter'] = "Глава 2"
+                            elif "Глава Третья" in last_chapter:
+                                result['chapter'] = "Глава 3"
+                            else:
+                                result['chapter'] = last_chapter[:30] + "..." if len(last_chapter) > 30 else last_chapter
+                except:
+                    continue
+        
+        # Проверяем обычные сохранения (слоты 1-9)
+        for i in range(1, 10):
+            if renpy.can_load(str(i)):
+                try:
+                    save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
+                    if save_json and save_json.get("user_id") == user_id:
+                        timestamp = save_json.get("_timestamp", 0)
+                        if timestamp > last_time:
+                            last_time = timestamp
+                            if timestamp:
+                                try:
+                                    time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
+                                    result['time'] = time_str
+                                except:
+                                    result['time'] = "Недавно"
+                            last_chapter = save_json.get("chapter", "Глава 1")
+                            if "Глава Первая" in last_chapter or "Связь" in last_chapter:
+                                result['chapter'] = "Глава 1"
+                            elif "Глава Вторая" in last_chapter or "Новые знакомства" in last_chapter:
+                                result['chapter'] = "Глава 2"
+                            elif "Глава Третья" in last_chapter:
+                                result['chapter'] = "Глава 3"
+                            else:
+                                result['chapter'] = last_chapter[:30] + "..." if len(last_chapter) > 30 else last_chapter
+                except:
+                    continue
+        
+        # Проверяем быстрые сохранения
+        if renpy.can_load("quick-save"):
+            try:
+                save_json = renpy.json_load(renpy.slot_json_filename("quick-save"))
+                if save_json and save_json.get("user_id") == user_id:
+                    timestamp = save_json.get("_timestamp", 0)
+                    if timestamp > last_time:
+                        if timestamp:
+                            try:
+                                time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
+                                result['time'] = time_str
+                            except:
+                                result['time'] = "Недавно"
+                        last_chapter = save_json.get("chapter", "Глава 1")
+                        if "Глава Первая" in last_chapter or "Связь" in last_chapter:
+                            result['chapter'] = "Глава 1"
+                        elif "Глава Вторая" in last_chapter or "Новые знакомства" in last_chapter:
+                            result['chapter'] = "Глава 2"
+                        elif "Глава Третья" in last_chapter:
+                            result['chapter'] = "Глава 3"
+                        else:
+                            result['chapter'] = last_chapter[:30] + "..." if len(last_chapter) > 30 else last_chapter
+            except:
+                pass
+        
+        return result
+    
+    def load_last_save_for_user(user_id):
+        """Загружает последнее сохранение для указанного пользователя"""
+        import os
+        
+        # Получаем список всех сохранений
+        saves = []
+        
+        # Проверяем автосохранения
+        for i in range(1, 10):
+            slot_name = "auto-" + str(i)
+            if renpy.can_load(slot_name):
+                try:
+                    save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                    if save_json and save_json.get("user_id") == user_id:
+                        timestamp = save_json.get("_timestamp", 0)
+                        saves.append((slot_name, timestamp))
+                except:
+                    continue
+        
+        # Проверяем обычные сохранения
+        for i in range(1, 10):
+            if renpy.can_load(str(i)):
+                try:
+                    save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
+                    if save_json and save_json.get("user_id") == user_id:
+                        timestamp = save_json.get("_timestamp", 0)
+                        saves.append((str(i), timestamp))
+                except:
+                    continue
+        
+        # Проверяем быстрые сохранения
+        if renpy.can_load("quick-save"):
+            try:
+                save_json = renpy.json_load(renpy.slot_json_filename("quick-save"))
+                if save_json and save_json.get("user_id") == user_id:
+                    timestamp = save_json.get("_timestamp", 0)
+                    saves.append(("quick-save", timestamp))
+            except:
+                pass
+        
+        # Сортируем по времени (самое новое последнее)
+        saves.sort(key=lambda x: x[1], reverse=True)
+        
+        if saves:
+            # Загружаем самое новое сохранение
+            renpy.load(str(saves[0][0]))
+            return True
+        return False
+
+
+################################################################################
+## Глава Первая: Связь
+################################################################################
 
 label start:
     # Устанавливаем музыку главного меню
@@ -243,7 +459,9 @@ label start:
     narrator "На экране появилось приветствие от Лины, яркое и жизнерадостное, словно солнечный луч, пробившийся сквозь тучи."
 
     # Диалог с первым выбором
+    show lina happy at center with dissolve
     e "Привет! Ты уже готова к завтрашнему дню?{p}Я так рада, что мы теперь будем учиться вместе!🥳{p}Я уже придумала, как мы будем проводить перемены! ✨✨✨"
+    hide lina
 
     narrator "Слова Лины, написанные с такой непринужденной легкостью, казались [persistent.user_name] одновременно и утешительными, и пугающими."
     narrator "Радость Лины была искренней, это было видно даже по смайликам, которые она использовала."
@@ -281,8 +499,10 @@ label after_first_choice_1:
     narrator "Она почувствовала легкое разочарование в себе. Этот ответ был слишком поверхностным, слишком… обычным."
     narrator "Она знала, что Лина, скорее всего, не заметит подвоха, но сама [persistent.user_name] чувствовала себя так, будто снова спряталась за маской."
 
+    show lina happy at center with dissolve
     e "Ура! Я так рада!"
     e "Я уже придумала, что мы можем пойти в кафе после уроков, если захочешь! Или в парк! Что скажешь?"
+    hide lina
 
     narrator "Лина, как всегда, полна энергии и предложений."
     
@@ -304,8 +524,10 @@ label after_first_choice_1:
 label after_first_choice_2:
     narrator "[persistent.user_name] отправила сообщение. Она почувствовала легкое облегчение. Это было лучше, чем простое \"да\". Признание волнения было шагом к открытости."
 
+    show lina happy at center with dissolve
     e "Ой, я понимаю! Но не переживай! Мы же вместе! Я тебе помогу со всем разобраться, обещаю! А перемены…"
     e "Я придумала, что мы можем ходить в библиотеку, там так тихо и уютно, или можем искать самые интересные уголки школы! Ты как?"
+    hide lina
 
     narrator "Лина не просто ответила, она предложила конкретные планы, пытаясь развеять любые сомнения [persistent.user_name]."
     narrator "Ее слова были полны заботы и желания сделать так, чтобы [persistent.user_name] чувствовала себя комфортно."
@@ -326,10 +548,12 @@ label after_first_choice_3:
 
     thought_user "Что скажет Лина? Примет ли она эту частичку моей истинной сущности?"
 
+    show lina happy at center with dissolve
     e "Ой, [persistent.user_name]! 🥺 Я так тронута! Спасибо тебе большое!"
     e "Я тоже очень рада, что мы будем вместе! И ты не волнуйся, я буду рядом! Мы все вместе преодолеем!"
     e "А перемены… Я придумала, что мы можем просто сидеть где-нибудь в тихом месте и разговаривать, или если ты захочешь, мы можем вместе изучать новые места в школе!"
     e "Главное, чтобы тебе было комфортно! Ты – мой самый лучший друг тоже!"
+    hide lina
 
     narrator "Слова Лины были полны искренности и тепла. Она не только приняла признание [persistent.user_name], но и ответила взаимностью, показав, что ее дружба не зависит от того, насколько [persistent.user_name] открыта."
     narrator "Это было именно то, что нужно [persistent.user_name], чтобы почувствовать себя немного увереннее."
@@ -369,8 +593,10 @@ label morning_scene:
     narrator "Утро пришло слишком быстро. Солнце пробивалось сквозь шторы, окрашивая комнату в золотистый свет."
     narrator "[persistent.user_name] проснулась с тяжелым сердцем, но с решимостью. Она села на кровати, потянулась и бросила взгляд на телефон. Новое сообщение от Лины уже ждало."
 
+    show lina happy at center with dissolve
     e "Доброе утро, [persistent.user_name]! 🌅 Уже проснулась?"
     e "Я собираюсь и так волнуюсь за тебя! Не забудь взять тетради и хорошее настроение. Увидимся у входа в школу? 😘"
+    hide lina
 
     thought_user "Ее энтузиазм заразителен... Может, и мне удастся почувствовать то же самое? Я не хочу подвести ее."
 
@@ -420,6 +646,7 @@ label morning_scene:
 
     narrator "[persistent.user_name] почувствовала, как напряжение немного отступает. Она ускорила шаг, направляясь к Лине."
 
+    show lina happy at center with dissolve
     e "[persistent.user_name]! Привет!"
     e "Я так рада тебя видеть!{p}Ты не опоздала ни на секунду!"
 
@@ -432,6 +659,7 @@ label morning_scene:
 
     e "Ну что, готова к первому дню? Я тебе все покажу! И познакомлю с моими друзьями."
     e "Они такие же сумасшедшие, как и я, так что не бойся!"
+    hide lina
 
     narrator "[persistent.user_name] посмотрела на Лину и заторможенно кивнула."
     thought_user "Возможно, сегодняшний день действительно станет не прыжком в неизвестность, а шагом навстречу чему-то новому и хорошему."
@@ -450,8 +678,267 @@ label morning_scene:
     stop music fadeout 3.0
     
     show text "{size=80}Конец первой главы{/size}" with dissolve
+    pause 2.0
+    
+    # Экран перехода ко второй главе
+    $ renpy.show_screen("chapter_transition", "Глава Первая: Связь", "Вторая. Новые знакомства", "Новые знакомства")
+    $ renpy.pause(1.0)
+    
+    # Ожидание действия пользователя
+    $ renpy.pause(None)
+
+################################################################################
+## Глава Вторая: Новые знакомства
+################################################################################
+
+label chapter_two:
+    # Показываем заголовок главы
+    scene black with fade
+    show text "{size=80}Глава Вторая{/size}\n{size=60}Новые знакомства{/size}" with dissolve
     pause 3.0
     scene black with dissolve
     
-    # Возврат в главное меню после окончания главы
+    # Обновляем прогресс в базе данных
+    if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+        $ db.update_save_progress(persistent.user_id, "Глава Вторая: Новые знакомства")
+    
+    # Запускаем музыку для второй главы
+    play music "song/Audio_soft_2.mp3" fadein 5.0
+    $ renpy.music.set_volume(0.4, delay=5)
+    
+    # Школьный коридор
+    scene bg school_hallway with fade
+    play sound "song/school_ambient.mp3" fadein 3.0
+    
+    narrator "Лина уверенно вела [persistent.user_name] по длинным школьным коридорам."
+    narrator "Стены были увешаны яркими плакатами, объявлениями о кружках и секциях, фотографиями улыбающихся учеников."
+    narrator "[persistent.user_name] чувствовала, как на нее обрушивается калейдоскоп новых впечатлений."
+    
+    thought_user "Здесь так шумно... Столько людей. Как Лина может ориентироваться во всем этом?"
+    
+    e "Смотри, это наша раздевалка! А тут спортзал. О, а вот и столовая, здесь готовят потрясающие булочки с корицей!"
+    
+    narrator "Лина тараторила без остановки, показывая все уголки школы."
+    narrator "Вдруг из-за угла выскочил парень с взъерошенными волосами и чуть не сбил их с ног."
+    
+    show alex smile at center with dissolve
+    
+    narrator "Он ловко увернулся и улыбнулся."
+    
+    a "Ой, простите! Я совсем вас не заметил. Вы новенькая?"
+    
+    narrator "Парень с любопытством посмотрел на [persistent.user_name]."
+    
+    thought_user "Он обращается ко мне? Что ответить?"
+    
+    menu second_chapter_first_choice:
+        "Да, я сегодня первый день. Приятно познакомиться.":
+            $ chapter2_choice_1 = 1
+            user_char "Да, я сегодня первый день. Приятно познакомиться."
+            
+        "Эм... да. Я новенькая.":
+            $ chapter2_choice_1 = 2
+            user_char "Эм... да. Я новенькая."
+        
+        "Просто молча кивнуть":
+            $ chapter2_choice_1 = 3
+            narrator "[persistent.user_name] просто молча кивнула."
+    
+    a "Класс! Я Алекс. Если что-то нужно будет — обращайся. Я здесь уже второй год, все знаю!"
+    
+    show lina happy at left with move
+    show alex smile at right
+    
+    e "Алекс — наш школьный активист! Он во всех мероприятиях участвует. А еще играет на гитаре."
+    
+    a "Лина, ну зачем ты сразу все секреты выдаешь?"
+    
+    narrator "Алекс засмеялся, и [persistent.user_name] почувствовала, как напряжение потихоньку отпускает."
+    
+    a "Слушай, а вы на большую перемену в музыкалку не хотите сходить? Мы там с ребятами репетируем. Будет весело!"
+    
+    thought_user "Музыка... Я никогда особо не слушала музыку. Но Лина, кажется, заинтересовалась."
+    
+    e "Ой, можно? Я давно хотела послушать, как вы играете!"
+    
+    narrator "Лина вопросительно посмотрела на [persistent.user_name]."
+    
+    menu second_chapter_second_choice:
+        "Давай сходим. Интересно посмотреть.":
+            $ chapter2_choice_2 = 1
+            user_char "Давай сходим. Интересно посмотреть."
+            
+        "Не знаю... Я не очень люблю шумные компании.":
+            $ chapter2_choice_2 = 2
+            user_char "Не знаю... Я не очень люблю шумные компании."
+        
+        "Если Лина хочет, то я тоже пойду.":
+            $ chapter2_choice_2 = 3
+            user_char "Если Лина хочет, то я тоже пойду."
+    
+    if chapter2_choice_2 == 2:
+        e "Ну хотя бы на пару минут заглянем? Если не понравится — сразу уйдем, обещаю!"
+        narrator "Лина мягко, но настойчиво уговаривала подругу."
+        narrator "[persistent.user_name] вздохнула."
+        user_char "Ладно, уговорила. Ненадолго."
+    else:
+        a "Отлично! Тогда жду вас после третьего урока. Актовый зал, не забудьте!"
+    
+    hide alex
+    hide lina
+    
+    narrator "Прозвенел звонок на урок, и Лина с [persistent.user_name] поспешили в класс."
+    
+    # Сцена на уроке
+    scene bg classroom with fade
+    
+    narrator "Класс был светлым и просторным. Ученики уже рассаживались по местам, приветствуя друг друга."
+    narrator "Учительница, женщина средних лет с добрыми глазами, жестом пригласила всех сесть."
+    
+    show teacher kind at center with dissolve
+    
+    t "Ребята, сегодня у нас новая ученица. Представься, пожалуйста."
+    
+    narrator "Все взгляды устремились на [persistent.user_name]. Она почувствовала, как щеки заливает румянец."
+    
+    thought_user "Так, спокойно. Я же готовилась к этому."
+    
+    user_char "Меня зовут [persistent.user_name]. Я... я надеюсь, мы подружимся."
+    
+    narrator "Кто-то из ребят одобрительно кивнул, кто-то улыбнулся. Одна девочка на последней парте с интересом рассматривала новенькую."
+    
+    t "Садись, [persistent.user_name]. А ты, Катя, покажешь нашей новой ученице, как у нас все устроено, хорошо?"
+    
+    show katia smile at left with moveinleft
+    
+    k "Конечно, Анна Сергеевна!"
+    
+    hide teacher
+    
+    narrator "Катя помахала [persistent.user_name] рукой, приглашая сесть рядом."
+    narrator "[persistent.user_name] осторожно опустилась на стул, чувствуя, как внутри смешиваются страх и любопытство."
+    
+    thought_user "Катя... Она кажется дружелюбной. Может, сегодня не такой уж плохой день?"
+    
+    # Звонок с урока
+    play sound "song/school_bell.mp3"
+    pause 1.0
+    
+    scene bg school_hallway with fade
+    
+    narrator "Первая перемена пролетела незаметно. Катя оказалась очень разговорчивой и рассказывала о всех учителях и школьных традициях."
+    
+    show katia smile at left
+    show lina happy at right
+    
+    k "А еще у нас есть театральный кружок! Я там состою. Если хочешь, приходи посмотреть!"
+    
+    e "Ой, точно! [persistent.user_name], это же отличная идея! Ты ведь любишь читать, может, и играть понравится?"
+    
+    thought_user "Играть? На сцене? Перед всеми? Это звучит пугающе... но и заманчиво одновременно."
+    
+    narrator "К ним подошел Алекс."
+    
+    show alex smile at center
+    
+    a "Ну что, идете? Перемена большая, самое время для музыки!"
+    
+    menu second_chapter_final_choice:
+        "Идем! Я хочу послушать.":
+            $ chapter2_choice_final = 1
+            user_char "Идем! Я хочу послушать."
+            jump music_room_scene
+            
+        "Может, в другой раз? Я немного устала.":
+            $ chapter2_choice_final = 2
+            user_char "Может, в другой раз? Я немного устала."
+            jump library_scene
+        
+        "А можно мы с Катей тоже придем?":
+            $ chapter2_choice_final = 3
+            user_char "А можно мы с Катей тоже придем?"
+            k "Ой, а можно? Я тоже очень хочу!"
+            a "Конечно! Чем больше, тем веселее!"
+            jump music_room_scene
+
+label music_room_scene:
+    hide alex
+    hide katia
+    hide lina
+    
+    scene bg music_room with fade
+    play music "song/gentle_guitar.mp3" fadein 3.0
+    
+    narrator "Актовый зал оказался уютным помещением с мягкими креслами и стареньким пианино в углу."
+    narrator "Несколько ребят уже настраивали инструменты. Алекс взял гитару и улыбнулся."
+    
+    show alex smile at center with dissolve
+    a "Мы сейчас разучиваем новую песню. Хотите послушать?"
+    hide alex
+    
+    narrator "[persistent.user_name] кивнула, чувствуя, как музыка начинает заполнять пространство."
+    narrator "Мелодия была простой, но в ней чувствовалось что-то теплое и искреннее."
+    
+    thought_user "Музыка... Оказывается, она может передавать чувства без слов. Это удивительно."
+    
+    show lina happy at center with dissolve
+    e "Тебе нравится, [persistent.user_name]?"
+    
+    user_char "Да... очень. Это... это красиво."
+    
+    narrator "Алекс довольно улыбнулся и продолжил играть."
+    narrator "В этот момент [persistent.user_name] поняла, что, возможно, мир эмоций не так уж недоступен для нее."
+    narrator "Нужно просто найти правильный ключ."
+    hide lina
+    
+    jump chapter_two_end
+
+label library_scene:
+    hide alex
+    hide katia
+    hide lina
+    
+    scene bg library with fade
+    
+    narrator "Пока остальные пошли в актовый зал, [persistent.user_name] направилась в библиотеку."
+    narrator "Здесь было тихо и спокойно, пахло старыми книгами и уютом."
+    
+    show librarian kind at center with dissolve
+    
+    lib "Здравствуй, дорогая! Ты новенькая? Хочешь что-то почитать?"
+    
+    thought_user "Библиотека... Здесь мне спокойно. Никто не требует быть общительной."
+    
+    user_char "Здравствуйте. Да, я бы хотела... может, что-то поспокойнее?"
+    
+    lib "О, тогда тебе точно понравится этот сборник рассказов о природе. Очень умиротворяющее чтение."
+    hide librarian
+    
+    narrator "[persistent.user_name] взяла книгу и устроилась в уютном кресле у окна."
+    narrator "Тишина обволакивала, давая возможность побыть наедине со своими мыслями."
+    
+    thought_user "Может, иногда лучше быть одной, чем чувствовать себя чужой в компании? Хотя... Лина и Катя... С ними, кажется, можно попробовать."
+    
+    jump chapter_two_end
+
+label chapter_two_end:
+    scene black with fade
+    stop music fadeout 3.0
+    stop sound fadeout 3.0
+    
+    show text "{size=80}Конец второй главы{/size}" with dissolve
+    pause 2.0
+    
+    # Экран перехода к третьей главе
+    $ renpy.show_screen("chapter_transition", "Глава Вторая: Новые знакомства", "Третья. Испытание дружбой", "Испытание дружбой")
+    $ renpy.pause(1.0)
+    $ renpy.pause(None)
+
+label chapter_three:
+    # Заглушка для третьей главы
+    scene black
+    show text "{size=80}Глава Третья{/size}\n{size=60}Испытание дружбой{/size}" with dissolve
+    pause 2.0
+    show text "{size=60}(в разработке){/size}" with dissolve
+    pause 2.0
     return

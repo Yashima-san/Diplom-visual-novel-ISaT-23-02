@@ -12,7 +12,7 @@ screen debug_database():
             xfill True  # Растягиваем по ширине
             
             # Заголовок
-            text "Информация об игроках" size 40 xalign 0.5 color gui.accent_color outlines [(2, "#3e2005", 0, 0)]
+            text "Информация об игроках" size 40 xalign 0.5 color gui.accent_color outlines [(2, "#a43c13", 0, 0)]
             
             # Информация о текущем пользователе
             frame:
@@ -78,7 +78,7 @@ screen debug_database():
                         # Строки пользователей
                         vpgrid:
                             cols 1
-                            spacing 2
+                            spacing 4
                             yinitial 0.0
                             mousewheel True
                             draggable True
@@ -106,15 +106,15 @@ screen debug_database():
                                     action Show("user_details", user_id=user_id, user_name=user_name)
                                     
                                     hbox:
-                                        spacing 20
+                                        spacing 15
                                         xfill True
                                         
                                         # Данные с фиксированной шириной и выравниванием по центру
                                         text "[user_id]" size 22 color "#ffffff" xsize 80 text_align 0.5
                                         text "[user_name]" size 22 color "#ffffff" xsize 200 text_align 0.5
                                         text "[progress_text]" size 22 color "#ffffff" xsize 400 text_align 0.5
-                                        text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
-                                        text "[last_save]" size 22 color "#ffffff" xsize 300 text_align 0.5
+                                        text "[ach_count]" size 22 color "#ffffff" xsize 250 text_align 0.5
+                                        text "[last_save]" size 22 color "#ffffff" xsize 80 text_align 0.5
                     else:
                         text "Нет пользователей в базе данных" size 24 xalign 0.5 color "#cccccc"
 
@@ -254,19 +254,6 @@ screen user_details(user_id, user_name):
             
             null height 20
             
-            # Кнопка загрузки
-            frame:
-                style "debug_action_frame"
-                xalign 0.5
-                xsize 600
-                padding (20, 15)
-                
-                vbox:
-                    spacing 10
-                    xfill True
-                    
-                    textbutton "▶ Загрузить игру за этого пользователя" style "debug_action_button" action [Function(set_current_user, user_id, user_name), Function(load_last_save_for_user, user_id)]
-                    text "При загрузке игра начнется с последнего сохранения пользователя" size 16 color "#888888" xalign 0.5
 
 ################################################################################
 ## Экран подтверждения очистки БД
@@ -372,12 +359,6 @@ init python:
                             last_time = str(last_save)
         
         return last_time
-    
-    def set_current_user(user_id, user_name):
-        """Установка текущего пользователя для загрузки"""
-        persistent.user_id = user_id
-        persistent.user_name = user_name
-        renpy.notify(f"Выбран игрок: {user_name}")
     
     def reset_all_achievements():
         """Сброс всех достижений"""

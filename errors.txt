@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/gui.rpy", line 396: invalid syntax
-    1ю0
-     ^
+File "game/debug_screen.rpy", line 116: 'ntext_align' is not a keyword argument or valid child of the text statement.
+    text "[ach_count]" size 22 color "#ffffff" xsize 250ntext_align 0.5
+                                                                   ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Sat Mar 14 11:56:59 2026
+Sat Mar 14 17:41:51 2026
