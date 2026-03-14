@@ -785,7 +785,7 @@ screen confirm_user_switch(slot):
                 xalign 0.5
                 spacing 150
                 
-                textbutton _("Да") action Function(load_other_user_save, slot)
+                textbutton _("Да") action [Function(load_other_user_save, slot), Hide("confirm_user_switch")]
                 textbutton _("Нет") action Hide("confirm_user_switch")
 
 init python:
@@ -1192,15 +1192,17 @@ screen confirm(message, yes_action, no_action):
         vbox:
             xalign .5
             yalign .5
-            spacing 45
+            spacing 75
+            xysize (600, 450)
 
             label _(message):
                 style "confirm_prompt"
                 xalign 0.5
+                yalign 0.5
 
             hbox:
                 xalign 0.5
-                spacing 150
+                spacing 120
 
                 textbutton _("Да") action yes_action
                 textbutton _("Нет") action no_action

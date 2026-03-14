@@ -81,7 +81,7 @@ define gui.name_text_size = 40
 define gui.interface_text_size = 28
 
 ## Размер заголовков в пользовательском интерфейсе.
-define gui.label_text_size = 32
+define gui.label_text_size = 30
 
 ## Размер текста на экране уведомлений.
 define gui.notify_text_size = 24
@@ -131,7 +131,7 @@ define gui.namebox_borders = Borders(5, 5, 5, 5)
 
 ## Если True, фон текстового окна будет моститься (расширяться по эффекту
 ## плитки). Если False, фон текстового окна будет фиксированным.
-define gui.namebox_tile = False
+define gui.namebox_tile = True
 
 
 ## Размещение диалога по отношению к текстовому окну. Это могут быть целые

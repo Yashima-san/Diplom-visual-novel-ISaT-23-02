@@ -143,8 +143,8 @@ screen user_details(user_id, user_name):
                 
                 hbox:
                     spacing 8
-                    text "←" size 30
-                    text "Назад к списку игроков" size 24
+                    text "⬅️" size 28
+                    text "Назад к списку игроков" size 28
             
             null height 10
             
@@ -165,12 +165,12 @@ screen user_details(user_id, user_name):
                         xalign 0.0
                         
                         # Левая колонка - метки
-                        text "ID:" size 24 color "#5e5e5e" xalign 1.0
-                        text "Имя:" size 24 color "#5e5e5e" xalign 1.0
+                        text "ID:" size 24 color "#5e5e5e" xalign 1.0 
+                        text "Имя:" size 24 color "#5e5e5e" xalign 1.1
                         
                         # Правая колонка - значения
-                        text "[user_id]" size 24 color gui.accent_color xalign 0.0
-                        text "[user_name]" size 24 color gui.accent_color xalign 0.0
+                        text "[user_id]" size 24 color gui.accent_color xalign 1.0
+                        text "[user_name]" size 24 color gui.accent_color xalign 1.1
             
             null height 10
             
@@ -195,15 +195,14 @@ screen user_details(user_id, user_name):
                             mousewheel True
                             draggable True
                             xadjustment None  # Запрет горизонтального скролла
-                            # Удалите yadjustment True
 
                             for i, chapter in enumerate(progress):
                                 hbox:
                                     spacing 15
                                     xfill True
-                                    text "✓" size 24 color "#00ff00"
-                                    text "Глава [i+1]:" size 22 color "#939393" xsize 80
-                                    text "[chapter]" size 22 color "#5e5e5e"
+                                    text "Глава [i+1]:" size 22 color "#939393" xsize 80 xpos 10
+                                    text "[chapter]" size 22 color "#5e5e5e" xpos 90
+                                    text "✅" size 24 xpos 200
                     else:
                         text "Нет данных о прогрессе" size 22 color "#939393" italic True
             
@@ -230,7 +229,6 @@ screen user_details(user_id, user_name):
                             mousewheel True
                             draggable True
                             xadjustment None  # Запрет горизонтального скролла
-                            # Удалите yadjustment True
 
                             for ach in achievements:
                                 $ ach_name = ach.get('achi_name', ach.get('name', 'Неизвестно'))
@@ -248,11 +246,11 @@ screen user_details(user_id, user_name):
                                         hbox:
                                             spacing 10
                                             text "🏅" size 22
-                                            text "[ach_name]" size 22 color gui.accent_color bold True
-                                        text "[ach_desc]" size 18 color "#939393"
-                                        text "[ach_time]" size 16 color "#5e5e5e" italic True
+                                            text "[ach_name]" size 22 color gui.accent_color
+                                        text "[ach_desc]" size 18 color "#ffffff"
+                                        text "[ach_time]" size 16 color "#434343" italic True
                     else:
-                        text "Нет достижений" size 22 color "#939393" italic True
+                        text "Нет достижений" size 22 color "#ffffff" italic True
             
             null height 20
             
@@ -267,7 +265,7 @@ screen user_details(user_id, user_name):
                     spacing 10
                     xfill True
                     
-                    textbutton "▶️ Загрузить игру за этого пользователя" style "debug_action_button" action [Function(set_current_user, user_id, user_name), Function(load_last_save_for_user, user_id)]
+                    textbutton "▶ Загрузить игру за этого пользователя" style "debug_action_button" action [Function(set_current_user, user_id, user_name), Function(load_last_save_for_user, user_id)]
                     text "При загрузке игра начнется с последнего сохранения пользователя" size 16 color "#888888" xalign 0.5
 
 ################################################################################
@@ -298,7 +296,6 @@ screen confirm_clear_db():
             text "⚠️ ОЧИСТКА БАЗЫ ДАННЫХ ⚠️":
                 size 24
                 color "#ff7171"
-                bold True
                 xalign 0.5
                 text_align 0.5
                 outlines [(2, "#a84343", 0, 0)]
@@ -316,8 +313,8 @@ screen confirm_clear_db():
                 spacing 10
                 xalign 0.5
                 
-                textbutton "✅ Да, очистить" style "debug_confirm_button_danger" action [Function(clear_database), Show("debug_database")]
-                textbutton "❌ Нет, отмена" style "debug_confirm_button_cancel" action Hide("confirm_clear_db")
+                textbutton "Да, очистить" style "debug_confirm_button_danger" action [Function(clear_database), Show("debug_database")]
+                textbutton "Нет, отмена" style "debug_confirm_button_cancel" action Hide("confirm_clear_db")
 
 ################################################################################
 ## Функции для работы с данными
@@ -443,16 +440,14 @@ style debug_detail_frame:
     background Frame("gui/frame.png", 15, 15, 15, 15)
 
 style debug_achievement_item:
-    background "#ffbc95"
+    background Frame("gui/confirm_frame_1.png", 15, 15, 15, 15)
     xfill True
     margin (0, 2)
 
 style debug_action_frame:
-    background Frame("gui/frame.png", 15, 15, 15, 15)
+    background Frame("gui/confirm_frame.png", 15, 15, 15, 15)
 
 style debug_action_button:
-    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
     padding (30, 15)
     xsize 500
     xalign 0.5
@@ -462,7 +457,7 @@ style debug_action_button_text:
     hover_color gui.hover_color
     size 22
     font gui.interface_text_font
-    outlines [(2, "#482918", 0, 0)]
+    outlines [(2, "#602e14", 0, 0)]
     text_align 0.5
 
 style debug_back_button:

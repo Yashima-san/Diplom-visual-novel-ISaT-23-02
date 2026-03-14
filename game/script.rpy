@@ -101,8 +101,22 @@ init python:
                     return
             except:
                 pass
-        # Если сохранение пустое или принадлежит текущему пользователю
-        renpy.load(str(slot))
+        
+        # Используем FileAction для загрузки вместо прямого renpy.load
+        renpy.run(FileAction(slot))
+    
+    def load_other_user_save(slot):
+        """Загружает сохранение другого пользователя и обновляет persistent"""
+        try:
+            save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
+            if save_json:
+                persistent.user_id = save_json.get("user_id")
+                persistent.user_name = save_json.get("user_name", "")
+        except:
+            pass
+        
+        # Используем FileAction для загрузки
+        renpy.run(FileAction(slot))
 
 
 label start:
@@ -405,7 +419,7 @@ label morning_scene:
     thought_user "Она здесь. И она меня видит. Это уже что-то."
 
     narrator "[persistent.user_name] почувствовала, как напряжение немного отступает. Она ускорила шаг, направляясь к Лине."
-    
+
     e "[persistent.user_name]! Привет!"
     e "Я так рада тебя видеть!{p}Ты не опоздала ни на секунду!"
 
