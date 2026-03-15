@@ -116,7 +116,9 @@ screen debug_database():
                                         text "[ach_count]" size 22 color "#ffffff" xsize 250 text_align 0.5
                                         text "[last_save]" size 22 color "#ffffff" xsize 80 text_align 0.5
                     else:
-                        text "Нет пользователей в базе данных" size 24 xalign 0.5 color "#cccccc"
+                        text "Нет игроков в базе данных" size 24 xalign 0.5 color "#cccccc"
+
+# ... остальной код без изменений ...
 
 ################################################################################
 ## Экран детальной информации о пользователе
@@ -126,7 +128,7 @@ screen user_details(user_id, user_name):
     tag menu
     
     # Создаем заголовок без интерполяции
-    $ title_text = "Детали пользователя: " + user_name + " (ID: " + str(user_id) + ")"
+    $ title_text = "Детали игрока: " + user_name + " (ID: " + str(user_id) + ")"
     
     use game_menu(_(title_text), scroll="viewport"):
         style_prefix "debug"
@@ -287,12 +289,12 @@ screen confirm_clear_db():
                 text_align 0.5
                 outlines [(2, "#a84343", 0, 0)]
             
-            text "Все пользователи и их прогресс будут безвозвратно удалены!":
+            text "Все игроки и их прогресс будут безвозвратно удалены!":
                 size 18
                 color "#ffffff"
                 xalign 0.5
                 text_align 0.5
-                outlines [(2, "#855133", 0, 0)]
+                outlines [(2, "#671a1a", 0, 0)]
             
             null height 10
             
@@ -311,7 +313,7 @@ init python:
     import time
     
     def get_user_progress(user_id):
-        """Получение прогресса пользователя по главам"""
+        """Получение прогресса игрока по главам"""
         progress = []
         if hasattr(persistent, 'user_data') and persistent.user_data:
             str_user_id = str(user_id)
@@ -438,7 +440,7 @@ style debug_action_button_text:
     hover_color gui.hover_color
     size 22
     font gui.interface_text_font
-    outlines [(2, "#602e14", 0, 0)]
+    outlines [(2, "#671a1a", 0, 0)]
     text_align 0.5
 
 style debug_back_button:

@@ -1,6 +1,4 @@
-﻿# script.rpy - исправленная версия
-
-define e = Character('Лина', color="#707ef6")
+﻿define e = Character('Лина', color="#707ef6")
 define user_char = Character("[persistent.user_name]", color="#ff9e5e")
 define thought_user = Character("[persistent.user_name]", what_italic=True)
 define narrator = Character(None, what_italic=True)
@@ -86,71 +84,59 @@ init python:
             renpy.take_screenshot()
             renpy.save("quick-save", "Быстрое сохранение")
     
-    # ИСПРАВЛЕНО: функция continue_game без вызова call_screen внутри взаимодействия
+    # Функция continue_game без вызова call_screen внутри взаимодействия
     def continue_game():
         """Показывает экран выбора пользователя для продолжения игры"""
         # Просто показываем экран, не вызываем его как screen
         renpy.show_screen("select_user_screen")
         return
     
-    def custom_file_action(slot):
-        """Кастомное действие для загрузки с проверкой пользователя"""
-        # Проверяем, существует ли сохранение
-        if not renpy.can_load(str(slot)):
-            return
+    # Функция для кастомного действия сохранения
+    def custom_save_action(slot):
+        """Кастомное действие для сохранения с информацией о пользователе и главе"""
+        # Получаем текущую главу из контекста игры
+        current_chapter = get_current_chapter()
         
-        try:
-            save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
-            if save_json and save_json.get("user_id") != persistent.user_id:
-                # Если сохранение принадлежит другому пользователю
-                renpy.show_screen("confirm_user_switch", slot=slot)
-                return
-        except:
-            pass
+        # Делаем скриншот
+        renpy.take_screenshot()
         
-        # Используем FileAction для загрузки
-        renpy.run(FileAction(slot))
+        # Сохраняем с дополнительной информацией
+        renpy.save(str(slot), f"Сохранение {slot}")
         
-    def load_other_user_save(slot):
-        """Загружает сохранение другого пользователя и обновляет persistent"""
+        # Обновляем информацию в JSON
         try:
             save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
             if save_json:
-                persistent.user_id = save_json.get("user_id")
-                persistent.user_name = save_json.get("user_name", "")
+                save_json["user_id"] = persistent.user_id
+                save_json["user_name"] = persistent.user_name
+                save_json["chapter"] = current_chapter
+                save_json["_timestamp"] = time.time()
+                
+                # Сохраняем обратно
+                import json
+                with open(renpy.slot_json_filename(str(slot)), 'w') as f:
+                    json.dump(save_json, f)
         except:
             pass
         
-        # Используем FileAction для загрузки
-        renpy.run(FileAction(slot))
-
-    # Функция для сохранения прогресса и перехода к следующей главе
-    def save_progress_and_continue(old_chapter, new_chapter_title, new_chapter_subtitle):
-        """Сохраняет прогресс и запускает следующую главу"""
-        # Сохраняем прогресс в базе данных
-        if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
-            db.update_save_progress(persistent.user_id, new_chapter_title)
-        
-        # Делаем быстрое сохранение
-        renpy.take_screenshot()
-        renpy.save(f"chapter-{new_chapter_title}", f"Автосохранение перед главой {new_chapter_title}")
-        
-        # Запускаем следующую главу
-        if new_chapter_title == "Вторая. Новые знакомства":
-            renpy.call_in_new_context("chapter_two")
-        elif new_chapter_title == "Третья. Испытание дружбой":
-            renpy.call_in_new_context("chapter_three")
+        renpy.notify(f"Игра сохранена в слот {slot}")
     
-    def save_progress_and_exit():
-        """Сохраняет прогресс и выходит в главное меню"""
-        if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
-            db.update_save_progress(persistent.user_id, "Глава Первая: Связь (завершена)")
-        
-        renpy.take_screenshot()
-        renpy.save("chapter-1-complete", "Завершение первой главы")
-        renpy.notify("Прогресс сохранен!")
+    # Функция для определения текущей главы
+    def get_current_chapter():
+        """Определяет текущую главу по контексту игры"""
+        # Проверяем, какая глава сейчас активна
+        if renpy.context().current_label:
+            current_label = renpy.context().current_label
+            
+            if current_label.startswith("chapter_two") or "chapter_two" in str(renpy.get_all_labels()):
+                return "Глава Вторая: Новые знакомства"
+            elif current_label.startswith("chapter_three") or "chapter_three" in str(renpy.get_all_labels()):
+                return "Глава Третья: Испытание дружбой"
+            else:
+                return "Глава Первая: Связь"
+        return "Глава Первая: Связь"
     
-    # ИСПРАВЛЕНО: функция get_last_save_info с обработкой ошибок
+    # ИСПРАВЛЕННАЯ функция get_last_save_info
     def get_last_save_info(user_id):
         """Получение информации о последнем сохранении пользователя"""
         result = {
@@ -161,6 +147,13 @@ init python:
         last_chapter = "—"
         
         try:
+            # Словарь для сопоставления глав
+            chapter_display = {
+                "Глава Первая: Связь": "Глава 1",
+                "Глава Вторая: Новые знакомства": "Глава 2",
+                "Глава Третья: Испытание дружбой": "Глава 3",
+            }
+            
             # Проверяем автосохранения (слоты auto)
             for i in range(1, 10):
                 slot_name = "auto-" + str(i)
@@ -178,17 +171,24 @@ init python:
                                         result['time'] = time_str
                                     except:
                                         result['time'] = "Недавно"
-                                # Получаем главу
-                                last_chapter = save_json.get("chapter", "Глава 1")
-                                # Форматируем название главы
-                                if "Глава Первая" in last_chapter or "Связь" in last_chapter:
-                                    result['chapter'] = "Глава 1"
-                                elif "Глава Вторая" in last_chapter or "Новые знакомства" in last_chapter:
-                                    result['chapter'] = "Глава 2"
-                                elif "Глава Третья" in last_chapter:
-                                    result['chapter'] = "Глава 3"
-                                else:
-                                    result['chapter'] = last_chapter[:30] + "..." if len(last_chapter) > 30 else last_chapter
+                                
+                                # Получаем главу из сохранения
+                                save_chapter = save_json.get("chapter", "")
+                                if save_chapter:
+                                    # Проверяем точное совпадение
+                                    if save_chapter in chapter_display:
+                                        result['chapter'] = chapter_display[save_chapter]
+                                    else:
+                                        # Проверяем частичное совпадение
+                                        if "Первая" in save_chapter or "Связь" in save_chapter:
+                                            result['chapter'] = "Глава 1"
+                                        elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
+                                            result['chapter'] = "Глава 2"
+                                        elif "Третья" in save_chapter:
+                                            result['chapter'] = "Глава 3"
+                                        else:
+                                            result['chapter'] = save_chapter
+                                    last_chapter = result['chapter']
                     except:
                         continue
             
@@ -207,15 +207,21 @@ init python:
                                         result['time'] = time_str
                                     except:
                                         result['time'] = "Недавно"
-                                last_chapter = save_json.get("chapter", "Глава 1")
-                                if "Глава Первая" in last_chapter or "Связь" in last_chapter:
-                                    result['chapter'] = "Глава 1"
-                                elif "Глава Вторая" in last_chapter or "Новые знакомства" in last_chapter:
-                                    result['chapter'] = "Глава 2"
-                                elif "Глава Третья" in last_chapter:
-                                    result['chapter'] = "Глава 3"
-                                else:
-                                    result['chapter'] = last_chapter[:30] + "..." if len(last_chapter) > 30 else last_chapter
+                                
+                                save_chapter = save_json.get("chapter", "")
+                                if save_chapter:
+                                    if save_chapter in chapter_display:
+                                        result['chapter'] = chapter_display[save_chapter]
+                                    else:
+                                        if "Первая" in save_chapter or "Связь" in save_chapter:
+                                            result['chapter'] = "Глава 1"
+                                        elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
+                                            result['chapter'] = "Глава 2"
+                                        elif "Третья" in save_chapter:
+                                            result['chapter'] = "Глава 3"
+                                        else:
+                                            result['chapter'] = save_chapter
+                                    last_chapter = result['chapter']
                     except:
                         continue
             
@@ -232,17 +238,29 @@ init python:
                                     result['time'] = time_str
                                 except:
                                     result['time'] = "Недавно"
-                            last_chapter = save_json.get("chapter", "Глава 1")
-                            if "Глава Первая" in last_chapter or "Связь" in last_chapter:
-                                result['chapter'] = "Глава 1"
-                            elif "Глава Вторая" in last_chapter or "Новые знакомства" in last_chapter:
-                                result['chapter'] = "Глава 2"
-                            elif "Глава Третья" in last_chapter:
-                                result['chapter'] = "Глава 3"
-                            else:
-                                result['chapter'] = last_chapter[:30] + "..." if len(last_chapter) > 30 else last_chapter
+                            
+                            save_chapter = save_json.get("chapter", "")
+                            if save_chapter:
+                                if save_chapter in chapter_display:
+                                    result['chapter'] = chapter_display[save_chapter]
+                                else:
+                                    if "Первая" in save_chapter or "Связь" in save_chapter:
+                                        result['chapter'] = "Глава 1"
+                                    elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
+                                        result['chapter'] = "Глава 2"
+                                    elif "Третья" in save_chapter:
+                                        result['chapter'] = "Глава 3"
+                                    else:
+                                        result['chapter'] = save_chapter
                 except:
                     pass
+            
+            # Если нашли сохранение, но глава не определилась, проверяем в БД
+            if result['chapter'] == "—" and last_time > 0:
+                if hasattr(db, 'get_user_progress'):
+                    progress = db.get_user_progress(user_id)
+                    if progress:
+                        result['chapter'] = progress[-1]  # Последняя глава
         except:
             pass
         
@@ -302,6 +320,117 @@ init python:
             except:
                 return False
         return False
+    
+    # В функции save_progress_and_continue добавьте сохранение главы
+    def save_progress_and_continue(old_chapter, new_chapter_title, new_chapter_subtitle):
+        """Сохраняет прогресс и запускает следующую главу"""
+        # Сохраняем прогресс в базе данных
+        if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+            db.update_save_progress(persistent.user_id, new_chapter_title)
+        
+        # Делаем быстрое сохранение с информацией о главе
+        renpy.take_screenshot()
+        renpy.save(f"chapter-{new_chapter_title}", f"Автосохранение перед главой {new_chapter_title}")
+        
+        # Обновляем JSON с информацией о главе
+        try:
+            save_json = renpy.json_load(renpy.slot_json_filename(f"chapter-{new_chapter_title}"))
+            if save_json:
+                save_json["chapter"] = new_chapter_title
+                save_json["_timestamp"] = time.time()
+                
+                import json
+                with open(renpy.slot_json_filename(f"chapter-{new_chapter_title}"), 'w') as f:
+                    json.dump(save_json, f)
+        except:
+            pass
+        
+        # Запускаем следующую главу
+        if new_chapter_title == "Вторая. Новые знакомства":
+            renpy.call_in_new_context("chapter_two")
+        elif new_chapter_title == "Третья. Испытание дружбой":
+            renpy.call_in_new_context("chapter_three")
+    
+    # В функции save_progress_and_exit добавьте сохранение главы
+    def save_progress_and_exit():
+        """Сохраняет прогресс и выходит в главное меню"""
+        if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+            db.update_save_progress(persistent.user_id, "Глава Первая: Связь (завершена)")
+        
+        renpy.take_screenshot()
+        renpy.save("chapter-1-complete", "Завершение первой главы")
+        
+        # Обновляем JSON с информацией о главе
+        try:
+            save_json = renpy.json_load(renpy.slot_json_filename("chapter-1-complete"))
+            if save_json:
+                save_json["chapter"] = "Глава Первая: Связь"
+                save_json["_timestamp"] = time.time()
+                
+                import json
+                with open(renpy.slot_json_filename("chapter-1-complete"), 'w') as f:
+                    json.dump(save_json, f)
+        except:
+            pass
+        
+        renpy.notify("Прогресс сохранен!")
+    
+    
+    def load_last_save_for_user(user_id):
+        """Загружает последнее сохранение для указанного пользователя"""
+        import os
+        
+        # Получаем список всех сохранений
+        saves = []
+        
+        try:
+            # Проверяем автосохранения
+            for i in range(1, 10):
+                slot_name = "auto-" + str(i)
+                if renpy.can_load(slot_name):
+                    try:
+                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                        if save_json and save_json.get("user_id") == user_id:
+                            timestamp = save_json.get("_timestamp", 0)
+                            saves.append((slot_name, timestamp))
+                    except:
+                        continue
+            
+            # Проверяем обычные сохранения
+            for i in range(1, 10):
+                if renpy.can_load(str(i)):
+                    try:
+                        save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
+                        if save_json and save_json.get("user_id") == user_id:
+                            timestamp = save_json.get("_timestamp", 0)
+                            saves.append((str(i), timestamp))
+                    except:
+                        continue
+            
+            # Проверяем быстрые сохранения
+            if renpy.can_load("quick-save"):
+                try:
+                    save_json = renpy.json_load(renpy.slot_json_filename("quick-save"))
+                    if save_json and save_json.get("user_id") == user_id:
+                        timestamp = save_json.get("_timestamp", 0)
+                        saves.append(("quick-save", timestamp))
+                except:
+                    pass
+        except:
+            pass
+        
+        # Сортируем по времени (самое новое последнее)
+        saves.sort(key=lambda x: x[1], reverse=True)
+        
+        if saves:
+            try:
+                # Загружаем самое новое сохранение
+                renpy.load(str(saves[0][0]))
+                return True
+            except:
+                return False
+        return False
+
 
 ################################################################################
 ## Глава Первая: Связь
@@ -652,12 +781,13 @@ label morning_scene:
     show text "{size=80}Конец первой главы{/size}" with dissolve
     pause 2.0
     
-    # Экран перехода ко второй главе
+    # ИСПРАВЛЕНО: передаем все три аргумента
     $ renpy.show_screen("chapter_transition", "Глава Первая: Связь", "Вторая. Новые знакомства", "Новые знакомства")
     $ renpy.pause(1.0)
     
     # Ожидание действия пользователя
     $ renpy.pause(None)
+
 
 ################################################################################
 ## Глава Вторая: Новые знакомства
@@ -901,10 +1031,12 @@ label chapter_two_end:
     show text "{size=80}Конец второй главы{/size}" with dissolve
     pause 2.0
     
-    # Экран перехода к третьей главе
+    # ИСПРАВЛЕНО: передаем все три аргумента
     $ renpy.show_screen("chapter_transition", "Глава Вторая: Новые знакомства", "Третья. Испытание дружбой", "Испытание дружбой")
-    $ renpy.pause(1.0, hard=True)  # hard=True для принудительной паузы
-    $ ui.interact()  # Ждем действия пользователя
+    $ renpy.pause(1.0)
+    
+    # Ожидание действия пользователя
+    $ ui.interact()
 
 label chapter_three:
     # Заглушка для третьей главы

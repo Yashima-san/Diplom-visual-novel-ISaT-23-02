@@ -180,7 +180,7 @@ screen gallery():
                                             color "#ffffff"
                                             size 20
                                             font gui.interface_text_font
-                                            outlines [(2, "#5e1414", 0, 0)]
+                                            outlines [(2, "#671a1a", 0, 0)]
                                             xalign 0.5
                                             yalign 0.2
                         else:
@@ -228,7 +228,7 @@ screen gallery_image_popup(image, title):
                 color "#ffffff"
                 size 32
                 font gui.interface_text_font
-                outlines [(2, "#711b1b", 0, 0)]
+                outlines [(2, "#671a1a", 0, 0)]
                 xalign 0.5
             
             # Изображение

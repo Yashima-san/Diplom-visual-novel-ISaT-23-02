@@ -130,7 +130,6 @@ screen achievements():
                                         yalign 0.5
                                         spacing 5
                                         
-                                        # ИСПРАВЛЕНО: разделено на два отдельных текстовых элемента
                                         if ach.is_unlocked():
                                             text ach.name:
                                                 style "achievement_name"

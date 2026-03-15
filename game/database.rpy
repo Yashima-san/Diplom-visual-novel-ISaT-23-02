@@ -354,8 +354,6 @@ init -2 python:
                 'save_point': time.time()
             })
         
-        # В database.rpy, обновите метод get_all_users
-
         def get_all_users(self):
             """Получение всех пользователей"""
             if self.sqlite_available:
@@ -427,7 +425,7 @@ init -2 python:
                         })
             return achievements
 
-        def get_user_progress(user_id):
+        def get_user_progress(self, user_id):
             """Получение прогресса пользователя по главам"""
             progress = []
             
@@ -450,14 +448,14 @@ init -2 python:
                             progress.append(formatted_chapter)
             
             # Если используем SQLite
-            if hasattr(db, 'sqlite_available') and db.sqlite_available:
+            if self.sqlite_available:
                 try:
-                    db.connect()
-                    db.cursor.execute('''
+                    self.connect()
+                    self.cursor.execute('''
                         SELECT DISTINCT chapter FROM save_progress_users 
                         WHERE user_ID = ? ORDER BY save_point
                     ''', (user_id,))
-                    for row in db.cursor.fetchall():
+                    for row in self.cursor.fetchall():
                         chapter = row['chapter']
                         if chapter and chapter not in progress:
                             formatted_chapter = chapter_formats.get(chapter, chapter)
@@ -465,7 +463,7 @@ init -2 python:
                 except:
                     pass
                 finally:
-                    db.disconnect()
+                    self.disconnect()
         
             return progress
     

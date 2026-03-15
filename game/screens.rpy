@@ -360,7 +360,6 @@ screen select_user_screen():
                 font gui.interface_text_font
                 xalign 0.5
                 yalign 0.5
-                # ИСПРАВЛЕНО: убран outlines с некорректными параметрами
             
             null height 10
             
@@ -398,7 +397,7 @@ screen select_user_screen():
                             $ user_id = user['user_ID']
                             $ user_name = user['name']
                             
-                            # Получаем информацию о последнем сохранении
+                            # Получаем информацию о последнем сохранении - ИСПРАВЛЕНО
                             $ last_save_info = get_last_save_info(user_id)
                             $ last_save_time = last_save_info['time']
                             $ last_save_chapter = last_save_info['chapter']
@@ -625,6 +624,7 @@ style main_menu_title:
     yalign 0.1
     textalign 0.5
     layout "subtitle"
+    # ИСПРАВЛЕНО: правильный формат outlines
     outlines [(5, "#a43c13", 0, 0)]
 
 style main_menu_version:
@@ -634,6 +634,7 @@ style main_menu_version:
     xalign 0.02
     yalign 0.98
     textalign 0.0
+    # ИСПРАВЛЕНО: правильный формат outlines
     outlines [(2, "#000000", 0, 0)]
 
 style main_menu_frame:
@@ -659,6 +660,7 @@ style main_menu_button_text:
     selected_color "#da6037"
     size 18
     font gui.interface_text_font
+    # ИСПРАВЛЕНО: правильный формат outlines
     outlines [(2, "#b64520", 0, 0)]
     text_align 0.5
     xalign 0.5
@@ -823,13 +825,13 @@ style about_label_text:
 
 screen save():
     tag menu
-    use file_slots_with_user(_("Сохранить"))
+    use file_slots_with_user(_("Сохранить"), is_save=True)
 
 screen load():
     tag menu
-    use file_slots_with_user(_("Загрузить"))
+    use file_slots_with_user(_("Загрузить"), is_save=False)
 
-screen file_slots_with_user(title):
+screen file_slots_with_user(title, is_save=True):
     default page_name_value = FilePageNameInputValue(pattern=_("{} страница"), auto=_("Автосохранения"), quick=_("Быстрые сохранения"))
     
     # Отображаем информацию о текущем пользователе
@@ -878,7 +880,11 @@ screen file_slots_with_user(title):
                     $ slot = i + 1
                     
                     button:
-                        action Function(custom_file_action, slot)
+                        # ИСПРАВЛЕНО: разные действия для сохранения и загрузки
+                        if is_save:
+                            action Function(custom_save_action, slot)
+                        else:
+                            action Function(custom_file_action, slot)
                         
                         has vbox
                         
@@ -895,6 +901,22 @@ screen file_slots_with_user(title):
                         if save_user:
                             text "Игрок: [save_user]":
                                 style "slot_user_text"
+                        
+                        # Добавляем информацию о главе в слот
+                        $ save_chapter = FileJson(slot, "chapter", empty="")
+                        if save_chapter:
+                            # Сокращаем название главы для отображения
+                            if "Первая" in save_chapter or "Связь" in save_chapter:
+                                $ display_chapter = "Глава 1"
+                            elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
+                                $ display_chapter = "Глава 2"
+                            elif "Третья" in save_chapter:
+                                $ display_chapter = "Глава 3"
+                            else:
+                                $ display_chapter = save_chapter[:20] + "..." if len(save_chapter) > 20 else save_chapter
+                            
+                            text "Глава: [display_chapter]":
+                                style "slot_chapter_text"
                         
                         key "save_delete" action FileDelete(slot)
             
@@ -979,6 +1001,13 @@ style slot_user_text:
     font gui.interface_text_font
     xalign 0.5
 
+# ИСПРАВЛЕНО: добавил стиль для текста главы в слоте
+style slot_chapter_text:
+    size 16
+    color "#ff9e5e"
+    font gui.interface_text_font
+    xalign 0.5
+    
 ## Экран подтверждения смены пользователя ######################################
 
 screen confirm_user_switch(slot):
@@ -1865,6 +1894,7 @@ screen input_name_screen():
                 color "#ff7171"
                 font gui.interface_text_font
                 xalign 0.5
+                # ИСПРАВЛЕНО: правильный формат outlines
                 outlines [(2, "#a83c1f", 0, 0)]
             
             # Поле ввода с закругленными углами
@@ -1895,6 +1925,7 @@ screen input_name_screen():
                 color "#ff9083"
                 font gui.interface_text_font
                 xalign 0.5
+                # ИСПРАВЛЕНО: правильный формат outlines
                 outlines [(2, "#de5d21", 0, 0)]
     
     key "K_RETURN" action Return(input_name)
@@ -1920,6 +1951,7 @@ init -1 python:
     style.input_confirm_button_text.color = "#ffbf92"
     style.input_confirm_button_text.hover_color = "#ffffff"
     style.input_confirm_button_text.size = 24
+    # ИСПРАВЛЕНО: правильный формат outlines
     style.input_confirm_button_text.outlines = [(2, "#ff832b", 0, 0)]
     style.input_confirm_button_text.text_align = 0.5
     style.input_confirm_button_text.xalign = 0.5
@@ -1941,24 +1973,24 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
         style "chapter_transition_frame"
         xalign 0.5
         yalign 0.5
-        xsize 800
-        ysize 500
+        xsize 850
+        ysize 550
         
         vbox:
             spacing 25
             xalign 0.5
             yalign 0.5
             
-            text "Глава завершена" size 40 color "#ffffff" outlines "#671a1a" xalign 0.5
+            text "Глава завершена" size 40 color "#ffffff" outlines [(3, "#671a1a", 0, 0)] xalign 0.5
             
             if old_chapter:
-                text "[old_chapter]" size 30 color "#ffffff" outlines "#671a1a" xalign 0.5
+                text "[old_chapter]" size 30 color "#ffb995" outlines [(2, "#671a1a", 0, 0)] xalign 0.5
             
             null height 20
             
-            text "Сохраняем ваш прогресс..." size 28 color "#ff9974" outlines "#671a1a" xalign 0.5
+            text "Сохраняем ваш прогресс..." size 28 color "#5e5e5e" xalign 0.5
             
-            text "Убедитесь, что у вас достаточно места для сохранений" size 20 color "#888888" xalign 0.5
+            text "Убедитесь, что у вас достаточно места для сохранений" size 22 color "#888888" xalign 0.5
             
             null height 30
             
@@ -1968,13 +2000,14 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
                 
                 textbutton "Да, продолжить":
                     style "chapter_transition_button"
-                    action [Function(save_progress_and_continue, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")]
+                    # Передаем третий аргумент
+                    action [Function(save_progress_and_continue, old_chapter, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")]
                 
                 textbutton "Нет, выйти в главное меню":
                     style "chapter_transition_button"
                     action [Function(save_progress_and_exit), MainMenu()]
     
-    key "K_RETURN" action [Function(save_progress_and_continue, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")]
+    key "K_RETURN" action [Function(save_progress_and_continue, old_chapter, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")]
     key "K_ESCAPE" action MainMenu()
 
 ## Стили для экрана перехода
@@ -1986,11 +2019,12 @@ style chapter_transition_button:
     background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
     hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
     padding (30, 15)
-    xsize 250
+    xsize 380
 
 style chapter_transition_button_text:
     color "#ffffff"
     hover_color "#ff9e5e"
-    size 22
+    outlines [(2, "#671a1a",0, 0)]
+    size 18
     font gui.interface_text_font
     text_align 0.5
