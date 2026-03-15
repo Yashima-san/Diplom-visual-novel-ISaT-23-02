@@ -74,33 +74,6 @@ init python:
         config.save_json_callbacks = []
         config.save_json_callbacks.append(add_user_info_to_save)
     
-    # Функция для загрузки последнего сохранения пользователя
-    def load_last_save_for_user(user_id):
-        """Загружает последнее сохранение для указанного пользователя"""
-        import os
-        
-        # Получаем список всех сохранений
-        saves = []
-        for i in range(1, 10):  # Проверяем слоты 1-9
-            if renpy.can_load(str(i)):
-                # Проверяем, принадлежит ли сохранение этому пользователю
-                try:
-                    save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
-                    if save_json and save_json.get("user_id") == user_id:
-                        timestamp = save_json.get("_timestamp", 0)
-                        saves.append((i, timestamp))
-                except:
-                    continue
-        
-        # Сортируем по времени (самое новое последнее)
-        saves.sort(key=lambda x: x[1], reverse=True)
-        
-        if saves:
-            # Загружаем самое новое сохранение
-            renpy.load(str(saves[0][0]))
-            return True
-        return False
-    
     # Функция для сохранения прогресса пользователя
     def save_user_progress():
         """Сохраняет текущий прогресс пользователя"""
@@ -113,22 +86,12 @@ init python:
             renpy.take_screenshot()
             renpy.save("quick-save", "Быстрое сохранение")
     
+    # ИСПРАВЛЕНО: функция continue_game без вызова call_screen внутри взаимодействия
     def continue_game():
         """Показывает экран выбора пользователя для продолжения игры"""
-        # Проверяем, есть ли вообще пользователи
-        users = []
-        if hasattr(db, 'get_all_users'):
-            users = db.get_all_users()
-        
-        if users:
-            # Если есть пользователи, показываем экран выбора
-            renpy.show_screen("select_user_screen")
-        else:
-            # Если пользователей нет, предлагаем начать новую игру
-            renpy.call_screen("confirm", 
-                _("Нет сохраненных игроков. Начать новую игру?"), 
-                yes_action=[Start(), Hide("confirm")], 
-                no_action=Hide("confirm"))
+        # Просто показываем экран, не вызываем его как screen
+        renpy.show_screen("select_user_screen")
+        return
     
     def custom_file_action(slot):
         """Кастомное действие для загрузки с проверкой пользователя"""
@@ -186,7 +149,8 @@ init python:
         renpy.take_screenshot()
         renpy.save("chapter-1-complete", "Завершение первой главы")
         renpy.notify("Прогресс сохранен!")
-        
+    
+    # ИСПРАВЛЕНО: функция get_last_save_info с обработкой ошибок
     def get_last_save_info(user_id):
         """Получение информации о последнем сохранении пользователя"""
         result = {
@@ -196,26 +160,79 @@ init python:
         last_time = 0
         last_chapter = "—"
         
-        # Проверяем автосохранения (слоты auto)
-        for i in range(1, 10):
-            slot_name = "auto-" + str(i)
-            if renpy.can_load(slot_name):
+        try:
+            # Проверяем автосохранения (слоты auto)
+            for i in range(1, 10):
+                slot_name = "auto-" + str(i)
+                if renpy.can_load(slot_name):
+                    try:
+                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                        if save_json and save_json.get("user_id") == user_id:
+                            timestamp = save_json.get("_timestamp", 0)
+                            if timestamp > last_time:
+                                last_time = timestamp
+                                # Форматируем время
+                                if timestamp:
+                                    try:
+                                        time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
+                                        result['time'] = time_str
+                                    except:
+                                        result['time'] = "Недавно"
+                                # Получаем главу
+                                last_chapter = save_json.get("chapter", "Глава 1")
+                                # Форматируем название главы
+                                if "Глава Первая" in last_chapter or "Связь" in last_chapter:
+                                    result['chapter'] = "Глава 1"
+                                elif "Глава Вторая" in last_chapter or "Новые знакомства" in last_chapter:
+                                    result['chapter'] = "Глава 2"
+                                elif "Глава Третья" in last_chapter:
+                                    result['chapter'] = "Глава 3"
+                                else:
+                                    result['chapter'] = last_chapter[:30] + "..." if len(last_chapter) > 30 else last_chapter
+                    except:
+                        continue
+            
+            # Проверяем обычные сохранения (слоты 1-9)
+            for i in range(1, 10):
+                if renpy.can_load(str(i)):
+                    try:
+                        save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
+                        if save_json and save_json.get("user_id") == user_id:
+                            timestamp = save_json.get("_timestamp", 0)
+                            if timestamp > last_time:
+                                last_time = timestamp
+                                if timestamp:
+                                    try:
+                                        time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
+                                        result['time'] = time_str
+                                    except:
+                                        result['time'] = "Недавно"
+                                last_chapter = save_json.get("chapter", "Глава 1")
+                                if "Глава Первая" in last_chapter or "Связь" in last_chapter:
+                                    result['chapter'] = "Глава 1"
+                                elif "Глава Вторая" in last_chapter or "Новые знакомства" in last_chapter:
+                                    result['chapter'] = "Глава 2"
+                                elif "Глава Третья" in last_chapter:
+                                    result['chapter'] = "Глава 3"
+                                else:
+                                    result['chapter'] = last_chapter[:30] + "..." if len(last_chapter) > 30 else last_chapter
+                    except:
+                        continue
+            
+            # Проверяем быстрые сохранения
+            if renpy.can_load("quick-save"):
                 try:
-                    save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                    save_json = renpy.json_load(renpy.slot_json_filename("quick-save"))
                     if save_json and save_json.get("user_id") == user_id:
                         timestamp = save_json.get("_timestamp", 0)
                         if timestamp > last_time:
-                            last_time = timestamp
-                            # Форматируем время
                             if timestamp:
                                 try:
                                     time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
                                     result['time'] = time_str
                                 except:
                                     result['time'] = "Недавно"
-                            # Получаем главу
                             last_chapter = save_json.get("chapter", "Глава 1")
-                            # Форматируем название главы
                             if "Глава Первая" in last_chapter or "Связь" in last_chapter:
                                 result['chapter'] = "Глава 1"
                             elif "Глава Вторая" in last_chapter or "Новые знакомства" in last_chapter:
@@ -225,59 +242,9 @@ init python:
                             else:
                                 result['chapter'] = last_chapter[:30] + "..." if len(last_chapter) > 30 else last_chapter
                 except:
-                    continue
-        
-        # Проверяем обычные сохранения (слоты 1-9)
-        for i in range(1, 10):
-            if renpy.can_load(str(i)):
-                try:
-                    save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
-                    if save_json and save_json.get("user_id") == user_id:
-                        timestamp = save_json.get("_timestamp", 0)
-                        if timestamp > last_time:
-                            last_time = timestamp
-                            if timestamp:
-                                try:
-                                    time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
-                                    result['time'] = time_str
-                                except:
-                                    result['time'] = "Недавно"
-                            last_chapter = save_json.get("chapter", "Глава 1")
-                            if "Глава Первая" in last_chapter or "Связь" in last_chapter:
-                                result['chapter'] = "Глава 1"
-                            elif "Глава Вторая" in last_chapter or "Новые знакомства" in last_chapter:
-                                result['chapter'] = "Глава 2"
-                            elif "Глава Третья" in last_chapter:
-                                result['chapter'] = "Глава 3"
-                            else:
-                                result['chapter'] = last_chapter[:30] + "..." if len(last_chapter) > 30 else last_chapter
-                except:
-                    continue
-        
-        # Проверяем быстрые сохранения
-        if renpy.can_load("quick-save"):
-            try:
-                save_json = renpy.json_load(renpy.slot_json_filename("quick-save"))
-                if save_json and save_json.get("user_id") == user_id:
-                    timestamp = save_json.get("_timestamp", 0)
-                    if timestamp > last_time:
-                        if timestamp:
-                            try:
-                                time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
-                                result['time'] = time_str
-                            except:
-                                result['time'] = "Недавно"
-                        last_chapter = save_json.get("chapter", "Глава 1")
-                        if "Глава Первая" in last_chapter or "Связь" in last_chapter:
-                            result['chapter'] = "Глава 1"
-                        elif "Глава Вторая" in last_chapter or "Новые знакомства" in last_chapter:
-                            result['chapter'] = "Глава 2"
-                        elif "Глава Третья" in last_chapter:
-                            result['chapter'] = "Глава 3"
-                        else:
-                            result['chapter'] = last_chapter[:30] + "..." if len(last_chapter) > 30 else last_chapter
-            except:
-                pass
+                    pass
+        except:
+            pass
         
         return result
     
@@ -288,48 +255,53 @@ init python:
         # Получаем список всех сохранений
         saves = []
         
-        # Проверяем автосохранения
-        for i in range(1, 10):
-            slot_name = "auto-" + str(i)
-            if renpy.can_load(slot_name):
+        try:
+            # Проверяем автосохранения
+            for i in range(1, 10):
+                slot_name = "auto-" + str(i)
+                if renpy.can_load(slot_name):
+                    try:
+                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                        if save_json and save_json.get("user_id") == user_id:
+                            timestamp = save_json.get("_timestamp", 0)
+                            saves.append((slot_name, timestamp))
+                    except:
+                        continue
+            
+            # Проверяем обычные сохранения
+            for i in range(1, 10):
+                if renpy.can_load(str(i)):
+                    try:
+                        save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
+                        if save_json and save_json.get("user_id") == user_id:
+                            timestamp = save_json.get("_timestamp", 0)
+                            saves.append((str(i), timestamp))
+                    except:
+                        continue
+            
+            # Проверяем быстрые сохранения
+            if renpy.can_load("quick-save"):
                 try:
-                    save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                    save_json = renpy.json_load(renpy.slot_json_filename("quick-save"))
                     if save_json and save_json.get("user_id") == user_id:
                         timestamp = save_json.get("_timestamp", 0)
-                        saves.append((slot_name, timestamp))
+                        saves.append(("quick-save", timestamp))
                 except:
-                    continue
-        
-        # Проверяем обычные сохранения
-        for i in range(1, 10):
-            if renpy.can_load(str(i)):
-                try:
-                    save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
-                    if save_json and save_json.get("user_id") == user_id:
-                        timestamp = save_json.get("_timestamp", 0)
-                        saves.append((str(i), timestamp))
-                except:
-                    continue
-        
-        # Проверяем быстрые сохранения
-        if renpy.can_load("quick-save"):
-            try:
-                save_json = renpy.json_load(renpy.slot_json_filename("quick-save"))
-                if save_json and save_json.get("user_id") == user_id:
-                    timestamp = save_json.get("_timestamp", 0)
-                    saves.append(("quick-save", timestamp))
-            except:
-                pass
+                    pass
+        except:
+            pass
         
         # Сортируем по времени (самое новое последнее)
         saves.sort(key=lambda x: x[1], reverse=True)
         
         if saves:
-            # Загружаем самое новое сохранение
-            renpy.load(str(saves[0][0]))
-            return True
+            try:
+                # Загружаем самое новое сохранение
+                renpy.load(str(saves[0][0]))
+                return True
+            except:
+                return False
         return False
-
 
 ################################################################################
 ## Глава Первая: Связь
@@ -931,8 +903,8 @@ label chapter_two_end:
     
     # Экран перехода к третьей главе
     $ renpy.show_screen("chapter_transition", "Глава Вторая: Новые знакомства", "Третья. Испытание дружбой", "Испытание дружбой")
-    $ renpy.pause(1.0)
-    $ renpy.pause(None)
+    $ renpy.pause(1.0, hard=True)  # hard=True для принудительной паузы
+    $ ui.interact()  # Ждем действия пользователя
 
 label chapter_three:
     # Заглушка для третьей главы

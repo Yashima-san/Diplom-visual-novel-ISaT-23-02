@@ -360,7 +360,7 @@ screen select_user_screen():
                 font gui.interface_text_font
                 xalign 0.5
                 yalign 0.5
-                outlines [(2, "#a43c13", 0, 0)]
+                # ИСПРАВЛЕНО: убран outlines с некорректными параметрами
             
             null height 10
             
@@ -384,55 +384,65 @@ screen select_user_screen():
                         text "Достижений" size 22 color "#ffffff" xsize 150 text_align 0.5
                 
                 # Список пользователей
-                vpgrid:
-                    cols 1
-                    spacing 5
-                    yinitial 0.0
+                viewport:
+                    ysize 350
+                    scrollbars "vertical"
                     mousewheel True
                     draggable True
-                    xadjustment None
-                    ysize 400
                     
-                    for user in users:
-                        $ user_id = user['user_ID']
-                        $ user_name = user['name']
+                    vbox:
+                        spacing 5
+                        xfill True
                         
-                        # Получаем информацию о последнем сохранении
-                        $ last_save_info = get_last_save_info(user_id)
-                        $ last_save_time = last_save_info['time']
-                        $ last_save_chapter = last_save_info['chapter']
-                        
-                        # Получаем количество достижений
-                        $ user_achievements = db.get_user_achievements(user_id) if hasattr(db, 'get_user_achievements') else []
-                        $ ach_count = len(user_achievements)
-                        
-                        # Кнопка выбора пользователя
-                        button:
-                            style "select_user_row"
-                            xfill True
-                            action [Function(set_current_user, user_id, user_name), Function(load_last_save_for_user, user_id), Hide("select_user_screen")]
+                        for user in users:
+                            $ user_id = user['user_ID']
+                            $ user_name = user['name']
                             
-                            hbox:
-                                spacing 20
+                            # Получаем информацию о последнем сохранении
+                            $ last_save_info = get_last_save_info(user_id)
+                            $ last_save_time = last_save_info['time']
+                            $ last_save_chapter = last_save_info['chapter']
+                            
+                            # Получаем количество достижений
+                            $ user_achievements = db.get_user_achievements(user_id) if hasattr(db, 'get_user_achievements') else []
+                            $ ach_count = len(user_achievements)
+                            
+                            # Кнопка выбора пользователя
+                            button:
+                                style "select_user_row"
                                 xfill True
+                                action [Function(set_current_user, user_id, user_name), Function(load_last_save_for_user, user_id), Hide("select_user_screen")]
                                 
-                                text "[user_name]" size 22 color "#ffffff" xsize 200 text_align 0.5
-                                text "[last_save_time]" size 22 color "#ffffff" xsize 400 text_align 0.5
-                                text "[last_save_chapter]" size 22 color "#ffffff" xsize 250 text_align 0.5
-                                text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
+                                hbox:
+                                    spacing 20
+                                    xfill True
+                                    
+                                    text "[user_name]" size 22 color "#ffffff" xsize 200 text_align 0.5
+                                    text "[last_save_time]" size 22 color "#ffffff" xsize 400 text_align 0.5
+                                    text "[last_save_chapter]" size 22 color "#ffffff" xsize 250 text_align 0.5
+                                    text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
             else:
-                text "Нет сохраненных пользователей" size 24 xalign 0.5 color "#cccccc"
-                null height 30
-                text "Начните новую игру, чтобы создать профиль" size 20 xalign 0.5 color "#aaaaaa"
+                # ИСПРАВЛЕНО: сообщение когда нет пользователей
+                vbox:
+                    spacing 30
+                    xalign 0.5
+                    yalign 0.5
+                    
+                    text "Нет сохраненных игроков" size 28 xalign 0.5 color "#cccccc"
+                    text "Начните новую игру, чтобы создать профиль" size 22 xalign 0.5 color "#aaaaaa"
+                    
+                    null height 20
+                    
+                    # Кнопка для начала новой игры прямо отсюда
+                    textbutton "Начать новую игру" style "select_user_button" action [Start(), Hide("select_user_screen")]
             
             null height 20
             
             # Кнопки действий
             hbox:
-                spacing 5
+                spacing 20
                 xalign 0.5
                 
-                textbutton "Новая игра" style "select_user_button" action [Start(), Hide("select_user_screen")]
                 textbutton "Отмена" style "select_user_button" action Hide("select_user_screen")
     
     key "game_menu" action Hide("select_user_screen")
@@ -446,6 +456,10 @@ style select_user_frame:
 style select_user_header:
     background "#c66b2f"
     xfill True
+
+style select_user_header_text:
+    color "#ffffff"
+    size 22
 
 style select_user_row:
     background "#d9874d"
@@ -466,7 +480,6 @@ style select_user_button_text:
     size 22
     font gui.interface_text_font
     text_align 0.5
-    outlines [(2, "#803e1a", 0, 0)]
 
 
 init python:
@@ -475,43 +488,46 @@ init python:
         last_chapter = None
         last_time = 0
         
-        # Проверяем сохранения в файлах
-        for i in range(1, 10):
-            if renpy.can_load(str(i)):
+        try:
+            # Проверяем сохранения в файлах
+            for i in range(1, 10):
+                if renpy.can_load(str(i)):
+                    try:
+                        save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
+                        if save_json and save_json.get("user_id") == user_id:
+                            timestamp = save_json.get("_timestamp", 0)
+                            if timestamp > last_time:
+                                last_time = timestamp
+                                # Пытаемся получить название главы из сохранения
+                                last_chapter = save_json.get("chapter", "Глава 1")
+                    except:
+                        continue
+            
+            # Если не нашли в сохранениях, проверяем в БД
+            if not last_chapter and hasattr(db, 'sqlite_available') and db.sqlite_available:
                 try:
-                    save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
-                    if save_json and save_json.get("user_id") == user_id:
-                        timestamp = save_json.get("_timestamp", 0)
-                        if timestamp > last_time:
-                            last_time = timestamp
-                            # Пытаемся получить название главы из сохранения
-                            last_chapter = save_json.get("chapter", "Глава 1")
+                    db.connect()
+                    db.cursor.execute('''
+                        SELECT chapter FROM save_progress_users 
+                        WHERE user_ID = ? ORDER BY save_point DESC LIMIT 1
+                    ''', (user_id,))
+                    row = db.cursor.fetchone()
+                    if row:
+                        last_chapter = row['chapter']
                 except:
-                    continue
-        
-        # Если не нашли в сохранениях, проверяем в БД
-        if not last_chapter and hasattr(db, 'sqlite_available') and db.sqlite_available:
-            try:
-                db.connect()
-                db.cursor.execute('''
-                    SELECT chapter FROM save_progress_users 
-                    WHERE user_ID = ? ORDER BY save_point DESC LIMIT 1
-                ''', (user_id,))
-                row = db.cursor.fetchone()
-                if row:
-                    last_chapter = row['chapter']
-            except:
-                pass
-            finally:
-                db.disconnect()
-        
-        # Если все еще нет, проверяем в persistent
-        if not last_chapter and hasattr(persistent, 'user_data') and persistent.user_data:
-            str_user_id = str(user_id)
-            if 'save_progress' in persistent.user_data and str_user_id in persistent.user_data['save_progress']:
-                saves = persistent.user_data['save_progress'][str_user_id]
-                if saves:
-                    last_chapter = saves[-1].get('chapter', 'Глава 1')
+                    pass
+                finally:
+                    db.disconnect()
+            
+            # Если все еще нет, проверяем в persistent
+            if not last_chapter and hasattr(persistent, 'user_data') and persistent.user_data:
+                str_user_id = str(user_id)
+                if 'save_progress' in persistent.user_data and str_user_id in persistent.user_data['save_progress']:
+                    saves = persistent.user_data['save_progress'][str_user_id]
+                    if saves:
+                        last_chapter = saves[-1].get('chapter', 'Глава 1')
+        except:
+            pass
         
         return last_chapter if last_chapter else "Нет сохранений"
     
@@ -522,23 +538,6 @@ init python:
         else:
             # Если нет сохранений, начинаем новую игру
             renpy.call_in_new_context("start")
-
-
-    def continue_game():
-        """Показывает экран выбора пользователя для продолжения игры"""
-        # Проверяем, есть ли вообще пользователи
-        users = db.get_all_users() if hasattr(db, 'get_all_users') else []
-        
-        if users:
-            # Если есть пользователи, показываем экран выбора
-            renpy.show_screen("select_user_screen")
-        else:
-            # Если пользователей нет, предлагаем начать новую игру
-            renpy.show_screen("confirm", 
-                _("Нет сохраненных игроков. Начать новую игру?"), 
-                yes_action=[Start(), Hide("confirm")], 
-                no_action=Hide("confirm"))
-
 
     def set_current_user(user_id, user_name):
         """Установка текущего пользователя"""
@@ -1950,16 +1949,16 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
             xalign 0.5
             yalign 0.5
             
-            text "Глава завершена" size 40 color "#ffffff" outlines "#652a13" xalign 0.5
+            text "Глава завершена" size 40 color "#ffffff" outlines "#671a1a" xalign 0.5
             
             if old_chapter:
-                text "[old_chapter]" size 30 color "#ffffff" xalign 0.5
+                text "[old_chapter]" size 30 color "#ffffff" outlines "#671a1a" xalign 0.5
             
             null height 20
             
-            text "Сохраняем ваш прогресс..." size 28 color "#ffffff" xalign 0.5
+            text "Сохраняем ваш прогресс..." size 28 color "#ff9974" outlines "#671a1a" xalign 0.5
             
-            text "Убедитесь, что у вас достаточно места для сохранений" size 16 color "#888888" xalign 0.5
+            text "Убедитесь, что у вас достаточно места для сохранений" size 20 color "#888888" xalign 0.5
             
             null height 30
             
@@ -1995,4 +1994,3 @@ style chapter_transition_button_text:
     size 22
     font gui.interface_text_font
     text_align 0.5
-    outlines [(2, "#803e1a", 0, 0)]

@@ -105,6 +105,13 @@ init python:
         None
     ))
 
+    gallery_items.append(GalleryItem(
+        "Ночная комната", 
+        "images/cg/room_day.png",
+        "cg",
+        None
+    ))
+
 # Экран галереи
 screen gallery():
     tag menu
@@ -118,7 +125,7 @@ screen gallery():
             # Вкладки категорий
             hbox:
                 spacing 10
-                xalign 0.72
+                xalign 0.6
                 
                 textbutton _("Персонажи"):
                     action SetScreenVariable("selected_category", "characters")
@@ -147,7 +154,6 @@ screen gallery():
                     xpos 50
                     
                     for item in category_items:
-                        # Убраны вложенные стили
                         if item.is_unlocked():
                             button:
                                 xysize (350, 250)
@@ -156,13 +162,16 @@ screen gallery():
                                 
                                 frame:
                                     xysize (360, 250)
-                                    background Frame("#cb6048", 20, 20)
+                                    background Frame("gui/confirm_frame.png", 0, 0, 0, 0)
                                     
                                     vbox:
+                                        xalign 0.5
+                                        yalign 0.5
+                                        
                                         # Проверяем существование файла перед отображением
                                         $ image_exists = renpy.loadable(item.image) if item.image else False
                                         if image_exists:
-                                            add Transform(item.image, zoom=0.5, xalign=0.5, yalign=0.5) xysize (340, 200)
+                                            add Transform(item.image, zoom=0.2, xalign=0.5, yalign=0.5) xysize (300, 160)
                                         else:
                                             text "Изображение\nне найдено" size 20 xalign 0.5 yalign 0.5
                                         
@@ -173,7 +182,7 @@ screen gallery():
                                             font gui.interface_text_font
                                             outlines [(2, "#5e1414", 0, 0)]
                                             xalign 0.5
-                                            yalign 0.3
+                                            yalign 0.2
                         else:
                             button:
                                 xysize (350, 250)
@@ -181,16 +190,19 @@ screen gallery():
                                 
                                 frame:
                                     xysize (340, 250)
-                                    background Frame("#cb6048", 20, 20)
-                                    
+                                    background Frame("gui/confirm_frame.png", 0, 0)
+
                                     vbox:
-                                        text "🔒" size 100 xalign 0.6 yalign 1.0
+                                        xalign 0.5
+                                        yalign 0.3
+
+                                        text "🔒" size 80 xalign 0.5 yalign 1.0
                                         text _("Не разблокировано"):
                                             color "#8f4e36"
                                             size 18
                                             font gui.interface_text_font
                                             xalign 0.5
-                                            yalign 0.5
+                                            yalign 0.45
             else:
                 text _("В этой категории пока нет изображений.") xalign 0.5
 
@@ -198,15 +210,19 @@ screen gallery():
 screen gallery_image_popup(image, title):
     modal True
     zorder 200
+    add "gui/overlay/confirm.png"
     
     frame:
         background Frame("gui/confirm_frame.png", 25, 25)
-        padding (25, 25)
+        padding (35, 35)
         xysize (1600, 920)
         xalign 0.5
         yalign 0.5
         
         vbox:
+            xalign 0.5
+            yalign 0.5
+            
             # Заголовок
             text title:
                 color "#ffffff"
@@ -218,7 +234,7 @@ screen gallery_image_popup(image, title):
             # Изображение
             $ image_exists = renpy.loadable(image) if image else False
             if image_exists:
-                add Transform(image, zoom=0.8, xalign=0.5, yalign=0.5) ysize 700
+                add Transform(image, zoom=0.8, xalign=0.5, yalign=0.5) xsize 1170 ysize 620
             else:
                 text "Изображение не найдено:\n[image]" size 30 xalign 0.5 yalign 0.5
             
