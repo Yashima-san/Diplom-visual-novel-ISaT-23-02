@@ -67,7 +67,7 @@ init -2 python:
                     CREATE TABLE IF NOT EXISTS save_progress_users (
                         save_ID INTEGER PRIMARY KEY AUTOINCREMENT,
                         user_ID INTEGER NOT NULL,
-                        chapter CHAR(15),
+                        chapter TEXT,
                         save_point TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 ''')
@@ -290,7 +290,7 @@ init -2 python:
                 self.cursor.execute('''
                     INSERT INTO achievements (user_ID, achi_name, description)
                     VALUES (?, ?, ?)
-                ''', (user_id, achievement_name, description));
+                ''', (user_id, achievement_name, description))
                 self.connection.commit()
             except Exception as e:
                 renpy.notify(f"Ошибка при сохранении достижения: {str(e)}")
@@ -370,48 +370,16 @@ init -2 python:
             else:
                 return self._get_all_users_memory()
         
-        def _add_user_memory(self, user_name):
-            """Добавление пользователя в память (альтернативное хранилище)"""
-            # Инициализируем persistent.user_data если его нет
-            if not hasattr(persistent, 'user_data') or persistent.user_data is None:
-                persistent.user_data = {
-                    'users': {},
-                    'achievements': {},
-                    'save_progress': {},
-                    'next_id': 1
-                }
-            
-            # Проверяем существующего пользователя
-            if 'users' in persistent.user_data:
+        def _get_all_users_memory(self):
+            """Получение пользователей из памяти"""
+            users = []
+            if hasattr(persistent, 'user_data') and persistent.user_data and 'users' in persistent.user_data:
                 for user_id, data in persistent.user_data['users'].items():
-                    if data.get('name') == user_name:
-                        return int(user_id)
-            
-            # Создаем нового пользователя
-            user_id = persistent.user_data.get('next_id', 1)
-            if 'users' not in persistent.user_data:
-                persistent.user_data['users'] = {}
-            
-            persistent.user_data['users'][str(user_id)] = {
-                'name': user_name,
-                'created_at': time.time()
-            }
-            
-            # Добавляем прогресс
-            if 'save_progress' not in persistent.user_data:
-                persistent.user_data['save_progress'] = {}
-            
-            if str(user_id) not in persistent.user_data['save_progress']:
-                persistent.user_data['save_progress'][str(user_id)] = []
-            
-            persistent.user_data['save_progress'][str(user_id)].append({
-                'chapter': "Глава Первая: Связь",
-                'save_point': time.time()
-            })
-            
-            persistent.user_data['next_id'] = user_id + 1
-            
-            return user_idя
+                    users.append({
+                        'user_ID': int(user_id),
+                        'name': data.get('name', '')
+                    })
+            return users
         
         def _get_all_users_sqlite(self):
             """Получение пользователей из SQLite"""

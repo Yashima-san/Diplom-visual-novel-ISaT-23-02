@@ -1,41 +1,17 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
 While running game code:
-  File "game/debug_screen.rpy", line 5, in execute
-    screen debug_database():
-  File "game/debug_screen.rpy", line 5, in execute
-    screen debug_database():
-  File "game/debug_screen.rpy", line 7, in execute
-    use game_menu(_("Игроки"), scroll="viewport"):
-  File "game/screens.rpy", line 681, in execute
-    screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
-  File "game/screens.rpy", line 681, in execute
-    screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
-  File "game/screens.rpy", line 689, in execute
+  File "game/screens.rpy", line 337, in execute
+    screen select_user_screen():
+  File "game/screens.rpy", line 337, in execute
+    screen select_user_screen():
+  File "game/screens.rpy", line 345, in execute
     frame:
-  File "game/screens.rpy", line 692, in execute
-    hbox:
-  File "game/screens.rpy", line 697, in execute
-    frame:
-  File "game/screens.rpy", line 700, in execute
-    if scroll == "viewport":
-  File "game/screens.rpy", line 702, in execute
-    viewport:
-  File "game/screens.rpy", line 713, in execute
+  File "game/screens.rpy", line 353, in execute
     vbox:
-  File "game/screens.rpy", line 716, in execute
-    transclude
-  File "game/debug_screen.rpy", line 7, in execute
-    use game_menu(_("Игроки"), scroll="viewport"):
-  File "game/debug_screen.rpy", line 10, in execute
-    vbox:
-  File "game/debug_screen.rpy", line 46, in execute
-    frame:
-  File "game/debug_screen.rpy", line 51, in execute
-    vbox:
-  File "game/debug_screen.rpy", line 58, in execute
+  File "game/screens.rpy", line 367, in execute
     $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
-  File "game/debug_screen.rpy", line 58, in <module>
+  File "game/screens.rpy", line 367, in <module>
     $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
               ~~~~~~~~~~~~~~~~^^                                        
   File "game/database.rpy", line 371, in get_all_users
@@ -84,7 +60,6 @@ Traceback (most recent call last):
   File "renpy/display/displayable.py", line 457, in visit_all
     d.visit_all(callback, seen)
     ~~~~~~~~~~~^^^^^^^^^^^^^^^^
-[Previous line repeated 1 more time]
   File "renpy/display/screen.py", line 503, in visit_all
     callback(self)
     ~~~~~~~~^^^^^^
@@ -97,41 +72,17 @@ Traceback (most recent call last):
   File "renpy/display/screen.py", line 715, in update
     self.screen.function(**self.scope)
     ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "game/debug_screen.rpy", line 5, in execute
-    screen debug_database():
-  File "game/debug_screen.rpy", line 5, in execute
-    screen debug_database():
-  File "game/debug_screen.rpy", line 7, in execute
-    use game_menu(_("Игроки"), scroll="viewport"):
-  File "game/screens.rpy", line 681, in execute
-    screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
-  File "game/screens.rpy", line 681, in execute
-    screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
-  File "game/screens.rpy", line 689, in execute
+  File "game/screens.rpy", line 337, in execute
+    screen select_user_screen():
+  File "game/screens.rpy", line 337, in execute
+    screen select_user_screen():
+  File "game/screens.rpy", line 345, in execute
     frame:
-  File "game/screens.rpy", line 692, in execute
-    hbox:
-  File "game/screens.rpy", line 697, in execute
-    frame:
-  File "game/screens.rpy", line 700, in execute
-    if scroll == "viewport":
-  File "game/screens.rpy", line 702, in execute
-    viewport:
-  File "game/screens.rpy", line 713, in execute
+  File "game/screens.rpy", line 353, in execute
     vbox:
-  File "game/screens.rpy", line 716, in execute
-    transclude
-  File "game/debug_screen.rpy", line 7, in execute
-    use game_menu(_("Игроки"), scroll="viewport"):
-  File "game/debug_screen.rpy", line 10, in execute
-    vbox:
-  File "game/debug_screen.rpy", line 46, in execute
-    frame:
-  File "game/debug_screen.rpy", line 51, in execute
-    vbox:
-  File "game/debug_screen.rpy", line 58, in execute
+  File "game/screens.rpy", line 367, in execute
     $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
-  File "game/debug_screen.rpy", line 58, in <module>
+  File "game/screens.rpy", line 367, in <module>
     $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
               ~~~~~~~~~~~~~~~~^^                                        
   File "game/database.rpy", line 371, in get_all_users
@@ -142,4 +93,4 @@ AttributeError: 'Database' object has no attribute '_get_all_users_memory'. Did 
 Windows-11-10.0.26200-SP0 AMD64
 Ren'Py 8.5.3.26020901+nightly
 За гранью чувств 0.0
-Mon Mar 16 16:54:52 2026
+Mon Mar 16 18:30:14 2026
