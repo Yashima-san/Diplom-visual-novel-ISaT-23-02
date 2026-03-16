@@ -100,8 +100,11 @@ init python:
     
     # Функция для перехода к следующей главе (БЕЗ СОХРАНЕНИЯ)
     def continue_to_next_chapter(old_chapter, new_chapter_title, new_chapter_subtitle):
-        """Только переходит к следующей главе, без сохранения"""
+        """Только переходит к следующей главе, без сохранения (сохранение уже сделано)"""
         renpy.notify("Загружаем следующую главу...")
+        
+        # Обновляем текущую главу
+        store.current_chapter = new_chapter_title
         
         # Определяем, на какую главу переходить
         if "Вторая" in new_chapter_title or "Новые знакомства" in new_chapter_title:
@@ -126,41 +129,17 @@ init python:
                 renpy.notify("Глава в разработке")
                 renpy.run(MainMenu())
     
-    # Функция для выхода в главное меню (с сохранением)
+    # Функция для выхода в главное меню (с сохранением, хотя оно уже должно быть сделано)
     def exit_to_main_menu(old_chapter):
-        """Сохраняет прогресс и выходит в главное меню"""
+        """Сохраняет прогресс (на всякий случай) и выходит в главное меню"""
+        # Проверяем, нужно ли сохранять (если вдруг автосохранение не сработало)
         if hasattr(persistent, 'user_id') and persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
             try:
                 db.update_save_progress(persistent.user_id, old_chapter)
             except:
                 pass
         
-        # Делаем скриншот и сохраняем
-        try:
-            renpy.take_screenshot()
-            slot_name = f"chapter-exit-{int(time.time())}"
-            renpy.save(slot_name, f"Выход из главы: {old_chapter}")
-            
-            # Обновляем JSON с информацией о главе
-            try:
-                import json
-                save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                if save_json:
-                    save_json["chapter"] = old_chapter
-                    if hasattr(persistent, 'user_id') and persistent.user_id is not None:
-                        save_json["user_id"] = persistent.user_id
-                    if hasattr(persistent, 'user_name') and persistent.user_name:
-                        save_json["user_name"] = persistent.user_name
-                    save_json["_timestamp"] = time.time()
-                    
-                    with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
-                        json.dump(save_json, f, ensure_ascii=False, indent=2)
-            except Exception as e:
-                print(f"Ошибка при сохранении JSON: {e}")
-        except:
-            pass
-        
-        renpy.notify("Прогресс сохранен!")
+        renpy.notify("Возвращаемся в главное меню...")
         renpy.run(MainMenu())
 
     # Функция для сохранения информации о пользователе
@@ -384,43 +363,10 @@ init python:
                 # Возвращаемся в главное меню, так как главы нет
                 renpy.run(MainMenu())
     
-    def save_progress_and_exit(old_chapter):
-        """Сохраняет прогресс и выходит в главное меню"""
-        if hasattr(persistent, 'user_id') and persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
-            try:
-                db.update_save_progress(persistent.user_id, old_chapter)
-            except:
-                pass
-        
-        # Делаем скриншот и сохраняем
-        try:
-            renpy.take_screenshot()
-            slot_name = f"chapter-complete-{int(time.time())}"
-            renpy.save(slot_name, f"Завершение {old_chapter}")
-            
-            # Обновляем JSON с информацией о главе
-            try:
-                import json
-                save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                if save_json:
-                    save_json["chapter"] = old_chapter
-                    if hasattr(persistent, 'user_id') and persistent.user_id is not None:
-                        save_json["user_id"] = persistent.user_id
-                    if hasattr(persistent, 'user_name') and persistent.user_name:
-                        save_json["user_name"] = persistent.user_name
-                    save_json["_timestamp"] = time.time()
-                    
-                    with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
-                        json.dump(save_json, f, ensure_ascii=False, indent=2)
-            except Exception as e:
-                print(f"Ошибка при сохранении JSON: {e}")
-        except:
-            pass
-        
-        renpy.notify("Прогресс сохранен!")
-        
-        # Используем функцию MainMenu() для возврата в главное меню
-        renpy.run(MainMenu())
+    def save_progress_and_continue(old_chapter, new_chapter_title, new_chapter_subtitle):
+        """(Устаревшая функция) - используйте continue_to_next_chapter после auto_save_chapter_complete"""
+        # Просто вызываем переход без повторного сохранения
+        continue_to_next_chapter(old_chapter, new_chapter_title, new_chapter_subtitle)
     
     def load_last_save_for_user(user_id):
         """Загружает последнее сохранение для указанного пользователя"""
@@ -795,8 +741,11 @@ label morning_scene:
     show text "{size=80}Конец первой главы{/size}" with dissolve
     pause 2.0
     
-    # Передаем все три аргумента
-    $ renpy.show_screen("chapter_transition", "Глава Первая: Связь", "Вторая. Новые знакомства", "Новые знакомства")
+    # АВТОМАТИЧЕСКОЕ СОХРАНЕНИЕ при завершении главы
+    $ auto_save_chapter_complete("Глава Первая: Связь")
+    
+    # Показываем экран перехода (переход без дополнительного сохранения)
+    $ renpy.show_screen("chapter_transition", "Глава Первая: Связь", "Глава Вторая: Новые знакомства", "Новые знакомства")
     $ renpy.pause(None)
 
 
@@ -1045,16 +994,20 @@ label chapter_two_end:
     show text "{size=80}Конец второй главы{/size}" with dissolve
     pause 2.0
     
-    # Обновляем прогресс в базе данных
+    # АВТОМАТИЧЕСКОЕ СОХРАНЕНИЕ при завершении главы
+    $ auto_save_chapter_complete("Глава Вторая: Новые знакомства")
+    
+    # Обновляем прогресс в базе данных (дополнительно)
     if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
         $ db.update_save_progress(persistent.user_id, "Глава Вторая: Новые знакомства")
     
     # Разблокируем достижение за прохождение второй главы
     $ unlock_achievement("chapter_two_complete")
     
-    # Передаем все три аргумента
-    $ renpy.show_screen("chapter_transition", "Глава Вторая: Новые знакомства", "Третья. Испытание дружбой", "Испытание дружбой")
+    # Показываем экран перехода (переход без дополнительного сохранения)
+    $ renpy.show_screen("chapter_transition", "Глава Вторая: Новые знакомства", "Глава Третья: Испытание дружбой", "Испытание дружбой")
     $ renpy.pause(None)
+
 
 label chapter_three:
     # Устанавливаем текущую главу для безопасного определения
@@ -1066,11 +1019,23 @@ label chapter_three:
     pause 2.0
     
     # Обновляем прогресс в базе данных
-    if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
-        $ db.update_save_progress(persistent.user_id, "Глава Третья: Испытание дружбой")
+    #if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+    #    $ db.update_save_progress(persistent.user_id, "Глава Третья: Испытание дружбой")
     
-    show text "{size=60}(в разработке){/size}" with dissolve
-    pause 2.0
-    
-    # Сохраняем прогресс и возвращаемся в главное меню
-    $ save_progress_and_exit("Глава Третья: Испытание дружбой")
+    # Здесь будет код третьей главы
+    # ...
+    #
+    # В конце третьей главы:
+    #scene black with fade
+    #show text "{size=80}Конец третьей главы{/size}" with dissolve
+    #pause 2.0
+    #
+    # АВТОМАТИЧЕСКОЕ СОХРАНЕНИЕ при завершении главы
+    #$ auto_save_chapter_complete("Глава Третья: Испытание дружбой")
+    #
+    # Разблокируем достижение
+    #$ unlock_achievement("chapter_three_complete")
+    #
+    # Показываем экран перехода к следующей главе или финальный экран
+    #$ renpy.show_screen("chapter_transition", "Глава Третья: Испытание дружбой", "Глава Четвертая", "Новые испытания")
+    #$ renpy.pause(None)
