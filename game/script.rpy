@@ -9,15 +9,11 @@ define t = Character('Анна Сергеевна', color="#9370db")
 define k = Character('Катя', color="#fe7d90")
 define lib = Character('Библиотекарь', color="#a0522d")
 
-default name = ""
-default entered_name = ""
-default default_name_used = False
-default chapter_one_seen = False
-
-# Определяем persistent переменные ДО всего остального кода
+# Определяем persistent переменные
 default persistent.user_name = ""
 default persistent.user_id = None
 default persistent.user_data = None
+default current_chapter = "Глава Первая: Связь"  # Глобальная переменная для главы
 
 # Объявление изображений персонажей
 image lina neutral = "images/characters/lina.png"
@@ -55,6 +51,22 @@ init python:
     import time
     import json
 
+        # Функция для проверки существования метки
+    def has_label(label_name):
+        """Проверяет, существует ли метка в игре"""
+        try:
+            # Преобразуем название главы в формат метки
+            if "Вторая" in label_name or "Новые знакомства" in label_name:
+                return renpy.has_label("chapter_two")
+            elif "Третья" in label_name or "Испытание" in label_name:
+                return renpy.has_label("chapter_three")
+            else:
+                # Для других названий пытаемся создать метку
+                label = label_name.lower().replace(" ", "_").replace(".", "").replace(":", "")
+                return renpy.has_label(label)
+        except:
+            return False
+
     # Функция для сохранения информации о пользователе
     def save_user_info():
         """Сохраняет информацию о текущем пользователе в файл сохранения"""
@@ -64,10 +76,26 @@ init python:
     # Функция для добавления информации о пользователе в JSON сохранения
     def add_user_info_to_save(json_data):
         """Добавляет информацию о пользователе в JSON сохранения"""
-        json_data["user_name"] = persistent.user_name
-        json_data["user_id"] = persistent.user_id
-        json_data["chapter"] = get_current_chapter()
-        json_data["_timestamp"] = time.time()
+        try:
+            # Безопасно получаем имя пользователя
+            user_name = ""
+            if hasattr(persistent, 'user_name') and persistent.user_name:
+                user_name = persistent.user_name
+            json_data["user_name"] = user_name
+            
+            # Безопасно получаем ID пользователя
+            user_id = None
+            if hasattr(persistent, 'user_id') and persistent.user_id is not None:
+                user_id = persistent.user_id
+            json_data["user_id"] = user_id
+            
+            json_data["chapter"] = get_current_chapter_safe()
+            json_data["_timestamp"] = time.time()
+        except Exception:
+            # В случае любой ошибки, просто продолжаем с минимальными данными
+            json_data["chapter"] = "Глава Первая: Связь"
+            json_data["_timestamp"] = time.time()
+        
         return json_data
     
     # Очищаем и добавляем функцию в колбэки
@@ -78,9 +106,9 @@ init python:
     # Функция для сохранения прогресса пользователя
     def save_user_progress():
         """Сохраняет текущий прогресс пользователя"""
-        if persistent.user_id:
+        if hasattr(persistent, 'user_id') and persistent.user_id:
             # Сохраняем в базу данных
-            current_chapter = get_current_chapter()
+            current_chapter = get_current_chapter_safe()
             if hasattr(db, 'update_save_progress'):
                 db.update_save_progress(persistent.user_id, current_chapter)
             
@@ -94,7 +122,7 @@ init python:
         renpy.show_screen("select_user_screen")
         return
     
-    # ИСПРАВЛЕНО: добавляем функцию custom_file_action
+    # Функция custom_file_action
     def custom_file_action(slot):
         """Кастомное действие для загрузки с проверкой пользователя"""
         # Проверяем, существует ли сохранение
@@ -103,7 +131,12 @@ init python:
         
         try:
             save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
-            if save_json and save_json.get("user_id") != persistent.user_id and save_json.get("user_id") is not None:
+            # Получаем текущий ID пользователя
+            current_user_id = None
+            if hasattr(persistent, 'user_id') and persistent.user_id is not None:
+                current_user_id = persistent.user_id
+                
+            if save_json and save_json.get("user_id") != current_user_id and save_json.get("user_id") is not None:
                 # Если сохранение принадлежит другому пользователю
                 renpy.show_screen("confirm_user_switch", slot=slot)
                 return
@@ -118,8 +151,10 @@ init python:
         try:
             save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
             if save_json:
-                persistent.user_id = save_json.get("user_id")
-                persistent.user_name = save_json.get("user_name", "")
+                if hasattr(persistent, 'user_id'):
+                    persistent.user_id = save_json.get("user_id")
+                if hasattr(persistent, 'user_name'):
+                    persistent.user_name = save_json.get("user_name", "")
         except:
             pass
         
@@ -128,8 +163,8 @@ init python:
     # Функция для кастомного действия сохранения
     def custom_save_action(slot):
         """Кастомное действие для сохранения с информацией о пользователе и главе"""
-        # Получаем текущую главу из контекста игры
-        current_chapter = get_current_chapter()
+        # Получаем текущую главу
+        current_chapter = get_current_chapter_safe()
         
         # Делаем скриншот
         renpy.take_screenshot()
@@ -141,8 +176,18 @@ init python:
         try:
             save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
             if save_json:
-                save_json["user_id"] = persistent.user_id
-                save_json["user_name"] = persistent.user_name
+                # Сохраняем ID пользователя
+                if hasattr(persistent, 'user_id') and persistent.user_id is not None:
+                    save_json["user_id"] = persistent.user_id
+                else:
+                    save_json["user_id"] = None
+                    
+                # Сохраняем имя пользователя
+                if hasattr(persistent, 'user_name') and persistent.user_name:
+                    save_json["user_name"] = persistent.user_name
+                else:
+                    save_json["user_name"] = ""
+                    
                 save_json["chapter"] = current_chapter
                 save_json["_timestamp"] = time.time()
                 
@@ -154,84 +199,126 @@ init python:
         
         renpy.notify(f"Игра сохранена в слот {slot}")
     
-    # Функция для определения текущей главы
-    def get_current_chapter():
-        """Определяет текущую главу по контексту игры"""
-        if renpy.context().current_label:
-            current_label = renpy.context().current_label
-            
-            if current_label.startswith("chapter_two") or "chapter_two" in current_label:
-                return "Глава Вторая: Новые знакомства"
-            elif current_label.startswith("chapter_three") or "chapter_three" in current_label:
-                return "Глава Третья: Испытание дружбой"
-            else:
-                return "Глава Первая: Связь"
+    # ЕДИНСТВЕННАЯ функция для определения текущей главы
+    def get_current_chapter_safe():
+        """Безопасно определяет текущую главу, работает даже во время сохранения"""
+        try:
+            # Пробуем получить из глобальной переменной
+            if hasattr(store, 'current_chapter') and store.current_chapter:
+                return store.current_chapter
+        except:
+            pass
+        
+        # По умолчанию возвращаем первую главу
         return "Глава Первая: Связь"
     
     # Функция для сохранения прогресса и перехода к следующей главе
     def save_progress_and_continue(old_chapter, new_chapter_title, new_chapter_subtitle):
         """Сохраняет прогресс и запускает следующую главу"""
-        if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
-            db.update_save_progress(persistent.user_id, old_chapter)
+        if hasattr(persistent, 'user_id') and persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+            try:
+                db.update_save_progress(persistent.user_id, old_chapter)
+            except:
+                pass
         
         # Разблокируем достижение за прохождение главы
-        if "Первая" in old_chapter or "Связь" in old_chapter:
-            unlock_achievement("chapter_one_complete")
-        elif "Вторая" in old_chapter or "Новые знакомства" in old_chapter:
-            unlock_achievement("chapter_two_complete")
+        try:
+            if "Первая" in old_chapter or "Связь" in old_chapter:
+                if 'unlock_achievement' in globals():
+                    unlock_achievement("chapter_one_complete")
+            elif "Вторая" in old_chapter or "Новые знакомства" in old_chapter:
+                if 'unlock_achievement' in globals():
+                    unlock_achievement("chapter_two_complete")
+        except:
+            pass
         
         # Делаем скриншот и сохраняем
-        renpy.take_screenshot()
-        slot_name = f"chapter-{int(time.time())}"
-        renpy.save(slot_name, f"Автосохранение после {old_chapter}")
-        
-        # Обновляем JSON с информацией о главе
         try:
-            save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-            if save_json:
-                save_json["chapter"] = old_chapter
-                save_json["user_id"] = persistent.user_id
-                save_json["user_name"] = persistent.user_name
-                save_json["_timestamp"] = time.time()
-                
-                with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
-                    json.dump(save_json, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"Ошибка при сохранении JSON: {e}")
+            renpy.take_screenshot()
+            slot_name = f"chapter-{int(time.time())}"
+            renpy.save(slot_name, f"Автосохранение после {old_chapter}")
+            
+            # Обновляем JSON с информацией о главе
+            try:
+                import json
+                save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                if save_json:
+                    save_json["chapter"] = old_chapter
+                    if hasattr(persistent, 'user_id') and persistent.user_id is not None:
+                        save_json["user_id"] = persistent.user_id
+                    if hasattr(persistent, 'user_name') and persistent.user_name:
+                        save_json["user_name"] = persistent.user_name
+                    save_json["_timestamp"] = time.time()
+                    
+                    with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
+                        json.dump(save_json, f, ensure_ascii=False, indent=2)
+            except Exception as e:
+                print(f"Ошибка при сохранении JSON: {e}")
+        except:
+            pass
         
         renpy.notify("Прогресс сохранен!")
         
+        # Определяем, на какую главу переходить
         if "Вторая" in new_chapter_title or "Новые знакомства" in new_chapter_title:
-            renpy.jump("chapter_two")
+            # Проверяем, существует ли метка chapter_two
+            if renpy.has_label("chapter_two"):
+                renpy.jump("chapter_two")
+            else:
+                renpy.notify("Глава в разработке")
+                renpy.run(MainMenu())
         elif "Третья" in new_chapter_title or "Испытание" in new_chapter_title:
-            renpy.jump("chapter_three")
+            # Проверяем, существует ли метка chapter_three
+            if renpy.has_label("chapter_three"):
+                renpy.jump("chapter_three")
+            else:
+                renpy.notify("Глава в разработке")
+                renpy.run(MainMenu())
         else:
-            renpy.jump("chapter_two")
+            # По умолчанию пытаемся перейти к chapter_two
+            if renpy.has_label("chapter_two"):
+                renpy.jump("chapter_two")
+            else:
+                renpy.notify("Глава в разработке")
+                renpy.run(MainMenu())
     
-    def save_progress_and_exit():
+    def save_progress_and_exit(old_chapter):
         """Сохраняет прогресс и выходит в главное меню"""
-        if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
-            db.update_save_progress(persistent.user_id, "Глава Первая: Связь (завершена)")
+        if hasattr(persistent, 'user_id') and persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+            try:
+                db.update_save_progress(persistent.user_id, old_chapter)
+            except:
+                pass
         
-        renpy.take_screenshot()
-        slot_name = f"chapter-1-complete-{int(time.time())}"
-        renpy.save(slot_name, "Завершение первой главы")
-        
+        # Делаем скриншот и сохраняем
         try:
-            save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-            if save_json:
-                save_json["chapter"] = "Глава Первая: Связь"
-                save_json["user_id"] = persistent.user_id
-                save_json["user_name"] = persistent.user_name
-                save_json["_timestamp"] = time.time()
-                
-                with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
-                    json.dump(save_json, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"Ошибка при сохранении JSON: {e}")
+            renpy.take_screenshot()
+            slot_name = f"chapter-complete-{int(time.time())}"
+            renpy.save(slot_name, f"Завершение {old_chapter}")
+            
+            # Обновляем JSON с информацией о главе
+            try:
+                import json
+                save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                if save_json:
+                    save_json["chapter"] = old_chapter
+                    if hasattr(persistent, 'user_id') and persistent.user_id is not None:
+                        save_json["user_id"] = persistent.user_id
+                    if hasattr(persistent, 'user_name') and persistent.user_name:
+                        save_json["user_name"] = persistent.user_name
+                    save_json["_timestamp"] = time.time()
+                    
+                    with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
+                        json.dump(save_json, f, ensure_ascii=False, indent=2)
+            except Exception as e:
+                print(f"Ошибка при сохранении JSON: {e}")
+        except:
+            pass
         
         renpy.notify("Прогресс сохранен!")
-        renpy.jump("main_menu")
+        
+        # Используем функцию MainMenu() для возврата в главное меню
+        renpy.run(MainMenu())
     
     def load_last_save_for_user(user_id):
         """Загружает последнее сохранение для указанного пользователя"""
@@ -270,8 +357,10 @@ init python:
     
     def set_current_user(user_id, user_name):
         """Установка текущего пользователя"""
-        persistent.user_id = user_id
-        persistent.user_name = user_name
+        if hasattr(persistent, 'user_id'):
+            persistent.user_id = user_id
+        if hasattr(persistent, 'user_name'):
+            persistent.user_name = user_name
         renpy.notify(f"Выбран игрок: {user_name}")
 
 
@@ -280,6 +369,9 @@ init python:
 ################################################################################
 
 label start:
+    # Устанавливаем текущую главу для безопасного определения
+    $ current_chapter = "Глава Первая: Связь"
+    
     # Устанавливаем музыку главного меню
     play music config.main_menu_music fadein 5.0
     $ renpy.music.set_volume(0.1, delay=0)
@@ -289,17 +381,15 @@ label start:
     
     # Обработка введенного имени
     if entered_name is None or entered_name.strip() == "":
-        $ name = "Настя"
-        $ default_name_used = True
+        $ player_name = "Настя"
     else:
-        $ name = entered_name.strip()
-        $ default_name_used = False
+        $ player_name = entered_name.strip()
     
     # Сохраняем имя в persistent для использования во всех персонажах
-    $ persistent.user_name = name
+    $ persistent.user_name = player_name
     
     # Сохраняем имя пользователя в базу данных
-    $ user_id = db.add_user(name) if 'db' in globals() and hasattr(db, 'add_user') else None
+    $ user_id = db.add_user(player_name) if 'db' in globals() and hasattr(db, 'add_user') else None
     
     # Сохраняем user_id в persistent
     $ persistent.user_id = user_id
@@ -613,6 +703,9 @@ label morning_scene:
 ################################################################################
 
 label chapter_two:
+    # Устанавливаем текущую главу для безопасного определения
+    $ current_chapter = "Глава Вторая: Новые знакомства"
+    
     # Показываем заголовок главы
     scene black with fade
     show text "{size=80}Глава Вторая{/size}\n{size=60}Новые знакомства{/size}" with dissolve
@@ -857,11 +950,14 @@ label chapter_two_end:
     # Разблокируем достижение за прохождение второй главы
     $ unlock_achievement("chapter_two_complete")
     
-    # ИСПРАВЛЕНО: передаем все три аргумента
+    # Передаем все три аргумента
     $ renpy.show_screen("chapter_transition", "Глава Вторая: Новые знакомства", "Третья. Испытание дружбой", "Испытание дружбой")
     $ renpy.pause(None)
 
 label chapter_three:
+    # Устанавливаем текущую главу для безопасного определения
+    $ current_chapter = "Глава Третья: Испытание дружбой"
+    
     # Показываем заголовок главы
     scene black with fade
     show text "{size=80}Глава Третья{/size}\n{size=60}Испытание дружбой{/size}" with dissolve

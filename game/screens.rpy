@@ -487,27 +487,28 @@ screen select_user_screen():
                                     text "[last_save_chapter]" size 22 color "#ffffff" xsize 250 text_align 0.5
                                     text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
             else:
-                # ИСПРАВЛЕНО: сообщение когда нет пользователей
+                # Cообщение когда нет пользователей
                 vbox:
                     spacing 30
                     xalign 0.5
                     yalign 0.5
                     
-                    text "Нет сохраненных игроков" size 28 xalign 0.5 color "#cccccc"
-                    text "Начните новую игру, чтобы создать профиль" size 22 xalign 0.5 color "#aaaaaa"
+                    text "Нет сохраненных игроков" size 28 xalign 0.5 color "#656565"
+                    text "Начните новую игру, чтобы создать профиль" size 22 xalign 0.5 color "#737373"
                     
                     null height 20
                     
-                    # Кнопка для начала новой игры прямо отсюда
-                    textbutton "Начать новую игру" style "select_user_button" action [Start(), Hide("select_user_screen")]
             
             null height 20
             
             # Кнопки действий
             hbox:
-                spacing 20
+                spacing 5
                 xalign 0.5
-                
+
+                # Кнопка для начала новой игры прямо отсюда
+                textbutton "Начать новую игру" style "select_user_button" action [Start(), Hide("select_user_screen")]
+
                 textbutton "Отмена" style "select_user_button" action Hide("select_user_screen")
     
     key "game_menu" action Hide("select_user_screen")
@@ -534,14 +535,13 @@ style select_user_row:
     margin (0, 2)
 
 style select_user_button:
-    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
-    padding (30, 15)
-    xsize 250
+    padding (5, 5)
+    xsize 350
 
 style select_user_button_text:
     color "#ffffff"
-    hover_color "#ffffff"
+    hover_color "#fb906d"
+    outlines[(2, "#671a1a", 0, 0)]
     size 22
     font gui.interface_text_font
     text_align 0.5
@@ -690,7 +690,6 @@ style main_menu_title:
     yalign 0.1
     textalign 0.5
     layout "subtitle"
-    # ИСПРАВЛЕНО: правильный формат outlines
     outlines [(5, "#a43c13", 0, 0)]
 
 style main_menu_version:
@@ -700,7 +699,6 @@ style main_menu_version:
     xalign 0.02
     yalign 0.98
     textalign 0.0
-    # ИСПРАВЛЕНО: правильный формат outlines
     outlines [(2, "#000000", 0, 0)]
 
 style main_menu_frame:
@@ -708,7 +706,6 @@ style main_menu_frame:
     yalign 0.5
     xsize 500
     ysize 650
-    # Убираем фон, чтобы использовался background из экрана
     background None
 
 style main_menu_button:
@@ -726,7 +723,6 @@ style main_menu_button_text:
     selected_color "#da6037"
     size 18
     font gui.interface_text_font
-    # ИСПРАВЛЕНО: правильный формат outlines
     outlines [(2, "#b64520", 0, 0)]
     text_align 0.5
     xalign 0.5
@@ -946,7 +942,7 @@ screen file_slots_with_user(title, is_save=True):
                     $ slot = i + 1
                     
                     button:
-                        # ИСПРАВЛЕНО: разные действия для сохранения и загрузки
+                        # Разные действия для сохранения и загрузки
                         if is_save:
                             action Function(custom_save_action, slot)
                         else:
@@ -1067,7 +1063,7 @@ style slot_user_text:
     font gui.interface_text_font
     xalign 0.5
 
-# ИСПРАВЛЕНО: добавил стиль для текста главы в слоте
+# Стиль для текста главы в слоте
 style slot_chapter_text:
     size 16
     color "#ff9e5e"
@@ -1930,8 +1926,8 @@ style slider_slider:
     variant "small"
     xsize 900
 
-##############################################
-##############################################
+###########################################################################
+###########################################################################
 
 # Экран для ввода имени
 screen input_name_screen():
@@ -1991,7 +1987,6 @@ screen input_name_screen():
                 color "#ff9083"
                 font gui.interface_text_font
                 xalign 0.5
-                # ИСПРАВЛЕНО: правильный формат outlines
                 outlines [(2, "#de5d21", 0, 0)]
     
     key "K_RETURN" action Return(input_name)
@@ -2017,7 +2012,6 @@ init -1 python:
     style.input_confirm_button_text.color = "#ffbf92"
     style.input_confirm_button_text.hover_color = "#ffffff"
     style.input_confirm_button_text.size = 24
-    # ИСПРАВЛЕНО: правильный формат outlines
     style.input_confirm_button_text.outlines = [(2, "#ff832b", 0, 0)]
     style.input_confirm_button_text.text_align = 0.5
     style.input_confirm_button_text.xalign = 0.5
@@ -2060,21 +2054,37 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
             
             null height 30
             
-            hbox:
-                spacing 30
-                xalign 0.5
-                
-                textbutton "Да, продолжить":
+            # Проверяем, существует ли следующая глава
+            $ next_chapter_exists = False
+            if "Вторая" in new_chapter_title or "Новые знакомства" in new_chapter_title:
+                $ next_chapter_exists = renpy.has_label("chapter_two")
+            elif "Третья" in new_chapter_title or "Испытание" in new_chapter_title:
+                $ next_chapter_exists = renpy.has_label("chapter_three")
+            
+            if next_chapter_exists:
+                # Если глава существует, показываем обе кнопки
+                hbox:
+                    spacing 30
+                    xalign 0.5
+                    
+                    textbutton "Да, продолжить":
+                        style "chapter_transition_button"
+                        action [Function(save_progress_and_continue, old_chapter, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")]
+                    
+                    textbutton "Нет, выйти в главное меню":
+                        style "chapter_transition_button"
+                        action [Function(save_progress_and_exit, old_chapter), Hide("chapter_transition"), MainMenu()]
+            else:
+                # Если глава в разработке, показываем только одну кнопку
+                textbutton "Выйти в главное меню":
                     style "chapter_transition_button"
-                    # Передаем третий аргумент
-                    action [Function(save_progress_and_continue, old_chapter, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")]
-                
-                textbutton "Нет, выйти в главное меню":
-                    style "chapter_transition_button"
-                    action [Function(save_progress_and_exit), MainMenu()]
+                    xalign 0.5
+                    action [Function(save_progress_and_exit, old_chapter), Hide("chapter_transition"), MainMenu()]
     
-    key "K_RETURN" action [Function(save_progress_and_continue, old_chapter, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")]
-    key "K_ESCAPE" action MainMenu()
+    key "K_RETURN" action If(next_chapter_exists, 
+        true=[Function(save_progress_and_continue, old_chapter, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")], 
+        false=[Function(save_progress_and_exit, old_chapter), Hide("chapter_transition"), MainMenu()])
+    key "K_ESCAPE" action [Function(save_progress_and_exit, old_chapter), Hide("chapter_transition"), MainMenu()]
 
 ## Стили для экрана перехода
 style chapter_transition_frame:

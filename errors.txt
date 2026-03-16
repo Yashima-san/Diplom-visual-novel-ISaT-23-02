@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/screens.rpy", line 1998: style property outlines appears twice.
-    hover_color "#ff9e5e" outlines "#671a1a"
-                                  ^
+File "game/script.rpy", line 1: expected statement.
+    ﻿define e = Character('Лина', color="#707ef6")
+            ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Sun Mar 15 22:46:43 2026
+Mon Mar 16 20:39:19 2026
