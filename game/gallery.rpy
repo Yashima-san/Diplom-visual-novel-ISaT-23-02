@@ -106,8 +106,8 @@ init python:
     ))
 
     gallery_items.append(GalleryItem(
-        "Ночная комната", 
-        "images/cg/room_day.png",
+        "Вечерняя комната", 
+        "images/cg/room_evening.png",
         "cg",
         None
     ))

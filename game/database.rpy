@@ -7,6 +7,7 @@ init -2 python:
     import sys
     import os
     import time
+    import json
     
     # Инициализация persistent переменных
     if not hasattr(persistent, 'user_data') or persistent.user_data is None:
@@ -179,9 +180,17 @@ init -2 python:
                     # Добавляем запись о начале игры
                     self.cursor.execute(
                         "INSERT INTO save_progress_users (user_ID, chapter) VALUES (?, ?)",
-                        (user_id, "Глава 1: Связь")
+                        (user_id, "Глава Первая: Связь")
                     )
                     self.connection.commit()
+                    
+                    # Сохраняем в persistent для резерва
+                    if 'users' not in persistent.user_data:
+                        persistent.user_data['users'] = {}
+                    persistent.user_data['users'][str(user_id)] = {
+                        'name': user_name,
+                        'created_at': time.time()
+                    }
                 
             except Exception as e:
                 renpy.notify(f"Ошибка при добавлении пользователя: {str(e)}")
@@ -225,7 +234,7 @@ init -2 python:
                 persistent.user_data['save_progress'][str(user_id)] = []
             
             persistent.user_data['save_progress'][str(user_id)].append({
-                'chapter': "Глава 1: Связь",
+                'chapter': "Глава Первая: Связь",
                 'save_point': time.time()
             })
             
@@ -361,16 +370,48 @@ init -2 python:
             else:
                 return self._get_all_users_memory()
         
-        def _get_all_users_memory(self):
-            """Получение пользователей из памяти"""
-            users = []
-            if hasattr(persistent, 'user_data') and persistent.user_data and 'users' in persistent.user_data:
+        def _add_user_memory(self, user_name):
+            """Добавление пользователя в память (альтернативное хранилище)"""
+            # Инициализируем persistent.user_data если его нет
+            if not hasattr(persistent, 'user_data') or persistent.user_data is None:
+                persistent.user_data = {
+                    'users': {},
+                    'achievements': {},
+                    'save_progress': {},
+                    'next_id': 1
+                }
+            
+            # Проверяем существующего пользователя
+            if 'users' in persistent.user_data:
                 for user_id, data in persistent.user_data['users'].items():
-                    users.append({
-                        'user_ID': int(user_id),
-                        'name': data.get('name', '')
-                    })
-            return users
+                    if data.get('name') == user_name:
+                        return int(user_id)
+            
+            # Создаем нового пользователя
+            user_id = persistent.user_data.get('next_id', 1)
+            if 'users' not in persistent.user_data:
+                persistent.user_data['users'] = {}
+            
+            persistent.user_data['users'][str(user_id)] = {
+                'name': user_name,
+                'created_at': time.time()
+            }
+            
+            # Добавляем прогресс
+            if 'save_progress' not in persistent.user_data:
+                persistent.user_data['save_progress'] = {}
+            
+            if str(user_id) not in persistent.user_data['save_progress']:
+                persistent.user_data['save_progress'][str(user_id)] = []
+            
+            persistent.user_data['save_progress'][str(user_id)].append({
+                'chapter': "Глава Первая: Связь",
+                'save_point': time.time()
+            })
+            
+            persistent.user_data['next_id'] = user_id + 1
+            
+            return user_idя
         
         def _get_all_users_sqlite(self):
             """Получение пользователей из SQLite"""
@@ -380,8 +421,18 @@ init -2 python:
                 self.cursor.execute("SELECT * FROM users ORDER BY user_ID")
                 for row in self.cursor.fetchall():
                     users.append(dict(row))
+                    
+                    # Синхронизируем с persistent
+                    str_id = str(row['user_ID'])
+                    if 'users' not in persistent.user_data:
+                        persistent.user_data['users'] = {}
+                    if str_id not in persistent.user_data['users']:
+                        persistent.user_data['users'][str_id] = {
+                            'name': row['name'],
+                            'created_at': time.time()
+                        }
             except Exception as e:
-                renpy.notify(f"Ошибка при получении пользователей: {str(e)}")
+                print(f"Ошибка при получении пользователей: {e}")
             finally:
                 self.disconnect()
             return users

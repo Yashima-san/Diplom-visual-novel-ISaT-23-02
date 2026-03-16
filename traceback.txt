@@ -1,28 +1,64 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
 While running game code:
-  File "game/script.rpy", line 98, in custom_save_action
-    current_chapter = get_current_chapter()
-                      ~~~~~~~~~~~~~~~~~~~^^
-  File "game/script.rpy", line 128, in get_current_chapter
-    if renpy.context().current_label:
-       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
-AttributeError: 'RevertableObject' object has no attribute 'current_label'
+  File "game/debug_screen.rpy", line 5, in execute
+    screen debug_database():
+  File "game/debug_screen.rpy", line 5, in execute
+    screen debug_database():
+  File "game/debug_screen.rpy", line 7, in execute
+    use game_menu(_("Игроки"), scroll="viewport"):
+  File "game/screens.rpy", line 681, in execute
+    screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
+  File "game/screens.rpy", line 681, in execute
+    screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
+  File "game/screens.rpy", line 689, in execute
+    frame:
+  File "game/screens.rpy", line 692, in execute
+    hbox:
+  File "game/screens.rpy", line 697, in execute
+    frame:
+  File "game/screens.rpy", line 700, in execute
+    if scroll == "viewport":
+  File "game/screens.rpy", line 702, in execute
+    viewport:
+  File "game/screens.rpy", line 713, in execute
+    vbox:
+  File "game/screens.rpy", line 716, in execute
+    transclude
+  File "game/debug_screen.rpy", line 7, in execute
+    use game_menu(_("Игроки"), scroll="viewport"):
+  File "game/debug_screen.rpy", line 10, in execute
+    vbox:
+  File "game/debug_screen.rpy", line 46, in execute
+    frame:
+  File "game/debug_screen.rpy", line 51, in execute
+    vbox:
+  File "game/debug_screen.rpy", line 58, in execute
+    $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
+  File "game/debug_screen.rpy", line 58, in <module>
+    $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
+              ~~~~~~~~~~~~~~~~^^                                        
+  File "game/database.rpy", line 371, in get_all_users
+    return self._get_all_users_memory()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^  
+AttributeError: 'Database' object has no attribute '_get_all_users_memory'. Did you mean: '_get_all_users_sqlite'?
 
 -- Full Traceback ------------------------------------------------------------
 
 Traceback (most recent call last):
-  File "renpy/common/00gamemenu.rpy", line 174, in script
-    $ ui.interact()
+  File "renpy/common/_layout/screen_main_menu.rpym", line 28, in script
+    python hide:
   File "renpy/ast.py", line 1187, in execute
     renpy.python.py_exec_bytecode(self.code.bytecode, self.hide, store=self.store)
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "renpy/python.py", line 1273, in py_exec_bytecode
     exec(bytecode, globals, locals)
     ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/common/00gamemenu.rpy", line 174, in <module>
-    $ ui.interact()
-      ~~~~~~~~~~~^^
+  File "renpy/common/_layout/screen_main_menu.rpym", line 28, in <module>
+    python hide:
+  File "renpy/common/_layout/screen_main_menu.rpym", line 35, in _execute_python_hide
+    ui.interact()
+    ~~~~~~~~~~~^^
   File "renpy/ui.py", line 306, in interact
     rv = renpy.game.interface.interact(roll_forward=roll_forward, **kwargs)
          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -36,66 +72,74 @@ Traceback (most recent call last):
         ^^^^^^^^^
     )
     ^
-  File "renpy/display/core.py", line 3250, in interact_core
-    rv = root_widget.event(ev, x, y, 0)
-         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/screen.py", line 805, in event
-    rv = self.child.event(ev, x, y, st)
-         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1510, in event
-    rv = super(Window, self).event(ev, x, y, st)
-         ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 273, in event
-    rv = d.event(ev, x - xo, y - yo, st)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1510, in event
-    rv = super(Window, self).event(ev, x, y, st)
-         ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 273, in event
-    rv = d.event(ev, x - xo, y - yo, st)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 273, in event
-    rv = d.event(ev, x - xo, y - yo, st)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/behavior.py", line 1185, in event
-    return handle_click(self.clicked)
-           ~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/behavior.py", line 1107, in handle_click
-    rv = run(action)
-         ~~~^^^^^^^^
-  File "renpy/display/behavior.py", line 411, in run
-    return action(*args, **kwargs)
-           ~~~~~~^^^^^^^^^^^^^^^^^
-  File "renpy/common/00action_other.rpy", line 618, in __call__
-    rv = self.callable(*self.args, **self.kwargs)
-         ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/script.rpy", line 98, in custom_save_action
-    current_chapter = get_current_chapter()
-                      ~~~~~~~~~~~~~~~~~~~^^
-  File "game/script.rpy", line 128, in get_current_chapter
-    if renpy.context().current_label:
-       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
-AttributeError: 'RevertableObject' object has no attribute 'current_label'
+  File "renpy/display/core.py", line 2702, in interact_core
+    root_widget.visit_all(lambda d: d.per_interact())
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/displayable.py", line 457, in visit_all
+    d.visit_all(callback, seen)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "renpy/display/displayable.py", line 457, in visit_all
+    d.visit_all(callback, seen)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "renpy/display/displayable.py", line 457, in visit_all
+    d.visit_all(callback, seen)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+[Previous line repeated 1 more time]
+  File "renpy/display/screen.py", line 503, in visit_all
+    callback(self)
+    ~~~~~~~~^^^^^^
+  File "renpy/display/core.py", line 2702, in <lambda>
+    root_widget.visit_all(lambda d: d.per_interact())
+                                    ~~~~~~~~~~~~~~^^ 
+  File "renpy/display/screen.py", line 514, in per_interact
+    self.update()
+    ~~~~~~~~~~~^^
+  File "renpy/display/screen.py", line 715, in update
+    self.screen.function(**self.scope)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "game/debug_screen.rpy", line 5, in execute
+    screen debug_database():
+  File "game/debug_screen.rpy", line 5, in execute
+    screen debug_database():
+  File "game/debug_screen.rpy", line 7, in execute
+    use game_menu(_("Игроки"), scroll="viewport"):
+  File "game/screens.rpy", line 681, in execute
+    screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
+  File "game/screens.rpy", line 681, in execute
+    screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
+  File "game/screens.rpy", line 689, in execute
+    frame:
+  File "game/screens.rpy", line 692, in execute
+    hbox:
+  File "game/screens.rpy", line 697, in execute
+    frame:
+  File "game/screens.rpy", line 700, in execute
+    if scroll == "viewport":
+  File "game/screens.rpy", line 702, in execute
+    viewport:
+  File "game/screens.rpy", line 713, in execute
+    vbox:
+  File "game/screens.rpy", line 716, in execute
+    transclude
+  File "game/debug_screen.rpy", line 7, in execute
+    use game_menu(_("Игроки"), scroll="viewport"):
+  File "game/debug_screen.rpy", line 10, in execute
+    vbox:
+  File "game/debug_screen.rpy", line 46, in execute
+    frame:
+  File "game/debug_screen.rpy", line 51, in execute
+    vbox:
+  File "game/debug_screen.rpy", line 58, in execute
+    $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
+  File "game/debug_screen.rpy", line 58, in <module>
+    $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
+              ~~~~~~~~~~~~~~~~^^                                        
+  File "game/database.rpy", line 371, in get_all_users
+    return self._get_all_users_memory()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^  
+AttributeError: 'Database' object has no attribute '_get_all_users_memory'. Did you mean: '_get_all_users_sqlite'?
 
 Windows-11-10.0.26200-SP0 AMD64
 Ren'Py 8.5.3.26020901+nightly
 За гранью чувств 0.0
-Mon Mar 16 01:13:08 2026
+Mon Mar 16 16:54:52 2026

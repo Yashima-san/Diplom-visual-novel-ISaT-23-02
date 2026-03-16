@@ -1007,7 +1007,7 @@ style slot_chapter_text:
     color "#ff9e5e"
     font gui.interface_text_font
     xalign 0.5
-    
+
 ## Экран подтверждения смены пользователя ######################################
 
 screen confirm_user_switch(slot):

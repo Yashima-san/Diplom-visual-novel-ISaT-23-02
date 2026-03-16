@@ -82,7 +82,7 @@ screen debug_database():
                             yinitial 0.0
                             mousewheel True
                             draggable True
-                            xadjustment None  # Запрет горизонтального скролла
+                            xadjustment None
 
                             for user in users:
                                 $ user_id = user['user_ID']
@@ -113,12 +113,11 @@ screen debug_database():
                                         text "[user_id]" size 22 color "#ffffff" xsize 80 text_align 0.5
                                         text "[user_name]" size 22 color "#ffffff" xsize 200 text_align 0.5
                                         text "[progress_text]" size 22 color "#ffffff" xsize 400 text_align 0.5
-                                        text "[ach_count]" size 22 color "#ffffff" xsize 250 text_align 0.5
-                                        text "[last_save]" size 22 color "#ffffff" xsize 80 text_align 0.5
+                                        text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
+                                        text "[last_save]" size 22 color "#ffffff" xsize 300 text_align 0.5
                     else:
                         text "Нет игроков в базе данных" size 24 xalign 0.5 color "#cccccc"
 
-# ... остальной код без изменений ...
 
 ################################################################################
 ## Экран детальной информации о пользователе

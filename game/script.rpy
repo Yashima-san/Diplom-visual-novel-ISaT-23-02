@@ -53,6 +53,7 @@ image bg library = "images/library.png"
 # Единый init python блок со всеми функциями
 init python:
     import time
+    import json
 
     # Функция для сохранения информации о пользователе
     def save_user_info():
@@ -65,6 +66,8 @@ init python:
         """Добавляет информацию о пользователе в JSON сохранения"""
         json_data["user_name"] = persistent.user_name
         json_data["user_id"] = persistent.user_id
+        json_data["chapter"] = get_current_chapter()
+        json_data["_timestamp"] = time.time()
         return json_data
     
     # Очищаем и добавляем функцию в колбэки
@@ -77,20 +80,51 @@ init python:
         """Сохраняет текущий прогресс пользователя"""
         if persistent.user_id:
             # Сохраняем в базу данных
+            current_chapter = get_current_chapter()
             if hasattr(db, 'update_save_progress'):
-                db.update_save_progress(persistent.user_id, "Глава Первая: Связь")
+                db.update_save_progress(persistent.user_id, current_chapter)
             
             # Также сохраняем информацию в файл сохранения
             renpy.take_screenshot()
             renpy.save("quick-save", "Быстрое сохранение")
     
-    # Функция continue_game без вызова call_screen внутри взаимодействия
+    # Функция continue_game
     def continue_game():
         """Показывает экран выбора пользователя для продолжения игры"""
-        # Просто показываем экран, не вызываем его как screen
         renpy.show_screen("select_user_screen")
         return
     
+    # ИСПРАВЛЕНО: добавляем функцию custom_file_action
+    def custom_file_action(slot):
+        """Кастомное действие для загрузки с проверкой пользователя"""
+        # Проверяем, существует ли сохранение
+        if not renpy.can_load(str(slot)):
+            return
+        
+        try:
+            save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
+            if save_json and save_json.get("user_id") != persistent.user_id and save_json.get("user_id") is not None:
+                # Если сохранение принадлежит другому пользователю
+                renpy.show_screen("confirm_user_switch", slot=slot)
+                return
+        except:
+            pass
+        
+        # Используем FileAction для загрузки
+        renpy.run(FileAction(slot))
+    
+    def load_other_user_save(slot):
+        """Загружает сохранение другого пользователя и обновляет persistent"""
+        try:
+            save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
+            if save_json:
+                persistent.user_id = save_json.get("user_id")
+                persistent.user_name = save_json.get("user_name", "")
+        except:
+            pass
+        
+        renpy.run(FileAction(slot))
+
     # Функция для кастомного действия сохранения
     def custom_save_action(slot):
         """Кастомное действие для сохранения с информацией о пользователе и главе"""
@@ -113,30 +147,93 @@ init python:
                 save_json["_timestamp"] = time.time()
                 
                 # Сохраняем обратно
-                import json
-                with open(renpy.slot_json_filename(str(slot)), 'w') as f:
-                    json.dump(save_json, f)
-        except:
-            pass
+                with open(renpy.slot_json_filename(str(slot)), 'w', encoding='utf-8') as f:
+                    json.dump(save_json, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"Ошибка при сохранении JSON: {e}")
         
         renpy.notify(f"Игра сохранена в слот {slot}")
     
     # Функция для определения текущей главы
     def get_current_chapter():
         """Определяет текущую главу по контексту игры"""
-        # Проверяем, какая глава сейчас активна
         if renpy.context().current_label:
             current_label = renpy.context().current_label
             
-            if current_label.startswith("chapter_two") or "chapter_two" in str(renpy.get_all_labels()):
+            if current_label.startswith("chapter_two") or "chapter_two" in current_label:
                 return "Глава Вторая: Новые знакомства"
-            elif current_label.startswith("chapter_three") or "chapter_three" in str(renpy.get_all_labels()):
+            elif current_label.startswith("chapter_three") or "chapter_three" in current_label:
                 return "Глава Третья: Испытание дружбой"
             else:
                 return "Глава Первая: Связь"
         return "Глава Первая: Связь"
     
-    # ИСПРАВЛЕННАЯ функция get_last_save_info
+    # Функция для сохранения прогресса и перехода к следующей главе
+    def save_progress_and_continue(old_chapter, new_chapter_title, new_chapter_subtitle):
+        """Сохраняет прогресс и запускает следующую главу"""
+        if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+            db.update_save_progress(persistent.user_id, old_chapter)
+        
+        # Разблокируем достижение за прохождение главы
+        if "Первая" in old_chapter or "Связь" in old_chapter:
+            unlock_achievement("chapter_one_complete")
+        elif "Вторая" in old_chapter or "Новые знакомства" in old_chapter:
+            unlock_achievement("chapter_two_complete")
+        
+        # Делаем скриншот и сохраняем
+        renpy.take_screenshot()
+        slot_name = f"chapter-{int(time.time())}"
+        renpy.save(slot_name, f"Автосохранение после {old_chapter}")
+        
+        # Обновляем JSON с информацией о главе
+        try:
+            save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+            if save_json:
+                save_json["chapter"] = old_chapter
+                save_json["user_id"] = persistent.user_id
+                save_json["user_name"] = persistent.user_name
+                save_json["_timestamp"] = time.time()
+                
+                with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
+                    json.dump(save_json, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"Ошибка при сохранении JSON: {e}")
+        
+        renpy.notify("Прогресс сохранен!")
+        
+        if "Вторая" in new_chapter_title or "Новые знакомства" in new_chapter_title:
+            renpy.jump("chapter_two")
+        elif "Третья" in new_chapter_title or "Испытание" in new_chapter_title:
+            renpy.jump("chapter_three")
+        else:
+            renpy.jump("chapter_two")
+    
+    def save_progress_and_exit():
+        """Сохраняет прогресс и выходит в главное меню"""
+        if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+            db.update_save_progress(persistent.user_id, "Глава Первая: Связь (завершена)")
+        
+        renpy.take_screenshot()
+        slot_name = f"chapter-1-complete-{int(time.time())}"
+        renpy.save(slot_name, "Завершение первой главы")
+        
+        try:
+            save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+            if save_json:
+                save_json["chapter"] = "Глава Первая: Связь"
+                save_json["user_id"] = persistent.user_id
+                save_json["user_name"] = persistent.user_name
+                save_json["_timestamp"] = time.time()
+                
+                with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
+                    json.dump(save_json, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            print(f"Ошибка при сохранении JSON: {e}")
+        
+        renpy.notify("Прогресс сохранен!")
+        renpy.jump("main_menu")
+    
+    # Функция get_last_save_info
     def get_last_save_info(user_id):
         """Получение информации о последнем сохранении пользователя"""
         result = {
@@ -144,19 +241,23 @@ init python:
             'chapter': "—"
         }
         last_time = 0
-        last_chapter = "—"
         
         try:
-            # Словарь для сопоставления глав
             chapter_display = {
                 "Глава Первая: Связь": "Глава 1",
                 "Глава Вторая: Новые знакомства": "Глава 2",
                 "Глава Третья: Испытание дружбой": "Глава 3",
             }
             
-            # Проверяем автосохранения (слоты auto)
+            # Проверяем все сохранения
+            all_slots = []
             for i in range(1, 10):
-                slot_name = "auto-" + str(i)
+                all_slots.append(str(i))
+            for i in range(1, 10):
+                all_slots.append(f"auto-{i}")
+            all_slots.append("quick-save")
+            
+            for slot_name in all_slots:
                 if renpy.can_load(slot_name):
                     try:
                         save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
@@ -164,43 +265,6 @@ init python:
                             timestamp = save_json.get("_timestamp", 0)
                             if timestamp > last_time:
                                 last_time = timestamp
-                                # Форматируем время
-                                if timestamp:
-                                    try:
-                                        time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
-                                        result['time'] = time_str
-                                    except:
-                                        result['time'] = "Недавно"
-                                
-                                # Получаем главу из сохранения
-                                save_chapter = save_json.get("chapter", "")
-                                if save_chapter:
-                                    # Проверяем точное совпадение
-                                    if save_chapter in chapter_display:
-                                        result['chapter'] = chapter_display[save_chapter]
-                                    else:
-                                        # Проверяем частичное совпадение
-                                        if "Первая" in save_chapter or "Связь" in save_chapter:
-                                            result['chapter'] = "Глава 1"
-                                        elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
-                                            result['chapter'] = "Глава 2"
-                                        elif "Третья" in save_chapter:
-                                            result['chapter'] = "Глава 3"
-                                        else:
-                                            result['chapter'] = save_chapter
-                                    last_chapter = result['chapter']
-                    except:
-                        continue
-            
-            # Проверяем обычные сохранения (слоты 1-9)
-            for i in range(1, 10):
-                if renpy.can_load(str(i)):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
-                        if save_json and save_json.get("user_id") == user_id:
-                            timestamp = save_json.get("_timestamp", 0)
-                            if timestamp > last_time:
-                                last_time = timestamp
                                 if timestamp:
                                     try:
                                         time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
@@ -220,63 +284,34 @@ init python:
                                         elif "Третья" in save_chapter:
                                             result['chapter'] = "Глава 3"
                                         else:
-                                            result['chapter'] = save_chapter
-                                    last_chapter = result['chapter']
+                                            result['chapter'] = save_chapter[:20] + "..." if len(save_chapter) > 20 else save_chapter
                     except:
                         continue
-            
-            # Проверяем быстрые сохранения
-            if renpy.can_load("quick-save"):
-                try:
-                    save_json = renpy.json_load(renpy.slot_json_filename("quick-save"))
-                    if save_json and save_json.get("user_id") == user_id:
-                        timestamp = save_json.get("_timestamp", 0)
-                        if timestamp > last_time:
-                            if timestamp:
-                                try:
-                                    time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
-                                    result['time'] = time_str
-                                except:
-                                    result['time'] = "Недавно"
-                            
-                            save_chapter = save_json.get("chapter", "")
-                            if save_chapter:
-                                if save_chapter in chapter_display:
-                                    result['chapter'] = chapter_display[save_chapter]
-                                else:
-                                    if "Первая" in save_chapter or "Связь" in save_chapter:
-                                        result['chapter'] = "Глава 1"
-                                    elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
-                                        result['chapter'] = "Глава 2"
-                                    elif "Третья" in save_chapter:
-                                        result['chapter'] = "Глава 3"
-                                    else:
-                                        result['chapter'] = save_chapter
-                except:
-                    pass
             
             # Если нашли сохранение, но глава не определилась, проверяем в БД
             if result['chapter'] == "—" and last_time > 0:
                 if hasattr(db, 'get_user_progress'):
                     progress = db.get_user_progress(user_id)
                     if progress:
-                        result['chapter'] = progress[-1]  # Последняя глава
-        except:
-            pass
+                        result['chapter'] = progress[-1] if progress else "—"
+        except Exception as e:
+            print(f"Ошибка в get_last_save_info: {e}")
         
         return result
     
     def load_last_save_for_user(user_id):
         """Загружает последнее сохранение для указанного пользователя"""
-        import os
-        
-        # Получаем список всех сохранений
         saves = []
         
         try:
-            # Проверяем автосохранения
+            all_slots = []
             for i in range(1, 10):
-                slot_name = "auto-" + str(i)
+                all_slots.append(str(i))
+            for i in range(1, 10):
+                all_slots.append(f"auto-{i}")
+            all_slots.append("quick-save")
+            
+            for slot_name in all_slots:
                 if renpy.can_load(slot_name):
                     try:
                         save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
@@ -285,151 +320,25 @@ init python:
                             saves.append((slot_name, timestamp))
                     except:
                         continue
-            
-            # Проверяем обычные сохранения
-            for i in range(1, 10):
-                if renpy.can_load(str(i)):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
-                        if save_json and save_json.get("user_id") == user_id:
-                            timestamp = save_json.get("_timestamp", 0)
-                            saves.append((str(i), timestamp))
-                    except:
-                        continue
-            
-            # Проверяем быстрые сохранения
-            if renpy.can_load("quick-save"):
-                try:
-                    save_json = renpy.json_load(renpy.slot_json_filename("quick-save"))
-                    if save_json and save_json.get("user_id") == user_id:
-                        timestamp = save_json.get("_timestamp", 0)
-                        saves.append(("quick-save", timestamp))
-                except:
-                    pass
-        except:
-            pass
+        except Exception as e:
+            print(f"Ошибка при поиске сохранений: {e}")
         
-        # Сортируем по времени (самое новое последнее)
         saves.sort(key=lambda x: x[1], reverse=True)
         
         if saves:
             try:
-                # Загружаем самое новое сохранение
                 renpy.load(str(saves[0][0]))
                 return True
-            except:
+            except Exception as e:
+                print(f"Ошибка при загрузке: {e}")
                 return False
         return False
     
-    # В функции save_progress_and_continue добавьте сохранение главы
-    def save_progress_and_continue(old_chapter, new_chapter_title, new_chapter_subtitle):
-        """Сохраняет прогресс и запускает следующую главу"""
-        # Сохраняем прогресс в базе данных
-        if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
-            db.update_save_progress(persistent.user_id, new_chapter_title)
-        
-        # Делаем быстрое сохранение с информацией о главе
-        renpy.take_screenshot()
-        renpy.save(f"chapter-{new_chapter_title}", f"Автосохранение перед главой {new_chapter_title}")
-        
-        # Обновляем JSON с информацией о главе
-        try:
-            save_json = renpy.json_load(renpy.slot_json_filename(f"chapter-{new_chapter_title}"))
-            if save_json:
-                save_json["chapter"] = new_chapter_title
-                save_json["_timestamp"] = time.time()
-                
-                import json
-                with open(renpy.slot_json_filename(f"chapter-{new_chapter_title}"), 'w') as f:
-                    json.dump(save_json, f)
-        except:
-            pass
-        
-        # Запускаем следующую главу
-        if new_chapter_title == "Вторая. Новые знакомства":
-            renpy.call_in_new_context("chapter_two")
-        elif new_chapter_title == "Третья. Испытание дружбой":
-            renpy.call_in_new_context("chapter_three")
-    
-    # В функции save_progress_and_exit добавьте сохранение главы
-    def save_progress_and_exit():
-        """Сохраняет прогресс и выходит в главное меню"""
-        if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
-            db.update_save_progress(persistent.user_id, "Глава Первая: Связь (завершена)")
-        
-        renpy.take_screenshot()
-        renpy.save("chapter-1-complete", "Завершение первой главы")
-        
-        # Обновляем JSON с информацией о главе
-        try:
-            save_json = renpy.json_load(renpy.slot_json_filename("chapter-1-complete"))
-            if save_json:
-                save_json["chapter"] = "Глава Первая: Связь"
-                save_json["_timestamp"] = time.time()
-                
-                import json
-                with open(renpy.slot_json_filename("chapter-1-complete"), 'w') as f:
-                    json.dump(save_json, f)
-        except:
-            pass
-        
-        renpy.notify("Прогресс сохранен!")
-    
-    
-    def load_last_save_for_user(user_id):
-        """Загружает последнее сохранение для указанного пользователя"""
-        import os
-        
-        # Получаем список всех сохранений
-        saves = []
-        
-        try:
-            # Проверяем автосохранения
-            for i in range(1, 10):
-                slot_name = "auto-" + str(i)
-                if renpy.can_load(slot_name):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                        if save_json and save_json.get("user_id") == user_id:
-                            timestamp = save_json.get("_timestamp", 0)
-                            saves.append((slot_name, timestamp))
-                    except:
-                        continue
-            
-            # Проверяем обычные сохранения
-            for i in range(1, 10):
-                if renpy.can_load(str(i)):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
-                        if save_json and save_json.get("user_id") == user_id:
-                            timestamp = save_json.get("_timestamp", 0)
-                            saves.append((str(i), timestamp))
-                    except:
-                        continue
-            
-            # Проверяем быстрые сохранения
-            if renpy.can_load("quick-save"):
-                try:
-                    save_json = renpy.json_load(renpy.slot_json_filename("quick-save"))
-                    if save_json and save_json.get("user_id") == user_id:
-                        timestamp = save_json.get("_timestamp", 0)
-                        saves.append(("quick-save", timestamp))
-                except:
-                    pass
-        except:
-            pass
-        
-        # Сортируем по времени (самое новое последнее)
-        saves.sort(key=lambda x: x[1], reverse=True)
-        
-        if saves:
-            try:
-                # Загружаем самое новое сохранение
-                renpy.load(str(saves[0][0]))
-                return True
-            except:
-                return False
-        return False
+    def set_current_user(user_id, user_name):
+        """Установка текущего пользователя"""
+        persistent.user_id = user_id
+        persistent.user_name = user_name
+        renpy.notify(f"Выбран игрок: {user_name}")
 
 
 ################################################################################
@@ -461,18 +370,6 @@ label start:
     # Сохраняем user_id в persistent
     $ persistent.user_id = user_id
     
-    # Если база данных не доступна, но пользователь сохранен в persistent, используем это
-    if user_id is None:
-        $ found_user = False
-        python:
-            if hasattr(persistent, 'user_data') and persistent.user_data:
-                if 'users' in persistent.user_data:
-                    for uid, data in persistent.user_data['users'].items():
-                        if data.get('name') == name:
-                            persistent.user_id = int(uid)
-                            found_user = True
-                            break
-    
     "Ты ничего не забыла, [persistent.user_name]?"
     "Пора просыпаться..."
     
@@ -487,13 +384,10 @@ label start:
         $ db.update_save_progress(persistent.user_id, "Глава Первая: Связь")
     
     # Разблокировка первого достижения
-    $ unlock_achievement("wake_up") if 'unlock_achievement' in globals() else None
-    # Сохраняем достижение в базу данных
-    if persistent.user_id and 'db' in globals() and hasattr(db, 'save_achievement'):
-        $ db.save_achievement(persistent.user_id, "Проснулась?", "Добро пожаловать в игру. Приятной игры!")
+    $ unlock_achievement("wake_up")
     
     # Разблокировка элементов галереи
-    $ unlock_gallery_item("room_evening") if 'unlock_gallery_item' in globals() else None
+    $ unlock_gallery_item("room_evening")
 
     # Показываем фон
     scene bg room_evening at truecenter with fade
@@ -517,7 +411,7 @@ label start:
     thought_user "А как вести себя хорошо, когда ты не понимаешь, что чувствуют другие?{p}Когда их улыбки кажутся мне масками, а слезы – просто мокрыми пятнами на лице?"
 
     show bg bg_room_pk_light with dissolve
-    $ unlock_gallery_item("room_pk_light") if 'unlock_gallery_item' in globals() else None
+    $ unlock_gallery_item("room_pk_light")
 
     narrator "На стене висел постер с изображением какого-то аниме-персонажа, его глаза, широко распахнутые, казалось, смотрели куда-то вдаль, в мир, полный ярких красок и бурных эмоций."
     narrator "[persistent.user_name] часто смотрела на него, пытаясь уловить хоть что-то, что могло бы помочь ей понять."
@@ -547,7 +441,7 @@ label start:
     narrator "Она медленно протянула руку к мышке, ее пальцы дрожали от легкого волнения."
 
     show bg room_pk with dissolve
-    $ unlock_gallery_item("room_pk") if 'unlock_gallery_item' in globals() else None
+    $ unlock_gallery_item("room_pk")
 
     thought_user "Новая школа. Новые люди. Родители думают, что это поможет. Может быть. Там учится Лина. Это хорошо. Хоть кто-то знакомый."
     thought_user "...Но… что, если я опять не смогу? Что, если я опять буду стоять в стороне, наблюдая, как другие смеются, общаются, живут? Я боюсь…"
@@ -574,25 +468,19 @@ label start:
         "Привет! Да, готова. Уже жду не дождусь!":
             $ choice_1 = 1
             user_char "Привет! Да, готова. Уже жду не дождусь! 😊"
-            $ unlock_achievement("first_choice") if 'unlock_achievement' in globals() else None
-            if persistent.user_id and 'db' in globals() and hasattr(db, 'save_achievement'):
-                $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
+            $ unlock_achievement("first_choice")
             jump after_first_choice_1
         
         "Привет! Я тоже очень рада! Немного волнуюсь, но уверена, что с тобой будет весело!":
             $ choice_1 = 2
             user_char "Привет! Я тоже очень рада!{p}Немного волнуюсь, но уверена, что с тобой будет весело! 😊"
-            $ unlock_achievement("first_choice") if 'unlock_achievement' in globals() else None
-            if persistent.user_id and 'db' in globals() and hasattr(db, 'save_achievement'):
-                $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
+            $ unlock_achievement("first_choice")
             jump after_first_choice_2
         
         "Привет! Я очень рада, что мы будем учиться вместе. Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг.":
             $ choice_1 = 3
             user_char "Привет! Я очень рада, что мы будем учиться вместе.{p}Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг. ❤️"
-            $ unlock_achievement("first_choice") if 'unlock_achievement' in globals() else None
-            if persistent.user_id and 'db' in globals() and hasattr(db, 'save_achievement'):
-                $ db.save_achievement(persistent.user_id, "Ваш выбор", "Первый важный выбор в игре")
+            $ unlock_achievement("first_choice")
             jump after_first_choice_3
 
 label after_first_choice_1:
@@ -781,11 +669,8 @@ label morning_scene:
     show text "{size=80}Конец первой главы{/size}" with dissolve
     pause 2.0
     
-    # ИСПРАВЛЕНО: передаем все три аргумента
+    # Передаем все три аргумента
     $ renpy.show_screen("chapter_transition", "Глава Первая: Связь", "Вторая. Новые знакомства", "Новые знакомства")
-    $ renpy.pause(1.0)
-    
-    # Ожидание действия пользователя
     $ renpy.pause(None)
 
 
@@ -1031,18 +916,29 @@ label chapter_two_end:
     show text "{size=80}Конец второй главы{/size}" with dissolve
     pause 2.0
     
+    # Обновляем прогресс в базе данных
+    if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+        $ db.update_save_progress(persistent.user_id, "Глава Вторая: Новые знакомства")
+    
+    # Разблокируем достижение за прохождение второй главы
+    $ unlock_achievement("chapter_two_complete")
+    
     # ИСПРАВЛЕНО: передаем все три аргумента
     $ renpy.show_screen("chapter_transition", "Глава Вторая: Новые знакомства", "Третья. Испытание дружбой", "Испытание дружбой")
-    $ renpy.pause(1.0)
-    
-    # Ожидание действия пользователя
-    $ ui.interact()
+    $ renpy.pause(None)
 
 label chapter_three:
-    # Заглушка для третьей главы
-    scene black
+    # Показываем заголовок главы
+    scene black with fade
     show text "{size=80}Глава Третья{/size}\n{size=60}Испытание дружбой{/size}" with dissolve
     pause 2.0
+    
+    # Обновляем прогресс в базе данных
+    if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+        $ db.update_save_progress(persistent.user_id, "Глава Третья: Испытание дружбой")
+    
     show text "{size=60}(в разработке){/size}" with dissolve
     pause 2.0
+    
+    # Возвращаемся в главное меню
     return

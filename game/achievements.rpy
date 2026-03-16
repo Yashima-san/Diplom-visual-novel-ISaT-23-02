@@ -12,6 +12,8 @@ init -1 python:
             self.hidden = hidden
         
         def is_unlocked(self):
+            if not isinstance(persistent._achievements, dict):
+                return False
             return persistent._achievements.get(self.id, False)
     
     # Словарь для хранения всех достижений
@@ -38,6 +40,10 @@ init -1 python:
                 persistent._achievements[id] = True
                 if not achievements[id].hidden:
                     renpy.notify("Достижение разблокировано: " + achievements[id].name)
+                
+                # Сохраняем в базу данных
+                if persistent.user_id and 'db' in globals() and hasattr(db, 'save_achievement'):
+                    db.save_achievement(persistent.user_id, achievements[id].name, achievements[id].description)
     
     # Функция для проверки, разблокировано ли достижение
     def is_achievement_unlocked(id):
@@ -72,6 +78,18 @@ init -1 python:
         "Ваш выбор",
         "Первый важный выбор в игре"
     )
+    
+    register_achievement(
+        "chapter_one_complete",
+        "Глава 1 пройдена",
+        "Вы завершили первую главу"
+    )
+    
+    register_achievement(
+        "chapter_two_complete",
+        "Глава 2 пройдена",
+        "Вы завершили вторую главу"
+    )
 
 # Экран достижений
 screen achievements():
@@ -90,9 +108,10 @@ screen achievements():
                 
                 $ unlocked = len([a for a in achievements.values() if a.is_unlocked()])
                 $ total = len(achievements)
+                $ progress_percent = (unlocked * 100 // total) if total > 0 else 0
                 
                 text _("Разблокировано: [unlocked]/[total]") size 30
-                text _("Прогресс: [unlocked*100/total if total>0 else 0]%") size 30
+                text _("Прогресс: [progress_percent]%") size 30
             
             null height 30
             
