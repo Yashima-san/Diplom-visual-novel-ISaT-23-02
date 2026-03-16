@@ -505,6 +505,7 @@ screen select_user_screen():
             hbox:
                 spacing 5
                 xalign 0.5
+                yalign 0.4
 
                 # Кнопка для начала новой игры прямо отсюда
                 textbutton "Начать новую игру" style "select_user_button" action [Start(), Hide("select_user_screen")]
@@ -2048,9 +2049,9 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
             
             null height 20
             
-            text "Сохраняем ваш прогресс..." size 28 color "#5e5e5e" xalign 0.5
+            text "Прогресс уже сохранен" size 28 color "#5e5e5e" xalign 0.5
             
-            text "Убедитесь, что у вас достаточно места для сохранений" size 22 color "#888888" xalign 0.5
+            text "Вы можете продолжить или вернуться в меню" size 22 color "#888888" xalign 0.5
             
             null height 30
             
@@ -2069,22 +2070,22 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
                     
                     textbutton "Да, продолжить":
                         style "chapter_transition_button"
-                        action [Function(save_progress_and_continue, old_chapter, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")]
+                        action [Function(continue_to_next_chapter, old_chapter, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")]
                     
                     textbutton "Нет, выйти в главное меню":
                         style "chapter_transition_button"
-                        action [Function(save_progress_and_exit, old_chapter), Hide("chapter_transition"), MainMenu()]
+                        action [Function(exit_to_main_menu, old_chapter), Hide("chapter_transition")]
             else:
                 # Если глава в разработке, показываем только одну кнопку
                 textbutton "Выйти в главное меню":
                     style "chapter_transition_button"
                     xalign 0.5
-                    action [Function(save_progress_and_exit, old_chapter), Hide("chapter_transition"), MainMenu()]
+                    action [Function(exit_to_main_menu, old_chapter), Hide("chapter_transition")]
     
     key "K_RETURN" action If(next_chapter_exists, 
-        true=[Function(save_progress_and_continue, old_chapter, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")], 
-        false=[Function(save_progress_and_exit, old_chapter), Hide("chapter_transition"), MainMenu()])
-    key "K_ESCAPE" action [Function(save_progress_and_exit, old_chapter), Hide("chapter_transition"), MainMenu()]
+        true=[Function(continue_to_next_chapter, old_chapter, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")], 
+        false=[Function(exit_to_main_menu, old_chapter), Hide("chapter_transition")])
+    key "K_ESCAPE" action [Function(exit_to_main_menu, old_chapter), Hide("chapter_transition")]
 
 ## Стили для экрана перехода
 style chapter_transition_frame:
