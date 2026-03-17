@@ -5,13 +5,17 @@
 init offset = -1
 
 init python:
+    import time
+    import json
+    
     def get_last_save_info(user_id):
         """Получение информации о последнем сохранении пользователя"""
         result = {
             'time': "Нет сохранений",
-            'chapter': "—"
+            'chapter': "Нет данных"
         }
         last_time = 0
+        last_chapter = "Нет данных"
         
         try:
             chapter_display = {
@@ -20,12 +24,15 @@ init python:
                 "Глава Третья: Испытание дружбой": "Глава 3",
             }
             
-            # Проверяем все сохранения
+            # Проверяем все возможные слоты сохранений
             all_slots = []
+            # Обычные слоты 1-9
             for i in range(1, 10):
                 all_slots.append(str(i))
+            # Автосохранения 1-9
             for i in range(1, 10):
                 all_slots.append(f"auto-{i}")
+            # Быстрое сохранение
             all_slots.append("quick-save")
             
             for slot_name in all_slots:
@@ -43,32 +50,87 @@ init python:
                                     except:
                                         result['time'] = "Недавно"
                                 
+                                # Получаем название главы из сохранения
                                 save_chapter = save_json.get("chapter", "")
                                 if save_chapter:
                                     if save_chapter in chapter_display:
-                                        result['chapter'] = chapter_display[save_chapter]
+                                        last_chapter = chapter_display[save_chapter]
                                     else:
+                                        # Пытаемся определить главу по содержимому
                                         if "Первая" in save_chapter or "Связь" in save_chapter:
-                                            result['chapter'] = "Глава 1"
+                                            last_chapter = "Глава 1"
                                         elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
-                                            result['chapter'] = "Глава 2"
+                                            last_chapter = "Глава 2"
                                         elif "Третья" in save_chapter:
-                                            result['chapter'] = "Глава 3"
+                                            last_chapter = "Глава 3"
                                         else:
-                                            result['chapter'] = save_chapter[:20] + "..." if len(save_chapter) > 20 else save_chapter
+                                            last_chapter = save_chapter[:20] + "..." if len(save_chapter) > 20 else save_chapter
                     except:
                         continue
             
+            result['chapter'] = last_chapter
+            
             # Если нашли сохранение, но глава не определилась, проверяем в БД
-            if result['chapter'] == "—" and last_time > 0:
+            if result['chapter'] == "Нет данных" and last_time > 0:
                 if hasattr(db, 'get_user_progress'):
                     progress = db.get_user_progress(user_id)
                     if progress:
-                        result['chapter'] = progress[-1] if progress else "—"
+                        result['chapter'] = progress[-1] if progress else "Нет данных"
         except Exception as e:
             print(f"Ошибка в get_last_save_info: {e}")
         
         return result
+    
+    def get_user_progress(user_id):
+        """Получение прогресса игрока по главам"""
+        progress = []
+        
+        # Словарь для форматирования названий глав
+        chapter_formats = {
+            "Глава Первая: Связь": "Глава 1",
+            "Глава Вторая: Новые знакомства": "Глава 2",
+            "Глава Третья: Испытание дружбой": "Глава 3",
+        }
+        
+        try:
+            # Проверяем все сохранения в JSON
+            all_slots = []
+            for i in range(1, 10):
+                all_slots.append(str(i))
+            for i in range(1, 10):
+                all_slots.append(f"auto-{i}")
+            all_slots.append("quick-save")
+            
+            chapters_found = set()
+            
+            for slot_name in all_slots:
+                if renpy.can_load(slot_name):
+                    try:
+                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                        if save_json and save_json.get("user_id") == user_id:
+                            chapter = save_json.get("chapter", "")
+                            if chapter:
+                                if chapter in chapter_formats:
+                                    chapters_found.add(chapter_formats[chapter])
+                                else:
+                                    # Пытаемся определить главу по содержимому
+                                    if "Первая" in chapter or "Связь" in chapter:
+                                        chapters_found.add("Глава 1")
+                                    elif "Вторая" in chapter or "Новые знакомства" in chapter:
+                                        chapters_found.add("Глава 2")
+                                    elif "Третья" in chapter:
+                                        chapters_found.add("Глава 3")
+                    except:
+                        continue
+            
+            # Преобразуем в список и сортируем
+            chapter_order = {"Глава 1": 1, "Глава 2": 2, "Глава 3": 3}
+            progress = sorted(list(chapters_found), key=lambda x: chapter_order.get(x, 0))
+            
+        except Exception as e:
+            print(f"Ошибка в get_user_progress: {e}")
+        
+        return progress
 
 ################################################################################
 ## Стили
@@ -412,8 +474,8 @@ screen select_user_screen():
         style "select_user_frame"
         xalign 0.5
         yalign 0.5
-        xsize 1100
-        ysize 700
+        xsize 1200
+        ysize 900
         padding (70, 70)
         
         vbox:
@@ -444,8 +506,8 @@ screen select_user_screen():
                         xfill True
                         
                         text "Имя" size 22 color "#ffffff" xsize 200 text_align 0.5
-                        text "Последнее сохранение" size 22 color "#ffffff" xsize 400 text_align 0.5
-                        text "Глава" size 22 color "#ffffff" xsize 250 text_align 0.5
+                        text "Сохранение" size 22 color "#ffffff" xsize 400 text_align 0.5
+                        text "Прогресс" size 22 color "#ffffff" xsize 250 text_align 0.5
                         text "Достижений" size 22 color "#ffffff" xsize 150 text_align 0.5
                 
                 # Список пользователей
@@ -463,10 +525,14 @@ screen select_user_screen():
                             $ user_id = user['user_ID']
                             $ user_name = user['name']
                             
-                            # Получаем информацию о последнем сохранении - ИСПРАВЛЕНО
+                            # Получаем информацию о последнем сохранении
                             $ last_save_info = get_last_save_info(user_id)
                             $ last_save_time = last_save_info['time']
                             $ last_save_chapter = last_save_info['chapter']
+                            
+                            # Получаем прогресс пользователя (все пройденные главы)
+                            $ user_progress = get_user_progress(user_id)
+                            $ progress_text = ", ".join(user_progress) if user_progress else "Нет данных"
                             
                             # Получаем количество достижений
                             $ user_achievements = db.get_user_achievements(user_id) if hasattr(db, 'get_user_achievements') else []
@@ -484,20 +550,19 @@ screen select_user_screen():
                                     
                                     text "[user_name]" size 22 color "#ffffff" xsize 200 text_align 0.5
                                     text "[last_save_time]" size 22 color "#ffffff" xsize 400 text_align 0.5
-                                    text "[last_save_chapter]" size 22 color "#ffffff" xsize 250 text_align 0.5
+                                    text "[progress_text]" size 22 color "#ffffff" xsize 250 text_align 0.5
                                     text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
             else:
-                # Cообщение когда нет пользователей
+                # Сообщение когда нет пользователей
                 vbox:
                     spacing 30
                     xalign 0.5
                     yalign 0.5
                     
                     text "Нет сохраненных игроков" size 28 xalign 0.5 color "#656565"
-                    text "Начните новую игру, чтобы создать профиль" size 22 xalign 0.5 color "#737373"
+                    text "Начните новую игру, чтобы создать сохранение" size 22 xalign 0.5 color "#737373"
                     
                     null height 20
-                    
             
             null height 20
             
@@ -505,11 +570,11 @@ screen select_user_screen():
             hbox:
                 spacing 5
                 xalign 0.5
-                yalign 0.4
-
+                yalign 0.1
+                
                 # Кнопка для начала новой игры прямо отсюда
                 textbutton "Начать новую игру" style "select_user_button" action [Start(), Hide("select_user_screen")]
-
+                
                 textbutton "Отмена" style "select_user_button" action Hide("select_user_screen")
     
     key "game_menu" action Hide("select_user_screen")
@@ -1071,43 +1136,6 @@ style slot_chapter_text:
     font gui.interface_text_font
     xalign 0.5
 
-## Экран подтверждения смены пользователя ######################################
-
-screen confirm_user_switch(slot):
-    modal True
-    zorder 200
-    
-    style_prefix "confirm"
-    
-    add "gui/overlay/confirm.png"
-    
-    frame:
-        vbox:
-            xalign .5
-            yalign .5
-            spacing 45
-            
-            label _("Это сохранение принадлежит другому игроку. Загрузить?"):
-                style "confirm_prompt"
-                xalign 0.5
-                text_align 0.5
-                xsize 600
-            
-            hbox:
-                xalign 0.5
-                spacing 150
-                
-                textbutton _("Да") action [Function(load_other_user_save, slot), Hide("confirm_user_switch")]
-                textbutton _("Нет") action Hide("confirm_user_switch")
-
-init python:
-    def load_other_user_save(slot):
-        """Загружает сохранение другого пользователя и обновляет persistent"""
-        save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
-        if save_json:
-            persistent.user_id = save_json.get("user_id")
-            persistent.user_name = save_json.get("user_name", "")
-        renpy.load(str(slot))
 
 ## Экран настроек ##############################################################
 
@@ -1957,7 +1985,6 @@ screen input_name_screen():
                 color "#ff7171"
                 font gui.interface_text_font
                 xalign 0.5
-                # ИСПРАВЛЕНО: правильный формат outlines
                 outlines [(2, "#a83c1f", 0, 0)]
             
             # Поле ввода с закругленными углами

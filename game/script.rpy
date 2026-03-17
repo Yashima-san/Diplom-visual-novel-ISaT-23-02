@@ -1,4 +1,4 @@
-﻿define e = Character('Лина', color="#707ef6")
+﻿﻿define e = Character('Лина', color="#707ef6")
 define user_char = Character("[persistent.user_name]", color="#ff9e5e")
 define thought_user = Character("[persistent.user_name]", what_italic=True)
 define narrator = Character(None, what_italic=True)
@@ -14,6 +14,12 @@ define persistent.user_name = ""
 define persistent.user_id = None
 define persistent.user_data = None
 default current_chapter = "Глава Первая: Связь"  # Глобальная переменная для главы
+default first_choice = 0
+default second_choice = 0
+default chapter2_choice_1 = 0
+default chapter2_choice_2 = 0
+default chapter2_choice_final = 0
+default morning_choice = 0
 
 # Объявление изображений персонажей
 image lina neutral = "images/characters/lina.png"
@@ -55,9 +61,13 @@ init python:
     original_e = e
     original_user_char = user_char
     original_thought_user = thought_user
+    original_a = a
+    original_t = t
+    original_k = k
+    original_lib = lib
 
     
-    # Функция для перехода к следующей главе (без пауз внутри интеракции)
+    # Функция для перехода к следующей главе
     def continue_to_next_chapter(old_chapter, new_chapter_title, new_chapter_subtitle):
         """Только переходит к следующей главе, без сохранения"""
         # Обновляем текущую главу
@@ -117,18 +127,18 @@ init python:
                 
                 # Обновляем JSON с информацией о главе
                 try:
-                    import json
                     save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                    if save_json:
-                        save_json["chapter"] = chapter_name
-                        if hasattr(persistent, 'user_id') and persistent.user_id is not None:
-                            save_json["user_id"] = persistent.user_id
-                        if hasattr(persistent, 'user_name') and persistent.user_name:
-                            save_json["user_name"] = persistent.user_name
-                        save_json["_timestamp"] = time.time()
-                        
-                        with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
-                            json.dump(save_json, f, ensure_ascii=False, indent=2)
+                    if save_json is None:
+                        save_json = {}
+                    save_json["chapter"] = chapter_name
+                    if hasattr(persistent, 'user_id') and persistent.user_id is not None:
+                        save_json["user_id"] = persistent.user_id
+                    if hasattr(persistent, 'user_name') and persistent.user_name:
+                        save_json["user_name"] = persistent.user_name
+                    save_json["_timestamp"] = time.time()
+                    
+                    with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
+                        json.dump(save_json, f, ensure_ascii=False, indent=2)
                 except Exception as e:
                     print(f"Ошибка при сохранении JSON: {e}")
             except:
@@ -158,18 +168,18 @@ init python:
                 
                 # Обновляем JSON с информацией о главе
                 try:
-                    import json
                     save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                    if save_json:
-                        save_json["chapter"] = chapter_name
-                        if hasattr(persistent, 'user_id') and persistent.user_id is not None:
-                            save_json["user_id"] = persistent.user_id
-                        if hasattr(persistent, 'user_name') and persistent.user_name:
-                            save_json["user_name"] = persistent.user_name
-                        save_json["_timestamp"] = time.time()
-                        
-                        with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
-                            json.dump(save_json, f, ensure_ascii=False, indent=2)
+                    if save_json is None:
+                        save_json = {}
+                    save_json["chapter"] = chapter_name
+                    if hasattr(persistent, 'user_id') and persistent.user_id is not None:
+                        save_json["user_id"] = persistent.user_id
+                    if hasattr(persistent, 'user_name') and persistent.user_name:
+                        save_json["user_name"] = persistent.user_name
+                    save_json["_timestamp"] = time.time()
+                    
+                    with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
+                        json.dump(save_json, f, ensure_ascii=False, indent=2)
                 except Exception as e:
                     print(f"Ошибка при сохранении JSON: {e}")
             except:
@@ -277,136 +287,57 @@ init python:
         
         renpy.run(FileAction(slot))
 
-    # Функция для кастомного действия сохранения
+    # ИСПРАВЛЕННАЯ функция для кастомного действия сохранения
     def custom_save_action(slot):
         """Кастомное действие для сохранения с информацией о пользователе и главе"""
-        # Получаем текущую главу
-        current_chapter = get_current_chapter_safe()
-        
-        # Делаем скриншот
-        renpy.take_screenshot()
-        
-        # Сохраняем с дополнительной информацией
-        renpy.save(str(slot), f"Сохранение {slot}")
-        
-        # Обновляем информацию в JSON
         try:
-            save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
-            if save_json:
-                # Сохраняем ID пользователя
-                if hasattr(persistent, 'user_id') and persistent.user_id is not None:
-                    save_json["user_id"] = persistent.user_id
-                else:
-                    save_json["user_id"] = None
-                    
-                # Сохраняем имя пользователя
-                if hasattr(persistent, 'user_name') and persistent.user_name:
-                    save_json["user_name"] = persistent.user_name
-                else:
-                    save_json["user_name"] = ""
-                    
-                save_json["chapter"] = current_chapter
-                save_json["_timestamp"] = time.time()
-                
-                # Сохраняем обратно
-                with open(renpy.slot_json_filename(str(slot)), 'w', encoding='utf-8') as f:
-                    json.dump(save_json, f, ensure_ascii=False, indent=2)
-        except Exception as e:
-            print(f"Ошибка при сохранении JSON: {e}")
-        
-        renpy.notify(f"Игра сохранена в слот {slot}")
-    
-    # ЕДИНСТВЕННАЯ функция для определения текущей главы
-    def get_current_chapter_safe():
-        """Безопасно определяет текущую главу, работает даже во время сохранения"""
-        try:
-            # Пробуем получить из глобальной переменной
-            if hasattr(store, 'current_chapter') and store.current_chapter:
-                return store.current_chapter
-        except:
-            pass
-        
-        # По умолчанию возвращаем первую главу
-        return "Глава Первая: Связь"
-    
-        # Функция для сохранения прогресса и перехода к следующей главе
-    def save_progress_and_continue(old_chapter, new_chapter_title, new_chapter_subtitle):
-        """Сохраняет прогресс и запускает следующую главу"""
-        if hasattr(persistent, 'user_id') and persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
-            try:
-                db.update_save_progress(persistent.user_id, old_chapter)
-            except:
-                pass
-        
-        # Разблокируем достижение за прохождение главы
-        try:
-            if "Первая" in old_chapter or "Связь" in old_chapter:
-                if 'unlock_achievement' in globals():
-                    unlock_achievement("chapter_one_complete")
-            elif "Вторая" in old_chapter or "Новые знакомства" in old_chapter:
-                if 'unlock_achievement' in globals():
-                    unlock_achievement("chapter_two_complete")
-        except:
-            pass
-        
-        # Делаем скриншот и сохраняем
-        try:
-            renpy.take_screenshot()
-            slot_name = f"chapter-{int(time.time())}"
-            renpy.save(slot_name, f"Автосохранение после {old_chapter}")
+            # Получаем текущую главу
+            current_chapter = get_current_chapter_safe()
             
-            # Обновляем JSON с информацией о главе
-            try:
-                import json
-                save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                if save_json:
-                    save_json["chapter"] = old_chapter
-                    if hasattr(persistent, 'user_id') and persistent.user_id is not None:
-                        save_json["user_id"] = persistent.user_id
-                    if hasattr(persistent, 'user_name') and persistent.user_name:
-                        save_json["user_name"] = persistent.user_name
-                    save_json["_timestamp"] = time.time()
-                    
-                    with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
-                        json.dump(save_json, f, ensure_ascii=False, indent=2)
-            except Exception as e:
-                print(f"Ошибка при сохранении JSON: {e}")
-        except:
-            pass
-        
-        renpy.notify("Прогресс сохранен!")
-        
-        # Определяем, на какую главу переходить
-        if "Вторая" in new_chapter_title or "Новые знакомства" in new_chapter_title:
-            # Проверяем, существует ли метка chapter_two
-            if renpy.has_label("chapter_two"):
-                renpy.jump("chapter_two")
+            # Делаем скриншот
+            renpy.take_screenshot()
+            
+            # Сохраняем игру
+            renpy.save(str(slot), f"Сохранение в слот {slot}")
+            
+            # Обновляем информацию в JSON
+            save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
+            if save_json is None:
+                save_json = {}
+            
+            # Сохраняем ID пользователя
+            if hasattr(persistent, 'user_id') and persistent.user_id is not None:
+                save_json["user_id"] = persistent.user_id
             else:
-                renpy.notify("Глава в разработке")
-                # Возвращаемся в главное меню, так как главы нет
-                renpy.run(MainMenu())
-        elif "Третья" in new_chapter_title or "Испытание" in new_chapter_title:
-            # Проверяем, существует ли метка chapter_three
-            if renpy.has_label("chapter_three"):
-                renpy.jump("chapter_three")
+                save_json["user_id"] = None
+                
+            # Сохраняем имя пользователя
+            if hasattr(persistent, 'user_name') and persistent.user_name:
+                save_json["user_name"] = persistent.user_name
             else:
-                renpy.notify("Глава в разработке")
-                # Возвращаемся в главное меню, так как главы нет
-                renpy.run(MainMenu())
-        else:
-            # По умолчанию пытаемся перейти к chapter_two
-            if renpy.has_label("chapter_two"):
-                renpy.jump("chapter_two")
-            else:
-                renpy.notify("Глава в разработке")
-                # Возвращаемся в главное меню, так как главы нет
-                renpy.run(MainMenu())
+                save_json["user_name"] = ""
+                
+            save_json["chapter"] = current_chapter
+            save_json["_timestamp"] = time.time()
+            
+            # Сохраняем обратно в файл
+            with open(renpy.slot_json_filename(str(slot)), 'w', encoding='utf-8') as f:
+                json.dump(save_json, f, ensure_ascii=False, indent=2)
+            
+            # Дополнительно сохраняем прогресс в базу данных
+            if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+                try:
+                    db.update_save_progress(persistent.user_id, current_chapter)
+                except:
+                    pass
+            
+            renpy.notify(f"Игра сохранена в слот {slot}")
+            
+        except Exception as e:
+            renpy.notify(f"Ошибка при сохранении: {str(e)}")
+            print(f"Ошибка в custom_save_action: {e}")
     
-    def save_progress_and_continue(old_chapter, new_chapter_title, new_chapter_subtitle):
-        """(Устаревшая функция) - используйте continue_to_next_chapter после auto_save_chapter_complete"""
-        # Просто вызываем переход без повторного сохранения
-        continue_to_next_chapter(old_chapter, new_chapter_title, new_chapter_subtitle)
-    
+    # ИСПРАВЛЕННАЯ функция для загрузки последнего сохранения
     def load_last_save_for_user(user_id):
         """Загружает последнее сохранение для указанного пользователя"""
         saves = []
@@ -431,6 +362,7 @@ init python:
         except Exception as e:
             print(f"Ошибка при поиске сохранений: {e}")
         
+        # Сортируем по времени (от новых к старым)
         saves.sort(key=lambda x: x[1], reverse=True)
         
         if saves:
@@ -442,6 +374,19 @@ init python:
                 return False
         return False
     
+    # ЕДИНСТВЕННАЯ функция для определения текущей главы
+    def get_current_chapter_safe():
+        """Безопасно определяет текущую главу, работает даже во время сохранения"""
+        try:
+            # Пробуем получить из глобальной переменной
+            if hasattr(store, 'current_chapter') and store.current_chapter:
+                return store.current_chapter
+        except:
+            pass
+        
+        # По умолчанию возвращаем первую главу
+        return "Глава Первая: Связь"
+    
     def set_current_user(user_id, user_name):
         """Установка текущего пользователя"""
         if hasattr(persistent, 'user_id'):
@@ -449,7 +394,6 @@ init python:
         if hasattr(persistent, 'user_name'):
             persistent.user_name = user_name
         renpy.notify(f"Выбран игрок: {user_name}")
-
 
 
 ################################################################################
@@ -568,8 +512,8 @@ label start:
     # Включаем режим чата для этой сцены
     $ enable_chat_mode()
 
-    # Диалог теперь будет отображаться в стиле мессенджера
-    e "Привет! Ты уже готова к завтрашнему дню?{p}Я так рада, что мы теперь будем учиться вместе!🥳{p}Я уже придумала, как мы будем проводить перемены! ✨✨✨"
+    # Лина отправляет сообщение
+    $ e("Привет! Ты уже готова к завтрашнему дню? Я так рада, что мы теперь будем учиться вместе! 🥳 Я уже придумала, как мы будем проводить перемены! ✨✨✨")
 
     narrator "Слова Лины, написанные с такой непринужденной легкостью, казались [persistent.user_name] одновременно и утешительными, и пугающими."
     narrator "Радость Лины была искренней, это было видно даже по смайликам, которые она использовала."
@@ -577,103 +521,99 @@ label start:
     thought_user "Я хочу ответить ей также жизнерадостно.. Но у меня не получается. Мои пальцы замирают над клавишами."
     thought_user "Что я могу сказать?"
 
-    menu first_choice:
-        "Привет! Да, готова. Уже жду не дождусь!":
-            $ choice_1 = 1
-            user_char "Привет! Да, готова. Уже жду не дождусь! 😊"
-            $ unlock_achievement("first_choice")
-            jump after_first_choice_1
+    # Показываем варианты ответа в чате
+    python:
+        def first_choice_callback(choice_text):
+            # Здесь можно сохранить выбор и продолжить
+            if "Привет! Да, готова" in choice_text:
+                store.first_choice = 1
+                unlock_achievement("first_choice")
+            elif "Я тоже очень рада" in choice_text:
+                store.first_choice = 2
+                unlock_achievement("first_choice")
+            elif "Я очень рада, что мы будем учиться вместе" in choice_text:
+                store.first_choice = 3
+                unlock_achievement("first_choice")
+            
+            # Продолжаем диалог
+            renpy.call_in_new_context("continue_chat_after_first")
         
-        "Привет! Я тоже очень рада! Немного волнуюсь, но уверена, что с тобой будет весело!":
-            $ choice_1 = 2
-            user_char "Привет! Я тоже очень рада!{p}Немного волнуюсь, но уверена, что с тобой будет весело! 😊"
-            $ unlock_achievement("first_choice")
-            jump after_first_choice_2
+        # Показываем варианты
+        show_chat_choices([
+            "Привет! Да, готова. Уже жду не дождусь! 😊",
+            "Привет! Я тоже очень рада! Немного волнуюсь, но уверена, что с тобой будет весело! 😊",
+            "Привет! Я очень рада, что мы будем учиться вместе. Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг. ❤️"
+        ], first_choice_callback)
         
-        "Привет! Я очень рада, что мы будем учиться вместе. Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг.":
-            $ choice_1 = 3
-            user_char "Привет! Я очень рада, что мы будем учиться вместе.{p}Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг. ❤️"
-            $ unlock_achievement("first_choice")
-            jump after_first_choice_3
-    $ disable_chat_mode()
+        # Ждем выбора
+        renpy.pause(None)
 
-label after_first_choice_1:
-    narrator "[persistent.user_name] отправила сообщение. Сердце ее забилось чуть быстрее."
-    narrator "Она почувствовала легкое разочарование в себе. Этот ответ был слишком поверхностным, слишком… обычным."
-    narrator "Она знала, что Лина, скорее всего, не заметит подвоха, но сама [persistent.user_name] чувствовала себя так, будто снова спряталась за маской."
-
-    $ enable_chat_mode()
-    e "Ура! Я так рада!"
-    e "Я уже придумала, что мы можем пойти в кафе после уроков, если захочешь! Или в парк! Что скажешь?"
-
-    narrator "Лина, как всегда, полна энергии и предложений."
-    
-    thought_user "Жаль что у меня так не получается, как у Лины…"
-    
-    narrator "Она хотела бы ответить с такой же легкостью, но ее внутренний мир был слишком запутан."
-    
-    menu second_choice_1:
-        "Звучит здорово! Я согласна на все!":
-            $ choice_2 = 11
-            user_char "Звучит здорово! Я согласна на все!"
+label continue_chat_after_first:
+    # Продолжаем диалог в чате
+    if first_choice == 1:
+        $ e("Ура! Я так рада!")
+        $ e("Я уже придумала, что мы можем пойти в кафе после уроков, если захочешь! Или в парк! Что скажешь?")
+        
+        python:
+            def second_choice_callback(choice_text):
+                if "Звучит здорово! Я согласна" in choice_text:
+                    store.second_choice = 11
+                elif "Давай сначала посмотрим" in choice_text:
+                    store.second_choice = 12
+                # Завершаем чат и переходим дальше
+                renpy.call_in_new_context("end_chat_scene")
             
-        "Давай сначала посмотрим, как пройдет день. Я немного устала сегодня.":
-            $ choice_2 = 12
-            user_char "Давай сначала посмотрим, как пройдет день. Я немного устала сегодня."
+            show_chat_choices([
+                "Звучит здорово! Я согласна на все!",
+                "Давай сначала посмотрим, как пройдет день. Я немного устала сегодня."
+            ], second_choice_callback)
+            renpy.pause(None)
     
-    jump night_scene
-    $ disable_chat_mode()
-
-
-label after_first_choice_2:
-    narrator "[persistent.user_name] отправила сообщение. Она почувствовала легкое облегчение. Это было лучше, чем простое \"да\". Признание волнения было шагом к открытости."
-
-    $ enable_chat_mode()
-    e "Ой, я понимаю! Но не переживай! Мы же вместе! Я тебе помогу со всем разобраться, обещаю! А перемены…"
-    e "Я придумала, что мы можем ходить в библиотеку, там так тихо и уютно, или можем искать самые интересные уголки школы! Ты как?"
-
-    narrator "Лина не просто ответила, она предложила конкретные планы, пытаясь развеять любые сомнения [persistent.user_name]."
-    narrator "Ее слова были полны заботы и желания сделать так, чтобы [persistent.user_name] чувствовала себя комфортно."
-    
-    menu second_choice_2:
-        "Звучит здорово! Библиотека – отличная идея!":
-            $ choice_2 = 21
-            user_char "Звучит здорово! Библиотека – отличная идея!"
+    elif first_choice == 2:
+        $ e("Ой, я понимаю! Но не переживай! Мы же вместе!")
+        $ e("Я придумала, что мы можем ходить в библиотеку, там так тихо и уютно! Ты как?")
+        
+        python:
+            def second_choice_callback(choice_text):
+                if "Звучит здорово! Библиотека" in choice_text:
+                    store.second_choice = 21
+                elif "Спасибо, Лина" in choice_text:
+                    store.second_choice = 22
+                renpy.call_in_new_context("end_chat_scene")
             
-        "Спасибо, Лина! Мне очень приятно, что ты так заботишься. Библиотека – это хорошо, но я, наверное, пока буду просто наблюдать.":
-            $ choice_2 = 22
-            user_char "Спасибо, Лина! Мне очень приятно, что ты так заботишься. Библиотека – это хорошо, но я, наверное, пока буду просто наблюдать."
+            show_chat_choices([
+                "Звучит здорово! Библиотека – отличная идея!",
+                "Спасибо, Лина! Я, наверное, пока буду просто наблюдать."
+            ], second_choice_callback)
+            renpy.pause(None)
     
-    jump night_scene
-    $ disable_chat_mode()
-
-label after_first_choice_3:
-    narrator "[persistent.user_name] отправила сообщение. Сердце ее колотилось в груди. Это было самое откровенное, что она могла написать. Она почувствовала, как по ее телу разливается тепло, смешанное с тревогой."
-
-    thought_user "Что скажет Лина? Примет ли она эту частичку моей истинной сущности?"
-
-    $ enable_chat_mode()
-    e "Ой, [persistent.user_name]! 🥺 Я так тронута! Спасибо тебе большое!"
-    e "Я тоже очень рада, что мы будем вместе! И ты не волнуйся, я буду рядом! Мы все вместе преодолеем!"
-    e "А перемены… Я придумала, что мы можем просто сидеть где-нибудь в тихом месте и разговаривать, или если ты захочешь, мы можем вместе изучать новые места в школе!"
-    e "Главное, чтобы тебе было комфортно! Ты – мой самый лучший друг тоже!"
-    
-
-    narrator "Слова Лины были полны искренности и тепла. Она не только приняла признание [persistent.user_name], но и ответила взаимностью, показав, что ее дружба не зависит от того, насколько [persistent.user_name] открыта."
-    narrator "Это было именно то, что нужно [persistent.user_name], чтобы почувствовать себя немного увереннее."
-    
-    menu second_choice_3:
-        "Спасибо, Лина! Ты лучшая! Я уже чувствую себя спокойнее.":
-            $ choice_2 = 31
-            user_char "Спасибо, Лина! Ты лучшая! Я уже чувствую себя спокойнее."
+    elif first_choice == 3:
+        $ e("Ой, [persistent.user_name]! 🥺 Я так тронута!")
+        $ e("Я тоже очень рада, что мы будем вместе! И ты не волнуйся, я буду рядом!")
+        
+        python:
+            def second_choice_callback(choice_text):
+                if "Спасибо, Лина! Ты лучшая!" in choice_text:
+                    store.second_choice = 31
+                elif "Спасибо, Лина! Я очень ценю твою дружбу" in choice_text:
+                    store.second_choice = 32
+                renpy.call_in_new_context("end_chat_scene")
             
-        "Спасибо, Лина! Я очень ценю твою дружбу. И да, мне будет легче, если ты будешь рядом.":
-            $ choice_2 = 32
-            user_char "Спасибо, Лина! Я очень ценю твою дружбу. И да, мне будет легче, если ты будешь рядом."
+            show_chat_choices([
+                "Спасибо, Лина! Ты лучшая! Я уже чувствую себя спокойнее.",
+                "Спасибо, Лина! Я очень ценю твою дружбу."
+            ], second_choice_callback)
+            renpy.pause(None)
     
-    jump night_scene
+    return
+
+label end_chat_scene:
+    # Отключаем режим чата
     $ disable_chat_mode()
     
+    # Продолжаем обычную игру
+    jump night_scene
+
 label night_scene:
     stop music
     scene bg night_room with fade
@@ -696,15 +636,43 @@ label morning_scene:
     play music "song/Audio_soft_1.mp3" fadein 3.0
     
     narrator "Утро пришло слишком быстро. Солнце пробивалось сквозь шторы, окрашивая комнату в золотистый свет."
-    narrator "[persistent.user_name] проснулась с тяжелым сердцем, но с решимостью. Она села на кровати, потянулась и бросила взгляд на телефон. Новое сообщение от Лины уже ждало."
+    narrator "[persistent.user_name] проснулась с тяжелым сердцем, но с решимостью. Она села на кровати, потянулась и бросила взгляд на телефон."
 
-    show lina speak at center with dissolve
-    e "Доброе утро, [persistent.user_name]! 🌅 Уже проснулась?"
-    e "Я собираюсь и так волнуюсь за тебя! Не забудь взять тетради и хорошее настроение. Увидимся у входа в школу? 😘"
-    hide lina
-
+    # Включаем мобильный режим чата
+    $ enable_mobile_chat_mode()
+    
+    # Лина пишет сообщения
+    $ e("Доброе утро, [persistent.user_name]! 🌅")
+    $ e("Уже проснулась? Я сейчас собираюсь в школу и так волнуюсь за тебя! 🥺")
+    $ e("Не забудь взять тетради и хорошее настроение 😘")
+    
     thought_user "Ее энтузиазм заразителен... Может, и мне удастся почувствовать то же самое? Я не хочу подвести ее."
+    
+    python:
+        def morning_choice_callback(choice_text):
+            if "Спасибо, Лина! Я уже встаю" in choice_text:
+                store.morning_choice = 1
+            elif "Я тоже волнуюсь" in choice_text:
+                store.morning_choice = 2
+            elif "Увидимся у входа" in choice_text:
+                store.morning_choice = 3
+            renpy.call_in_new_context("continue_morning")
+        
+        show_chat_choices([
+            "Спасибо, Лина! Я уже встаю. Увидимся у входа! ❤️",
+            "Я тоже волнуюсь... Но спасибо, что ты рядом!",
+            "Увидимся у входа в школу! Я постараюсь не опоздать 😊"
+        ], morning_choice_callback)
+        
+        renpy.pause(None)
 
+label continue_morning:
+    # Отключаем режим чата
+    $ disable_chat_mode()
+    
+    # Продолжаем обычную сцену
+    narrator "[persistent.user_name] улыбнулась, чувствуя себя немного увереннее."
+    
     narrator "[persistent.user_name] улыбнулась уголком губ и начала собираться."
     narrator "Комната, обычно такая уютная, теперь казалась полем битвы: рюкзак валялся на полу, полный случайных вещей — старых учебников из прошлой школы, пачки карандашей и даже любимой записной книжки, куда она иногда черкала свои мысли."
     narrator "Она методично складывала все необходимое: свежие тетради, ручки, бутылку воды."
@@ -753,7 +721,7 @@ label morning_scene:
 
     show lina speak at center with dissolve
     e "[persistent.user_name]! Привет!"
-    e "Я так рада тебя видеть!{p}Ты не опоздала ни на секунду!"
+    e "Я так рада тебя видеть! Ты не опоздала ни на секунду!"
 
     narrator "Лина обняла [persistent.user_name] крепко, словно старую подругу. Это объятие было таким искренним и теплым, что [persistent.user_name] почувствовала, как последние остатки страха начинают таять."
 
@@ -802,6 +770,7 @@ label morning_scene:
         $ exit_to_main_menu(result[1])
     
     return
+
 
 ################################################################################
 ## Глава Вторая: Новые знакомства
@@ -1082,6 +1051,7 @@ label chapter_two_end:
     
     return
 
+
 label chapter_three:
     # Убираем уведомление о загрузке (оно было показано перед переходом)
     
@@ -1094,30 +1064,7 @@ label chapter_three:
     pause 3.0
     scene black with dissolve
     
-    # Обновляем прогресс в базе данных
-    #if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
-    #    $ db.update_save_progress(persistent.user_id, "Глава Третья: Испытание дружбой")
-    #
     # Здесь будет код третьей главы
-    # ...
-    #
-    # В конце третьей главы:
-    #scene black with fade
-    #show text "{size=80}Конец третьей главы{/size}" with dissolve
-    #pause 2.0
-    #hide text with dissolve
-    #pause 0.5
-    #
-    # АВТОМАТИЧЕСКОЕ СОХРАНЕНИЕ при завершении главы
-    #$ auto_save_chapter_complete("Глава Третья: Испытание дружбой")
-    #
-    # Разблокируем достижение
-    #$ unlock_achievement("chapter_three_complete")
-    #
-    # Небольшая пауза, чтобы уведомление о сохранении отобразилось
-    #$ renpy.pause(1.0)
-    #
-    # Показываем экран перехода к следующей главе или финальный экран
-    #call screen chapter_transition("Глава Третья: Испытание дружбой", "Глава Четвертая: Новые горизонты", "Новые горизонты")
-    #
-    #return
+    "Глава в разработке"
+    
+    return

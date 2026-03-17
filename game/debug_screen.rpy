@@ -260,6 +260,7 @@ screen user_details(user_id, user_name):
 ## Экран подтверждения очистки БД
 ################################################################################
 
+
 screen confirm_clear_db():
     modal True
     zorder 200
@@ -289,7 +290,7 @@ screen confirm_clear_db():
                 outlines [(2, "#a84343", 0, 0)]
             
             text "Все игроки и их прогресс будут безвозвратно удалены!":
-                size 18
+                size 20
                 color "#ffffff"
                 xalign 0.5
                 text_align 0.5
@@ -300,9 +301,15 @@ screen confirm_clear_db():
             hbox:
                 spacing 10
                 xalign 0.5
+                # ИСПРАВЛЕНО: удалена строка "size 18"
                 
-                textbutton "Да, очистить" style "debug_confirm_button_danger" action [Function(clear_database), Show("debug_database")]
-                textbutton "Нет, отмена" style "debug_confirm_button_cancel" action Hide("confirm_clear_db")
+                textbutton "Да, очистить":
+                    style "debug_confirm_button_danger"
+                    action [Function(clear_database), Show("debug_database")]
+                
+                textbutton "Нет, отмена":
+                    style "debug_confirm_button_cancel"
+                    action Hide("confirm_clear_db")
 
 ################################################################################
 ## Функции для работы с данными
@@ -467,7 +474,7 @@ style debug_confirm_button_danger:
 style debug_confirm_button_danger_text:
     color "#ff8d67"
     hover_color "#ffffff"
-    size 14
+    size 20
     font gui.interface_text_font
     text_align 0.5
 
