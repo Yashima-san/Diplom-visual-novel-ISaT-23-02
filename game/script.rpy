@@ -50,59 +50,11 @@ image bg library = "images/library.png"
 init python:
     import time
     import json
-
-        # Функция для автоматического сохранения при завершении главы
-    def auto_save_chapter_complete(chapter_name):
-        """Автоматически сохраняет прогресс при завершении главы"""
-        if hasattr(persistent, 'user_id') and persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
-            try:
-                db.update_save_progress(persistent.user_id, chapter_name)
-            except:
-                pass
-        
-        # Разблокируем достижение за прохождение главы
-        try:
-            if "Первая" in chapter_name or "Связь" in chapter_name:
-                if 'unlock_achievement' in globals():
-                    unlock_achievement("chapter_one_complete")
-            elif "Вторая" in chapter_name or "Новые знакомства" in chapter_name:
-                if 'unlock_achievement' in globals():
-                    unlock_achievement("chapter_two_complete")
-        except:
-            pass
-        
-        # Делаем скриншот и сохраняем
-        try:
-            renpy.take_screenshot()
-            slot_name = f"chapter-complete-{int(time.time())}"
-            renpy.save(slot_name, f"Автосохранение: {chapter_name}")
-            
-            # Обновляем JSON с информацией о главе
-            try:
-                import json
-                save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                if save_json:
-                    save_json["chapter"] = chapter_name
-                    if hasattr(persistent, 'user_id') and persistent.user_id is not None:
-                        save_json["user_id"] = persistent.user_id
-                    if hasattr(persistent, 'user_name') and persistent.user_name:
-                        save_json["user_name"] = persistent.user_name
-                    save_json["_timestamp"] = time.time()
-                    
-                    with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
-                        json.dump(save_json, f, ensure_ascii=False, indent=2)
-            except Exception as e:
-                print(f"Ошибка при сохранении JSON: {e}")
-        except:
-            pass
-        
-        renpy.notify(f"Глава завершена! Прогресс сохранен.")
     
-    # Функция для перехода к следующей главе (БЕЗ СОХРАНЕНИЯ)
+
+    # Функция для перехода к следующей главе (без пауз внутри интеракции)
     def continue_to_next_chapter(old_chapter, new_chapter_title, new_chapter_subtitle):
-        """Только переходит к следующей главе, без сохранения (сохранение уже сделано)"""
-        renpy.notify("Загружаем следующую главу...")
-        
+        """Только переходит к следующей главе, без сохранения"""
         # Обновляем текущую главу
         store.current_chapter = new_chapter_title
         
@@ -113,34 +65,116 @@ init python:
                 renpy.jump("chapter_two")
             else:
                 renpy.notify("Глава в разработке")
-                renpy.run(MainMenu())
+                renpy.jump("main_menu")
         elif "Третья" in new_chapter_title or "Испытание" in new_chapter_title:
             # Проверяем, существует ли метка chapter_three
             if renpy.has_label("chapter_three"):
                 renpy.jump("chapter_three")
             else:
                 renpy.notify("Глава в разработке")
-                renpy.run(MainMenu())
+                renpy.jump("main_menu")
         else:
             # По умолчанию пытаемся перейти к chapter_two
             if renpy.has_label("chapter_two"):
                 renpy.jump("chapter_two")
             else:
                 renpy.notify("Глава в разработке")
-                renpy.run(MainMenu())
-    
-    # Функция для выхода в главное меню (с сохранением, хотя оно уже должно быть сделано)
+                renpy.jump("main_menu")
+
+    # Функция для выхода в главное меню
     def exit_to_main_menu(old_chapter):
-        """Сохраняет прогресс (на всякий случай) и выходит в главное меню"""
-        # Проверяем, нужно ли сохранять (если вдруг автосохранение не сработало)
-        if hasattr(persistent, 'user_id') and persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+        """Выходит в главное меню"""
+        renpy.jump("main_menu")
+
+    # Функция для автоматического сохранения при завершении главы
+    def auto_save_chapter_complete(chapter_name):
+        """Автоматически сохраняет прогресс при завершении главы"""
+        # Сохраняем только для готовых глав (первая и вторая)
+        if "Первая" in chapter_name or "Связь" in chapter_name:
+            # Первая глава - сохраняем
+            if hasattr(persistent, 'user_id') and persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+                try:
+                    db.update_save_progress(persistent.user_id, chapter_name)
+                except:
+                    pass
+            
+            # Разблокируем достижение за прохождение главы
             try:
-                db.update_save_progress(persistent.user_id, old_chapter)
+                unlock_achievement("chapter_one_complete")
             except:
                 pass
+            
+            # Делаем скриншот и сохраняем
+            try:
+                renpy.take_screenshot()
+                slot_name = f"chapter1-complete-{int(time.time())}"
+                renpy.save(slot_name, f"Автосохранение: {chapter_name}")
+                
+                # Обновляем JSON с информацией о главе
+                try:
+                    import json
+                    save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                    if save_json:
+                        save_json["chapter"] = chapter_name
+                        if hasattr(persistent, 'user_id') and persistent.user_id is not None:
+                            save_json["user_id"] = persistent.user_id
+                        if hasattr(persistent, 'user_name') and persistent.user_name:
+                            save_json["user_name"] = persistent.user_name
+                        save_json["_timestamp"] = time.time()
+                        
+                        with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
+                            json.dump(save_json, f, ensure_ascii=False, indent=2)
+                except Exception as e:
+                    print(f"Ошибка при сохранении JSON: {e}")
+            except:
+                pass
+            
+            renpy.notify(f"Глава завершена! Прогресс сохранен.")
         
-        renpy.notify("Возвращаемся в главное меню...")
-        renpy.run(MainMenu())
+        elif "Вторая" in chapter_name or "Новые знакомства" in chapter_name:
+            # Вторая глава - сохраняем
+            if hasattr(persistent, 'user_id') and persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
+                try:
+                    db.update_save_progress(persistent.user_id, chapter_name)
+                except:
+                    pass
+            
+            # Разблокируем достижение за прохождение главы
+            try:
+                unlock_achievement("chapter_two_complete")
+            except:
+                pass
+            
+            # Делаем скриншот и сохраняем
+            try:
+                renpy.take_screenshot()
+                slot_name = f"chapter2-complete-{int(time.time())}"
+                renpy.save(slot_name, f"Автосохранение: {chapter_name}")
+                
+                # Обновляем JSON с информацией о главе
+                try:
+                    import json
+                    save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                    if save_json:
+                        save_json["chapter"] = chapter_name
+                        if hasattr(persistent, 'user_id') and persistent.user_id is not None:
+                            save_json["user_id"] = persistent.user_id
+                        if hasattr(persistent, 'user_name') and persistent.user_name:
+                            save_json["user_name"] = persistent.user_name
+                        save_json["_timestamp"] = time.time()
+                        
+                        with open(renpy.slot_json_filename(slot_name), 'w', encoding='utf-8') as f:
+                            json.dump(save_json, f, ensure_ascii=False, indent=2)
+                except Exception as e:
+                    print(f"Ошибка при сохранении JSON: {e}")
+            except:
+                pass
+            
+            renpy.notify(f"Глава завершена! Прогресс сохранен.")
+        
+        else:
+            # Главы в разработке - не сохраняем
+            renpy.notify(f"Глава в разработке. Прогресс не сохранен.")
 
     # Функция для сохранения информации о пользователе
     def save_user_info():
@@ -410,6 +444,7 @@ init python:
         if hasattr(persistent, 'user_name'):
             persistent.user_name = user_name
         renpy.notify(f"Выбран игрок: {user_name}")
+
 
 
 ################################################################################
@@ -738,16 +773,26 @@ label morning_scene:
     stop sound fadeout 3.0
     stop music fadeout 3.0
     
+    # Показываем текст "Конец первой главы"
     show text "{size=80}Конец первой главы{/size}" with dissolve
     pause 2.0
+    hide text with dissolve
+    pause 0.5
     
     # АВТОМАТИЧЕСКОЕ СОХРАНЕНИЕ при завершении главы
     $ auto_save_chapter_complete("Глава Первая: Связь")
     
-    # Показываем экран перехода (переход без дополнительного сохранения)
-    $ renpy.show_screen("chapter_transition", "Глава Первая: Связь", "Глава Вторая: Новые знакомства", "Новые знакомства")
-    $ renpy.pause(None)
-
+    # Показываем экран перехода и получаем результат
+    $ result = renpy.call_screen("chapter_transition", "Глава Первая: Связь", "Глава Вторая: Новые знакомства", "Новые знакомства")
+    
+    if result[0] == "continue":
+        # Переходим к следующей главе
+        $ continue_to_next_chapter(result[1], result[2], result[3])
+    else:
+        # Выходим в главное меню
+        $ exit_to_main_menu(result[1])
+    
+    return
 
 ################################################################################
 ## Глава Вторая: Новые знакомства
@@ -771,7 +816,7 @@ label chapter_two:
     play music "song/Audio_soft_2.mp3" fadein 5.0
     $ renpy.music.set_volume(0.4, delay=5)
     
-    # Школьный коридор - временно используем school_entrance вместо school_hallway
+    # Школьный коридор
     scene bg school_entrance with fade
     play sound "song/school_ambient.mp3" fadein 3.0
     
@@ -799,18 +844,22 @@ label chapter_two:
     menu second_chapter_first_choice:
         "Да, я сегодня первый день. Приятно познакомиться.":
             $ chapter2_choice_1 = 1
+            $ unlock_achievement("sociable_choice")
             user_char "Да, я сегодня первый день. Приятно познакомиться."
             
         "Эм... да. Я новенькая.":
             $ chapter2_choice_1 = 2
+            $ unlock_achievement("shy_choice")
             user_char "Эм... да. Я новенькая."
         
         "Просто молча кивнуть":
             $ chapter2_choice_1 = 3
+            $ unlock_achievement("balanced_choice")
             narrator "[persistent.user_name] просто молча кивнула."
     
     a "Класс! Я Алекс. Если что-то нужно будет — обращайся. Я здесь уже второй год, все знаю!"
-    
+    $ unlock_achievement("meet_alex")
+
     show lina happy at left with move
     show alex smile at right
     
@@ -863,7 +912,8 @@ label chapter_two:
     show teacher kind at center with dissolve
     
     t "Ребята, сегодня у нас новая ученица. Представься, пожалуйста."
-    
+    $ unlock_achievement("meet_teacher")
+
     narrator "Все взгляды устремились на [persistent.user_name]. Она почувствовала, как щеки заливает румянец."
     
     thought_user "Так, спокойно. Я же готовилась к этому."
@@ -877,7 +927,8 @@ label chapter_two:
     show katia smile at left with moveinleft
     
     k "Конечно, Анна Сергеевна!"
-    
+    $ unlock_achievement("meet_katya")
+
     hide teacher
     
     narrator "Катя помахала [persistent.user_name] рукой, приглашая сесть рядом."
@@ -933,7 +984,8 @@ label music_room_scene:
     
     scene bg music_room with fade
     play music "song/gentle_guitar.mp3" fadein 3.0
-    
+    $ unlock_achievement("music_room_visit")
+
     narrator "Актовый зал оказался уютным помещением с мягкими креслами и стареньким пианино в углу."
     narrator "Несколько ребят уже настраивали инструменты. Алекс взял гитару и улыбнулся."
     
@@ -964,6 +1016,7 @@ label library_scene:
     hide lina
     
     scene bg library with fade
+    $ unlock_achievement("library_visit")
     
     narrator "Пока остальные пошли в актовый зал, [persistent.user_name] направилась в библиотеку."
     narrator "Здесь было тихо и спокойно, пахло старыми книгами и уютом."
@@ -971,7 +1024,8 @@ label library_scene:
     show librarian kind at center with dissolve
     
     lib "Здравствуй, дорогая! Ты новенькая? Хочешь что-то почитать?"
-    
+    $ unlock_achievement("meet_librarian")
+
     thought_user "Библиотека... Здесь мне спокойно. Никто не требует быть общительной."
     
     user_char "Здравствуйте. Да, я бы хотела... может, что-то поспокойнее?"
@@ -983,6 +1037,7 @@ label library_scene:
     narrator "Тишина обволакивала, давая возможность побыть наедине со своими мыслями."
     
     thought_user "Может, иногда лучше быть одной, чем чувствовать себя чужой в компании? Хотя... Лина и Катя... С ними, кажется, можно попробовать."
+    $ unlock_achievement("new_friends")
     
     jump chapter_two_end
 
@@ -991,8 +1046,11 @@ label chapter_two_end:
     stop music fadeout 3.0
     stop sound fadeout 3.0
     
+    # Показываем текст "Конец второй главы"
     show text "{size=80}Конец второй главы{/size}" with dissolve
     pause 2.0
+    hide text with dissolve
+    pause 0.5
     
     # АВТОМАТИЧЕСКОЕ СОХРАНЕНИЕ при завершении главы
     $ auto_save_chapter_complete("Глава Вторая: Новые знакомства")
@@ -1001,27 +1059,34 @@ label chapter_two_end:
     if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
         $ db.update_save_progress(persistent.user_id, "Глава Вторая: Новые знакомства")
     
-    # Разблокируем достижение за прохождение второй главы
-    $ unlock_achievement("chapter_two_complete")
+    # Показываем экран перехода и получаем результат
+    $ result = renpy.call_screen("chapter_transition", "Глава Вторая: Новые знакомства", "Глава Третья: Испытание дружбой", "Испытание дружбой")
     
-    # Показываем экран перехода (переход без дополнительного сохранения)
-    $ renpy.show_screen("chapter_transition", "Глава Вторая: Новые знакомства", "Глава Третья: Испытание дружбой", "Испытание дружбой")
-    $ renpy.pause(None)
-
+    if result[0] == "continue":
+        # Переходим к следующей главе
+        $ continue_to_next_chapter(result[1], result[2], result[3])
+    else:
+        # Выходим в главное меню
+        $ exit_to_main_menu(result[1])
+    
+    return
 
 label chapter_three:
+    # Убираем уведомление о загрузке (оно было показано перед переходом)
+    
     # Устанавливаем текущую главу для безопасного определения
     $ current_chapter = "Глава Третья: Испытание дружбой"
     
     # Показываем заголовок главы
     scene black with fade
     show text "{size=80}Глава Третья{/size}\n{size=60}Испытание дружбой{/size}" with dissolve
-    pause 2.0
+    pause 3.0
+    scene black with dissolve
     
     # Обновляем прогресс в базе данных
     #if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
     #    $ db.update_save_progress(persistent.user_id, "Глава Третья: Испытание дружбой")
-    
+    #
     # Здесь будет код третьей главы
     # ...
     #
@@ -1029,6 +1094,8 @@ label chapter_three:
     #scene black with fade
     #show text "{size=80}Конец третьей главы{/size}" with dissolve
     #pause 2.0
+    #hide text with dissolve
+    #pause 0.5
     #
     # АВТОМАТИЧЕСКОЕ СОХРАНЕНИЕ при завершении главы
     #$ auto_save_chapter_complete("Глава Третья: Испытание дружбой")
@@ -1036,6 +1103,10 @@ label chapter_three:
     # Разблокируем достижение
     #$ unlock_achievement("chapter_three_complete")
     #
+    # Небольшая пауза, чтобы уведомление о сохранении отобразилось
+    #$ renpy.pause(1.0)
+    #
     # Показываем экран перехода к следующей главе или финальный экран
-    #$ renpy.show_screen("chapter_transition", "Глава Третья: Испытание дружбой", "Глава Четвертая", "Новые испытания")
-    #$ renpy.pause(None)
+    #call screen chapter_transition("Глава Третья: Испытание дружбой", "Глава Четвертая: Новые горизонты", "Новые горизонты")
+    #
+    #return

@@ -1,45 +1,33 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
-While loading <renpy.display.im.Image object ('images/school_hallway.png') at 0x00000000052de6f0>:
-  File "game/script.rpy", line 710, in script
-    narrator "Лина уверенно вела [persistent.user_name] по длинным школьным коридорам."
-  File "game/script.rpy", line 304, in save_progress_and_exit
-    renpy.jump("main_menu")
-    ~~~~~~~~~~^^^^^^^^^^^^^
-renpy.game.JumpException: main_menu
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "game/script.rpy", line 710, in script
-    narrator "Лина уверенно вела [persistent.user_name] по длинным школьным коридорам."
-renpy.script.LabelNotFound: could not find label 'main_menu'.
+While running game code:
+  File "game/script.rpy", line 756, in script
+    call screen chapter_transition("Глава Первая: Связь", "Глава Вторая: Новые знакомства", "Новые знакомства")
+  File "game/script.rpy", line 61, in continue_to_next_chapter
+    renpy.pause(0.5)
+    ~~~~~~~~~~~^^^^^
+Exception: Cannot start an interaction in the middle of an interaction, without creating a new context.
 
 -- Full Traceback ------------------------------------------------------------
 
 Traceback (most recent call last):
-  File "game/script.rpy", line 710, in script
-    narrator "Лина уверенно вела [persistent.user_name] по длинным школьным коридорам."
-  File "renpy/ast.py", line 2926, in execute
-    Say.execute(self)
-    ~~~~~~~~~~~^^^^^^
-  File "renpy/ast.py", line 991, in execute
-    renpy.exports.say(who, what, *args, **kwargs)
-    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/exports/sayexports.py", line 129, in say
-    who(what, *args, **kwargs)
-    ~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/character.py", line 1565, in __call__
-    self.do_display(who, what, cb_args=self.cb_args, dtt=dtt, **display_args)
-    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/character.py", line 1220, in do_display
-    display_say(who, what, self.do_show, **display_args)
-    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/character.py", line 968, in display_say
-    raise exception
-  File "renpy/character.py", line 902, in display_say
-    rv = renpy.ui.interact(mouse="say", type=type, roll_forward=roll_forward)
-         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "game/script.rpy", line 756, in script
+    call screen chapter_transition("Глава Первая: Связь", "Глава Вторая: Новые знакомства", "Новые знакомства")
+  File "renpy/ast.py", line 2242, in execute
+    self.call("execute")
+    ~~~~~~~~~^^^^^^^^^^^
+  File "renpy/ast.py", line 2196, in call
+    return renpy.statements.call(method, parsed, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/statements.py", line 381, in call
+    return method(parsed, *args, **kwargs)
+           ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/common/000statements.rpy", line 695, in execute_call_screen
+    store._return = renpy.call_screen(name, *args, **kwargs)
+                    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/exports/statementexports.py", line 348, in call_screen
+    rv = renpy.ui.interact(mouse="screen", type="screen", roll_forward=roll_forward)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "renpy/ui.py", line 306, in interact
     rv = renpy.game.interface.interact(roll_forward=roll_forward, **kwargs)
          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -80,6 +68,9 @@ Traceback (most recent call last):
   File "renpy/display/layout.py", line 1281, in event
     rv = i.event(ev, x - xo, y - yo, cst)
          ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/layout.py", line 1281, in event
+    rv = i.event(ev, x - xo, y - yo, cst)
+         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
   File "renpy/display/behavior.py", line 1185, in event
     return handle_click(self.clicked)
            ~~~~~~~~~~~~^^^^^^^^^^^^^^
@@ -95,35 +86,22 @@ Traceback (most recent call last):
   File "renpy/common/00action_other.rpy", line 618, in __call__
     rv = self.callable(*self.args, **self.kwargs)
          ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/script.rpy", line 304, in save_progress_and_exit
-    renpy.jump("main_menu")
-    ~~~~~~~~~~^^^^^^^^^^^^^
-  File "renpy/exports/statementexports.py", line 271, in jump
-    raise renpy.game.JumpException(label)
-renpy.game.JumpException: main_menu
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
-  File "renpy/bootstrap.py", line 401, in bootstrap
-    renpy.main.main()
-    ~~~~~~~~~~~~~~~^^
-  File "renpy/main.py", line 591, in main
-    run(restart)
-    ~~~^^^^^^^^^
-  File "renpy/main.py", line 137, in run
-    renpy.execution.run_context(True)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
-  File "renpy/execution.py", line 1037, in run_context
-    context.run()
-    ~~~~~~~~~~~^^
-  File "game/script.rpy", line 710, in script
-    narrator "Лина уверенно вела [persistent.user_name] по длинным школьным коридорам."
-  File "renpy/script.py", line 1202, in lookup
-    raise LabelNotFound(original)
-renpy.script.LabelNotFound: could not find label 'main_menu'.
+  File "game/script.rpy", line 61, in continue_to_next_chapter
+    renpy.pause(0.5)
+    ~~~~~~~~~~~^^^^^
+  File "renpy/exports/statementexports.py", line 198, in pause
+    rv = renpy.ui.interact(mouse="pause", type="pause", roll_forward=roll_forward, pause=delay, pause_modal=modal)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/ui.py", line 306, in interact
+    rv = renpy.game.interface.interact(roll_forward=roll_forward, **kwargs)
+         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/core.py", line 2122, in interact
+    raise Exception(
+        "Cannot start an interaction in the middle of an interaction, without creating a new context."
+    )
+Exception: Cannot start an interaction in the middle of an interaction, without creating a new context.
 
 Windows-11-10.0.26200-SP0 AMD64
 Ren'Py 8.5.3.26020901+nightly
 За гранью чувств 0.0
-Mon Mar 16 21:03:36 2026
+Tue Mar 17 02:03:24 2026

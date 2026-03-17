@@ -2070,22 +2070,22 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
                     
                     textbutton "Да, продолжить":
                         style "chapter_transition_button"
-                        action [Function(continue_to_next_chapter, old_chapter, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")]
+                        action [Return(("continue", old_chapter, new_chapter_title, new_chapter_subtitle))]
                     
                     textbutton "Нет, выйти в главное меню":
                         style "chapter_transition_button"
-                        action [Function(exit_to_main_menu, old_chapter), Hide("chapter_transition")]
+                        action [Return(("exit", old_chapter))]
             else:
                 # Если глава в разработке, показываем только одну кнопку
                 textbutton "Выйти в главное меню":
                     style "chapter_transition_button"
                     xalign 0.5
-                    action [Function(exit_to_main_menu, old_chapter), Hide("chapter_transition")]
+                    action [Return(("exit", old_chapter))]
     
     key "K_RETURN" action If(next_chapter_exists, 
-        true=[Function(continue_to_next_chapter, old_chapter, new_chapter_title, new_chapter_subtitle), Hide("chapter_transition")], 
-        false=[Function(exit_to_main_menu, old_chapter), Hide("chapter_transition")])
-    key "K_ESCAPE" action [Function(exit_to_main_menu, old_chapter), Hide("chapter_transition")]
+        true=Return(("continue", old_chapter, new_chapter_title, new_chapter_subtitle)), 
+        false=Return(("exit", old_chapter)))
+    key "K_ESCAPE" action Return(("exit", old_chapter))
 
 ## Стили для экрана перехода
 style chapter_transition_frame:
