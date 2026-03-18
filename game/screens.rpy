@@ -205,11 +205,25 @@ style frame:
 
 ###### Стили курсоров ######
 
-# Временно отключаем пользовательские курсоры до создания файлов
-# Используем стандартные курсоры Ren'Py
+# Базовый стиль для всех кнопок с правильными курсорами
 style button:
     properties gui.button_properties("button")
-    mouse "default"
+    mouse "default"                     # Обычное состояние
+    hover_mouse "hover"                  # Наведение
+    selected_mouse "click"              # Выбранное состояние
+    selected_hover_mouse "click"          # Наведение на выбранном состоянии
+    insensitive_mouse "default"           # Неактивное состояние
+
+# Стили для курсоров (определяем их один раз)
+init python:
+    # Создаем курсоры если нужно (опционально)
+    config.mouse = {
+        "default": [ ("gui/cursor/default.png", 0, 0) ],
+        "hover": [ ("gui/cursor/hover.png", 0, 0) ],
+        "selected": [ ("gui/cursor/click.png", 0, 0) ],
+        "selected_hover": [ ("gui/cursor/click.png", 0, 0) ],
+        "insensitive": [ ("gui/cursor/default.png", 0, 0) ],
+    }
 
 
 # Для кнопок навигации
@@ -1108,7 +1122,7 @@ screen file_slots_with_user(title, is_save=True):
                     
                     textbutton _(">") action FilePageNext()
                     key "save_page_next" action FilePageNext()
-                    
+
 ## Экран настроек ##############################################################
 
 screen preferences():

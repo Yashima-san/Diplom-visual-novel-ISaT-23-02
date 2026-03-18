@@ -542,32 +542,29 @@ label start:
     # Показываем варианты ответа в чате
     python:
         def first_choice_callback(choice_text):
-            # Здесь можно сохранить выбор и продолжить
             if "Привет! Да, готова" in choice_text:
                 store.first_choice = 1
                 unlock_achievement("first_choice")
-            elif "Я тоже очень рада" in choice_text:
+            elif "Привет! Я тоже очень рада" in choice_text:
                 store.first_choice = 2
                 unlock_achievement("first_choice")
-            elif "Я очень рада, что мы будем учиться вместе" in choice_text:
+            elif "Привет! Я очень рада" in choice_text:
                 store.first_choice = 3
                 unlock_achievement("first_choice")
             
-            # Продолжаем диалог - используем renpy.jump
+            # Отправляем выбранное сообщение в чат
+            user_say(choice_text)
             renpy.jump("continue_chat_after_first")
         
-        # Показываем варианты
         show_chat_choices([
             "Привет! Да, готова. Уже жду не дождусь! 😊",
             "Привет! Я тоже очень рада! Немного волнуюсь, но уверена, что с тобой будет весело! 😊",
             "Привет! Я очень рада, что мы будем учиться вместе. Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг. ❤️"
         ], first_choice_callback)
         
-        # Ждем выбора
         renpy.pause(None)
 
 label continue_chat_after_first:
-    # Продолжаем диалог в чате
     if first_choice == 1:
         $ e("Ура! Я так рада!")
         $ e("Я уже придумала, что мы можем пойти в кафе после уроков, если захочешь! Или в парк! Что скажешь?")
@@ -578,7 +575,9 @@ label continue_chat_after_first:
                     store.second_choice = 11
                 elif "Давай сначала посмотрим" in choice_text:
                     store.second_choice = 12
-                # Завершаем чат и переходим дальше - используем renpy.jump
+                
+                # Отправляем выбранное сообщение в чат
+                user_say(choice_text)
                 renpy.jump("end_chat_scene")
             
             show_chat_choices([
@@ -597,6 +596,9 @@ label continue_chat_after_first:
                     store.second_choice = 21
                 elif "Спасибо, Лина" in choice_text:
                     store.second_choice = 22
+                
+                # Отправляем выбранное сообщение в чат
+                user_say(choice_text)
                 renpy.jump("end_chat_scene")
             
             show_chat_choices([
@@ -615,6 +617,9 @@ label continue_chat_after_first:
                     store.second_choice = 31
                 elif "Спасибо, Лина! Я очень ценю твою дружбу" in choice_text:
                     store.second_choice = 32
+                
+                # Отправляем выбранное сообщение в чат
+                user_say(choice_text)
                 renpy.jump("end_chat_scene")
             
             show_chat_choices([
@@ -628,8 +633,6 @@ label continue_chat_after_first:
 label end_chat_scene:
     # Отключаем режим чата
     $ disable_chat_mode()
-    
-    # Продолжаем обычную игру
     jump night_scene
 
 label night_scene:
@@ -650,17 +653,15 @@ label night_scene:
 
 label morning_scene:
     stop music
-    # Возвращаемся к CG-арту комнаты (утро следующего дня)
     scene cg room_evening with fade
     play music "song/Audio_soft_1.mp3" fadein 3.0
     
     narrator "Утро пришло слишком быстро. Солнце пробивалось сквозь шторы, окрашивая комнату в золотистый свет."
     narrator "[persistent.user_name] проснулась с тяжелым сердцем, но с решимостью. Она села на кровати, потянулась и бросила взгляд на телефон."
 
-    # Включаем мобильный режим чата
-    $ enable_mobile_chat_mode()
+    # Включаем режим чата
+    $ enable_chat_mode()
     
-    # Лина пишет сообщения
     $ e("Доброе утро, [persistent.user_name]! 🌅")
     $ e("Уже проснулась? Я сейчас собираюсь в школу и так волнуюсь за тебя! 🥺")
     $ e("Не забудь взять тетради и хорошее настроение 😘")
@@ -675,6 +676,9 @@ label morning_scene:
                 store.morning_choice = 2
             elif "Увидимся у входа" in choice_text:
                 store.morning_choice = 3
+            
+            # Отправляем выбранное сообщение в чат
+            user_say(choice_text)
             renpy.jump("continue_morning")
         
         show_chat_choices([
@@ -689,7 +693,6 @@ label continue_morning:
     # Отключаем режим чата
     $ disable_chat_mode()
     
-    # Продолжаем обычную сцену
     narrator "[persistent.user_name] улыбнулась, чувствуя себя немного увереннее."
     
     narrator "[persistent.user_name] улыбнулась уголком губ и начала собираться."
@@ -769,23 +772,18 @@ label continue_morning:
     stop sound fadeout 3.0
     stop music fadeout 3.0
     
-    # Показываем текст "Конец первой главы"
     show text "{size=80}Конец первой главы{/size}" with dissolve
     pause 2.0
     hide text with dissolve
     pause 0.5
     
-    # АВТОМАТИЧЕСКОЕ СОХРАНЕНИЕ при завершении главы
     $ auto_save_chapter_complete("Глава Первая: Связь")
     
-    # Показываем экран перехода и получаем результат
     $ result = renpy.call_screen("chapter_transition", "Глава Первая: Связь", "Глава Вторая: Новые знакомства", "Новые знакомства")
     
     if result[0] == "continue":
-        # Переходим к следующей главе
         $ continue_to_next_chapter(result[1], result[2], result[3])
     else:
-        # Выходим в главное меню
         $ exit_to_main_menu(result[1])
     
     return
@@ -796,24 +794,19 @@ label continue_morning:
 ################################################################################
 
 label chapter_two:
-    # Устанавливаем текущую главу для безопасного определения
     $ current_chapter = "Глава Вторая: Новые знакомства"
     
-    # Показываем заголовок главы
     scene black with fade
     show text "{size=80}Глава Вторая{/size}\n{size=60}Новые знакомства{/size}" with dissolve
     pause 3.0
     scene black with dissolve
     
-    # Обновляем прогресс в базе данных
     if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
         $ db.update_save_progress(persistent.user_id, "Глава Вторая: Новые знакомства")
     
-    # Запускаем музыку для второй главы
     play music "song/Audio_soft_2.mp3" fadein 5.0
     $ renpy.music.set_volume(0.4, delay=5)
     
-    # Школьный коридор
     scene bg school_entrance with fade
     play sound "song/school_ambient.mp3" fadein 3.0
     
@@ -900,7 +893,6 @@ label chapter_two:
     
     narrator "Прозвенел звонок на урок, и Лина с [persistent.user_name] поспешили в класс."
     
-    # Сцена на уроке
     scene bg classroom with fade
     
     narrator "Класс был светлым и просторным. Ученики уже рассаживались по местам, приветствуя друг друга."
@@ -933,7 +925,6 @@ label chapter_two:
     
     thought_user "Катя... Она кажется дружелюбной. Может, сегодня не такой уж плохой день?"
     
-    # Звонок с урока
     play sound "song/school_bell.mp3"
     pause 1.0
     
@@ -1045,45 +1036,34 @@ label chapter_two_end:
     stop music fadeout 3.0
     stop sound fadeout 3.0
     
-    # Показываем текст "Конец второй главы"
     show text "{size=80}Конец второй главы{/size}" with dissolve
     pause 2.0
     hide text with dissolve
     pause 0.5
     
-    # АВТОМАТИЧЕСКОЕ СОХРАНЕНИЕ при завершении главы
     $ auto_save_chapter_complete("Глава Вторая: Новые знакомства")
     
-    # Обновляем прогресс в базе данных (дополнительно)
     if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
         $ db.update_save_progress(persistent.user_id, "Глава Вторая: Новые знакомства")
     
-    # Показываем экран перехода и получаем результат
     $ result = renpy.call_screen("chapter_transition", "Глава Вторая: Новые знакомства", "Глава Третья: Испытание дружбой", "Испытание дружбой")
     
     if result[0] == "continue":
-        # Переходим к следующей главе
         $ continue_to_next_chapter(result[1], result[2], result[3])
     else:
-        # Выходим в главное меню
         $ exit_to_main_menu(result[1])
     
     return
 
 
 label chapter_three:
-    # Убираем уведомление о загрузке (оно было показано перед переходом)
-    
-    # Устанавливаем текущую главу для безопасного определения
     $ current_chapter = "Глава Третья: Испытание дружбой"
     
-    # Показываем заголовок главы
     scene black with fade
     show text "{size=80}Глава Третья{/size}\n{size=60}Испытание дружбой{/size}" with dissolve
     pause 3.0
     scene black with dissolve
     
-    # Здесь будет код третьей главы
     "Глава в разработке"
     
     return
