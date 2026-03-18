@@ -46,7 +46,6 @@ image librarian neutral = Transform("images/characters/librarian_neutral.png", z
 image librarian kind = Transform("images/characters/librarian_kind.png", zoom=0.4, xalign=0.5, yalign=1.0)
 
 # Объявление изображений фона
-image bg room_evening = "images/room_evening.png"
 image bg night_room = "images/night_room.png"
 image bg room_pk = "images/room_pk.png"
 image bg bg_room_pk_light = "images/room_pk_light.png"
@@ -57,6 +56,9 @@ image bg school_hallway = "images/school_hallway.png"
 image bg classroom = "images/classroom.png"
 image bg music_room = "images/music_room.png"
 image bg library = "images/library.png"
+
+# CG-арты (отдельно от обычных фонов)
+image cg room_evening = "images/cg/room_evening.png"
 
 ####################################################################################
 
@@ -450,11 +452,11 @@ label start:
     # Разблокировка первого достижения
     $ unlock_achievement("wake_up")
     
-    # Разблокировка элементов галереи
+    # Разблокировка элементов галереи (CG-арт для вечерней комнаты)
     $ unlock_gallery_item("room_evening")
 
-    # Показываем фон
-    scene bg room_evening at truecenter with fade
+    # Показываем CG-арт (вечер)
+    scene cg room_evening at truecenter with fade
 
     # Старт музыки
     stop music
@@ -640,7 +642,8 @@ label night_scene:
 
 label morning_scene:
     stop music
-    scene bg room_evening with fade
+    # Возвращаемся к CG-арту комнаты (утро следующего дня)
+    scene cg room_evening with fade
     play music "song/Audio_soft_1.mp3" fadein 3.0
     
     narrator "Утро пришло слишком быстро. Солнце пробивалось сквозь шторы, окрашивая комнату в золотистый свет."

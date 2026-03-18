@@ -144,10 +144,12 @@ screen messenger_chat_with_choices():
                         bold True
                         xalign 0.5
                     
+                    # ИСПРАВЛЕНО: используем отдельный блок python для определения цвета
+                    $ status_color = "#4caf50" if chat_status == "В сети" else "#ffaa00"
                     text chat_status:
                         style "chat_partner_status"
                         size 18
-                        color "#4caf50" if chat_status == "В сети" else "#ffaa00"
+                        color status_color
                         xalign 0.5
             
             # Область сообщений
@@ -242,13 +244,13 @@ screen messenger_chat_with_choices():
                         xfill True
                         xsize 800
                         
+                        # ИСПРАВЛЕНО: убран left_margin, вместо этого используем padding во frame
                         text "Введите текст...":
                             style "input_placeholder"
                             size 20
                             color "#888888"
                             xalign 0.0
                             yalign 0.5
-                            left_margin 15
             
             # Область с вариантами ответа (показываем только если есть варианты)
             if chat_choices:
@@ -340,9 +342,11 @@ screen mobile_messenger():
                     vbox:
                         yalign 0.5
                         text "Лина" size 28 color "#ffffff" bold True
+                        # ИСПРАВЛЕНО: используем отдельный блок python для определения цвета
+                        $ status_color = "#4caf50" if chat_status == "В сети" else "#ffaa00"
                         text chat_status:
                             size 18
-                            color "#4caf50" if chat_status == "В сети" else "#ffaa00"
+                            color status_color
             
             # Область сообщений
             viewport:
@@ -445,13 +449,13 @@ screen mobile_messenger():
                         style "mobile_input_field"
                         xfill True
                         
+                        # ИСПРАВЛЕНО: убран left_margin, вместо этого используем padding во frame
                         text "Введите текст...":
                             style "mobile_input_placeholder"
                             size 18
                             color "#888888"
                             xalign 0.0
                             yalign 0.5
-                            left_margin 15
             
             # Нижняя панель с вариантами ответа (показываем только если есть варианты)
             if chat_choices:
@@ -525,10 +529,12 @@ style input_field:
     background "#3b3b3b"
     ysize 50
     xfill True
+    padding (15, 0)  # Добавляем отступы здесь вместо left_margin
 
 style input_placeholder:
     font gui.interface_text_font
     yalign 0.5
+    xalign 0.0
 
 style messenger_user_bubble:
     background "#c66b2f"
@@ -641,11 +647,13 @@ style mobile_input_field:
     background "#3b3b3b"
     ysize 45
     xfill True
+    padding (15, 0)  # Добавляем отступы здесь вместо left_margin
 
 style mobile_input_placeholder:
     font gui.interface_text_font
     size 18
     yalign 0.5
+    xalign 0.0
 
 style mobile_input_area:
     background "#2b2b2b"

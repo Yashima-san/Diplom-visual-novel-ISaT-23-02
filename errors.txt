@@ -2,9 +2,13 @@
 errors listed below, and try again.
 
 
-File "game/messenger.rpy", line 166: The if statement is not a valid child of the text statement.
-    text msg.character[0] if msg.character else "?":
-                            ^
+File "game/messenger.rpy", line 253: 'left_margin' is not a keyword argument or valid child of the text statement.
+    left_margin 15
+               ^
+
+File "game/messenger.rpy", line 458: 'left_margin' is not a keyword argument or valid child of the text statement.
+    left_margin 15
+               ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Wed Mar 18 10:39:22 2026
+Wed Mar 18 14:04:57 2026

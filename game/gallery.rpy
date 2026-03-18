@@ -1,3 +1,5 @@
+[file name]: gallery.rpy
+[file content begin]
 ################################################################################
 ## Галерея
 ################################################################################
@@ -41,7 +43,7 @@ init python:
     # Словарь для хранения элементов галереи
     gallery_items = []
     
-    # Добавление элементов в галерею
+    # Персонажи (удален user)
     gallery_items.append(GalleryItem(
         "Лина", 
         "images/characters/lina.png", 
@@ -49,39 +51,26 @@ init python:
         "meet_lina"
     ))
 
+    # Фоны (все локации из игры)
     gallery_items.append(GalleryItem(
-        "[persistent.user_name]", 
-        "images/characters/user.png", 
-        "characters",
-        "meet_user"
-    ))
-
-    gallery_items.append(GalleryItem(
-        "Комната вечером", 
-        "images/room_evening.png",
+        "Ночная комната", 
+        "images/night_room.png",
         "backgrounds",
-        "room_evening"
+        None
     ))
     
     gallery_items.append(GalleryItem(
-        "Комната закат", 
+        "Комната (дневная)", 
+        "images/room_pk.png",
+        "backgrounds",
+        None
+    ))
+    
+    gallery_items.append(GalleryItem(
+        "Комната (светлая)", 
         "images/room_pk_light.png",
         "backgrounds",
         "room_pk_light"
-    ))
-    
-    gallery_items.append(GalleryItem(
-        "Комната", 
-        "images/room_pk.png",
-        "backgrounds",
-        "room_pk"
-    ))
-    
-    gallery_items.append(GalleryItem(
-        "Школа", 
-        "images/school_entrance.png",
-        "backgrounds",
-        None
     ))
     
     gallery_items.append(GalleryItem(
@@ -99,17 +88,46 @@ init python:
     ))
     
     gallery_items.append(GalleryItem(
-        "Ночная комната", 
-        "images/night_room.png",
+        "Школа (вход)", 
+        "images/school_entrance.png",
         "backgrounds",
         None
     ))
+    
+    gallery_items.append(GalleryItem(
+        "Школьный коридор", 
+        "images/school_hallway.png",
+        "backgrounds",
+        None
+    ))
+    
+    gallery_items.append(GalleryItem(
+        "Класс", 
+        "images/classroom.png",
+        "backgrounds",
+        None
+    ))
+    
+    gallery_items.append(GalleryItem(
+        "Музыкальная комната", 
+        "images/music_room.png",
+        "backgrounds",
+        "music_room_visit"
+    ))
+    
+    gallery_items.append(GalleryItem(
+        "Библиотека", 
+        "images/library.png",
+        "backgrounds",
+        "library_visit"
+    ))
 
+    # CG-арты
     gallery_items.append(GalleryItem(
         "Вечерняя комната", 
         "images/cg/room_evening.png",
         "cg",
-        None
+        "room_evening"
     ))
 
 # Экран галереи
@@ -274,3 +292,4 @@ style gallery_close_button_text:
     size 24
     outlines [(2, "#671a1a", 0, 0)]
     text_align 0.5
+[file content end]
