@@ -81,19 +81,6 @@ init -1 python:
     )
     
     register_achievement(
-        "chapter_one_complete",
-        "Глава 1 пройдена",
-        "Вы завершили первую главу"
-    )
-    
-    # Новые достижения для второй главы
-    register_achievement(
-        "chapter_two_complete",
-        "Глава 2 пройдена",
-        "Вы завершили вторую главу"
-    )
-    
-    register_achievement(
         "meet_alex",
         "Знакомство с Алексом",
         "Вы познакомились с Алексом - школьным активистом"
@@ -151,6 +138,19 @@ init -1 python:
         "new_friends",
         "Новые друзья",
         "Вы завели новых друзей в новой школе"
+    )
+    
+    register_achievement(
+        "chapter_one_complete",
+        "Глава 1 пройдена",
+        "Вы завершили первую главу"
+    )
+    
+    # Новые достижения для второй главы
+    register_achievement(
+        "chapter_two_complete",
+        "Глава 2 пройдена",
+        "Вы завершили вторую главу"
     )
 # Экран достижений
 screen achievements():

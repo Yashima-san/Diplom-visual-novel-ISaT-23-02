@@ -34,35 +34,48 @@ init python:
     # Временное хранилище для вариантов ответа
     chat_choices = []
     chat_choice_callback = None
+    chat_active = False  # Флаг активности чата
     
     # Функция для показа вариантов ответа в чате
     def show_chat_choices(choices, callback):
-        global chat_choices, chat_choice_callback
+        global chat_choices, chat_choice_callback, chat_active
         chat_choices = choices
         chat_choice_callback = callback
-        renpy.show_screen("messenger_chat_with_choices")
+        chat_active = True
+        renpy.show_screen("messenger_chat_with_choices", _layer="screens")
     
     # Функция для обработки выбора
     def select_chat_choice(choice_text):
-        global chat_choices, chat_choice_callback
+        global chat_choices, chat_choice_callback, chat_active
         if chat_choice_callback:
             # Добавляем сообщение пользователя в историю чата
-            add_chat_message("Вы", choice_text, is_user=True)
+            add_chat_message(persistent.user_name if persistent.user_name else "Вы", choice_text, is_user=True)
             # Вызываем callback с выбранным текстом
             chat_choice_callback(choice_text)
         # Очищаем варианты
         chat_choices = []
         chat_choice_callback = None
+        
+    # Функция для закрытия чата
+    def close_chat():
+        global chat_active
+        chat_active = False
+        renpy.hide_screen("messenger_chat_with_choices")
+        renpy.hide_screen("mobile_messenger")
 
-# Экран чата с вариантами ответа
+# ИСПРАВЛЕННЫЙ экран чата с вариантами ответа
 screen messenger_chat_with_choices():
+    # Важно: делаем экран модальным и с высоким zorder
+    modal True
+    zorder 200
+    
     # Стилизованный фон под чат
     frame:
         style "messenger_frame"
         xalign 0.5
         yalign 0.5
-        xsize 1200
-        ysize 700
+        xsize 1300
+        ysize 900
         
         vbox:
             # Шапка чата
@@ -91,19 +104,23 @@ screen messenger_chat_with_choices():
                             color "#4caf50"
                     
                     # Кнопка закрытия
-                    textbutton "✕" xpos 1100 yalign 0.5 action Hide("messenger_chat_with_choices")
+                    textbutton "✕":
+                        style "messenger_close_button"
+                        action Function(close_chat)
+                        xalign 1.0
+                        yalign 0.5
             
             # Область сообщений
             viewport:
                 id "chat_viewport"
-                ysize 440  # Уменьшаем, чтобы освободить место для вариантов
+                ysize 550
                 scrollbars "vertical"
                 mousewheel True
                 draggable True
-                yinitial 1.0  # Всегда показываем последние сообщения
+                yinitial 1.0
                 
                 vbox:
-                    spacing 10
+                    spacing 15
                     xfill True
                     
                     # Отображаем все сообщения из истории
@@ -123,11 +140,17 @@ screen messenger_chat_with_choices():
                                             style "messenger_message_text"
                                             size 22
                                             color "#ffffff"
+                                            xalign 0.0
+                                            yalign 0.0
+                                            line_spacing 5
+                                            substitute False
                                         text msg.time:
                                             style "messenger_time"
                                             size 14
                                             color "#bbbbbb"
                                             xalign 1.0
+                                            yalign 1.0
+                                            substitute False
                         else:
                             # Сообщение другого персонажа (слева)
                             hbox:
@@ -136,15 +159,16 @@ screen messenger_chat_with_choices():
                                 # Аватар персонажа
                                 frame:
                                     style "messenger_avatar"
-                                    xysize (50, 50)
+                                    xysize (60, 60)
                                     background "#c66b2f"
                                     
                                     # Первая буква имени как аватар
-                                    text msg.character[0]:
+                                    text msg.character[0] if msg.character else "?":
                                         size 30
                                         color "#ffffff"
                                         xalign 0.5
                                         yalign 0.5
+                                        substitute False
                                 
                                 frame:
                                     style "messenger_other_bubble"
@@ -156,15 +180,19 @@ screen messenger_chat_with_choices():
                                             size 18
                                             color "#ff9e5e"
                                             bold True
+                                            substitute False
                                         text msg.text:
                                             style "messenger_message_text"
                                             size 22
                                             color "#000000"
+                                            line_spacing 5
+                                            substitute False
                                         text msg.time:
                                             style "messenger_time"
                                             size 14
                                             color "#888888"
                                             xalign 1.0
+                                            substitute False
             
             # Разделитель
             frame:
@@ -178,31 +206,42 @@ screen messenger_chat_with_choices():
             frame:
                 style "messenger_choices_area"
                 xfill True
-                ysize 180
+                ysize 250
                 
-                vpgrid:
-                    cols 1
-                    spacing 8
-                    yinitial 0.0
+                viewport:
+                    ysize 230
+                    scrollbars "vertical"
                     mousewheel True
                     draggable True
-                    xfill True
                     
-                    for choice_text in chat_choices:
-                        button:
-                            style "messenger_choice_button"
-                            xfill True
-                            action Function(select_chat_choice, choice_text)
-                            
-                            text choice_text:
-                                style "messenger_choice_text"
-                                size 20
-                                color "#ffffff"
-                                xalign 0.0
-                                yalign 0.5
+                    vbox:
+                        spacing 10
+                        xfill True
+                        
+                        for choice_text in chat_choices:
+                            button:
+                                style "messenger_choice_button"
+                                xfill True
+                                action Function(select_chat_choice, choice_text)
+                                
+                                text choice_text:
+                                    style "messenger_choice_text"
+                                    size 20
+                                    color "#2b2b2b"
+                                    xalign 0.0
+                                    yalign 0.5
+                                    line_spacing 5
+                                    substitute False
+    
+    # Закрытие по Escape
+    key "K_ESCAPE" action Function(close_chat)
+    key "game_menu" action Function(close_chat)
 
-# Экран чата для мобильного телефона (утренняя переписка)
+# ИСПРАВЛЕННЫЙ экран чата для мобильного телефона
 screen mobile_messenger():
+    modal True
+    zorder 200
+    
     # Стилизованный фон под экран телефона
     frame:
         style "mobile_messenger_frame"
@@ -219,8 +258,6 @@ screen mobile_messenger():
                 
                 hbox:
                     xfill True
-                    xalign 0.5
-                    spacing 500
                     
                     text "9:41" size 24 color "#ffffff" xalign 0.0
                     text "📶 🔋 100%" size 20 color "#ffffff" xalign 1.0
@@ -234,7 +271,9 @@ screen mobile_messenger():
                     xfill True
                     
                     # Кнопка назад
-                    textbutton "←" style "mobile_back_button" action Hide("mobile_messenger")
+                    textbutton "←":
+                        style "mobile_back_button"
+                        action Function(close_chat)
                     
                     # Аватар и имя контакта
                     hbox:
@@ -253,12 +292,14 @@ screen mobile_messenger():
                             text "онлайн" size 18 color "#4caf50"
                     
                     # Кнопка меню
-                    textbutton "⋮" style "mobile_menu_button" action NullAction()
+                    textbutton "⋮":
+                        style "mobile_menu_button"
+                        action NullAction()
             
             # Область сообщений
             viewport:
                 id "mobile_chat_viewport"
-                ysize 1000
+                ysize 950
                 scrollbars "vertical"
                 mousewheel True
                 draggable True
@@ -285,11 +326,14 @@ screen mobile_messenger():
                                             style "mobile_message_text"
                                             size 24
                                             color "#ffffff"
+                                            line_spacing 5
+                                            substitute False
                                         text msg.time:
                                             style "mobile_time"
                                             size 16
                                             color "#bbbbbb"
                                             xalign 1.0
+                                            substitute False
                         else:
                             # Сообщение Лины (слева)
                             hbox:
@@ -312,18 +356,22 @@ screen mobile_messenger():
                                             size 20
                                             color "#ff9e5e"
                                             bold True
+                                            substitute False
                                         text msg.text:
                                             style "mobile_message_text"
                                             size 24
                                             color "#000000"
+                                            line_spacing 5
+                                            substitute False
                                         text msg.time:
                                             style "mobile_time"
                                             size 16
                                             color "#888888"
                                             xalign 1.0
+                                            substitute False
                     
                     # Индикатор "Лина печатает..."
-                    if renpy.random.random() < 0.3:  # Случайно показываем индикатор
+                    if renpy.random.random() < 0.3:
                         hbox:
                             xfill True
                             
@@ -349,24 +397,36 @@ screen mobile_messenger():
                 style "mobile_input_area"
                 xfill True
                 
-                vbox:
-                    spacing 10
-                    xfill True
+                viewport:
+                    ysize 180
+                    scrollbars "vertical"
+                    mousewheel True
+                    draggable True
                     
-                    for choice_text in chat_choices:
-                        button:
-                            style "mobile_choice_button"
-                            xfill True
-                            action Function(select_chat_choice, choice_text)
-                            
-                            text choice_text:
-                                style "mobile_choice_text"
-                                size 22
-                                color "#ffffff"
-                                xalign 0.5
-                                yalign 0.5
+                    vbox:
+                        spacing 10
+                        xfill True
+                        
+                        for choice_text in chat_choices:
+                            button:
+                                style "mobile_choice_button"
+                                xfill True
+                                action Function(select_chat_choice, choice_text)
+                                
+                                text choice_text:
+                                    style "mobile_choice_text"
+                                    size 22
+                                    color "#2b2b2b"
+                                    xalign 0.5
+                                    yalign 0.5
+                                    line_spacing 5
+                                    substitute False
+    
+    # Закрытие по Escape
+    key "K_ESCAPE" action Function(close_chat)
+    key "game_menu" action Function(close_chat)
 
-# Стили для мессенджера
+# ИСПРАВЛЕННЫЕ стили для мессенджера
 style messenger_frame:
     background Frame("gui/frame.png", 25, 25, 25, 25)
     padding (0, 0)
@@ -374,7 +434,7 @@ style messenger_frame:
 style messenger_header:
     background "#2b2b2b"
     ysize 80
-    padding (10, 10)
+    padding (20, 10)
 
 style messenger_title:
     font gui.interface_text_font
@@ -385,48 +445,63 @@ style messenger_status:
 
 style messenger_user_bubble:
     background "#c66b2f"
-    padding (15, 10)
-    margin (10, 5, 50, 5)
+    padding (20, 15)
+    margin (10, 5, 30, 5)
     xalign 1.0
 
 style messenger_other_bubble:
     background "#f0f0f0"
-    padding (15, 10)
-    margin (10, 5, 50, 5)
+    padding (20, 15)
+    margin (10, 5, 30, 5)
 
 style messenger_avatar:
     background "#c66b2f"
-    xysize (50, 50)
+    xysize (60, 60)
     xalign 0.0
+    margin (10, 0, 5, 0)
 
 style messenger_name:
     font gui.interface_text_font
 
 style messenger_message_text:
     font gui.text_font
+    xalign 0.0
+    yalign 0.0
 
 style messenger_time:
     font gui.interface_text_font
+    xalign 1.0
+    yalign 1.0
 
 style messenger_choices_area:
     background "#2b2b2b"
-    ysize 180
-    padding (15, 10)
+    ysize 250
+    padding (20, 15)
 
 style messenger_choice_button:
-    background "#3b3b3b"
-    hover_background "#c66b2f"
-    padding (0, 12)
+    background "gui/thoughtbubble.png"
+    hover_background "gui/thoughtbubble_hover.png"
+    padding (15, 12)
     xfill True
     xalign 0.5
 
 style messenger_choice_text:
-    font gui.interface_text_font
     hover_color "#ffffff"
     xalign 0.0
-    left_margin 15
+    yalign 0.5
+    left_margin 20
 
-# Стили для мобильного мессенджера
+style messenger_close_button:
+    background None
+    hover_background None
+    padding (10, 10)
+
+style messenger_close_button_text:
+    color "#ffffff"
+    size 30
+    hover_color "#ff6b6b"
+
+# ИСПРАВЛЕННЫЕ стили для мобильного мессенджера
 style mobile_messenger_frame:
     background "#1a1a1a"
     padding (0, 0)
@@ -484,6 +559,7 @@ style mobile_avatar:
     background "#c66b2f"
     xysize (60, 60)
     xalign 0.0
+    margin (10, 0, 5, 0)
 
 style mobile_name:
     font gui.interface_text_font
@@ -493,10 +569,14 @@ style mobile_name:
 style mobile_message_text:
     font gui.text_font
     size 24
+    xalign 0.0
+    yalign 0.0
 
 style mobile_time:
     font gui.interface_text_font
     size 16
+    xalign 1.0
+    yalign 1.0
 
 style mobile_input_area:
     background "#2b2b2b"
@@ -504,31 +584,33 @@ style mobile_input_area:
     padding (15, 15)
 
 style mobile_choice_button:
-    background "#3b3b3b"
-    hover_background "#c66b2f"
-    padding (15, 15)
+    background "gui/thoughtbubble.png"
+    hover_background "gui/thoughtbubble_hover.png"
+    padding (15, 12)
     xfill True
+    xalign 0.5
 
 style mobile_choice_text:
-    font gui.interface_text_font
     hover_color "#ffffff"
     xalign 0.5
     yalign 0.5
     size 22
 
-# Функции для работы с чатом
+# ИСПРАВЛЕННЫЕ функции для работы с чатом
 init python:
     def chat_send(character, text):
         """Отправляет сообщение от персонажа в чат"""
-        add_chat_message(character.name if hasattr(character, 'name') else character, text, False)
-        renpy.show_screen("messenger_chat_with_choices")
-        renpy.pause(0.5)
+        char_name = character.name if hasattr(character, 'name') else str(character)
+        add_chat_message(char_name, text, False)
+        renpy.show_screen("messenger_chat_with_choices", _layer="screens")
+        renpy.pause(0.2)
     
     def mobile_chat_send(character, text):
         """Отправляет сообщение в мобильный чат"""
-        add_chat_message(character.name if hasattr(character, 'name') else character, text, False)
-        renpy.show_screen("mobile_messenger")
-        renpy.pause(0.5)
+        char_name = character.name if hasattr(character, 'name') else str(character)
+        add_chat_message(char_name, text, False)
+        renpy.show_screen("mobile_messenger", _layer="screens")
+        renpy.pause(0.2)
     
     # Класс для чат-персонажей
     class ChatCharacter:
@@ -572,8 +654,8 @@ init python:
         # Очищаем историю перед новой перепиской
         clear_chat()
         
-        # Скрываем обычное диалоговое окно через window hide
-        renpy.run(renpy.curried_call_in_new_context("hide_window"))
+        # Скрываем обычное диалоговое окно
+        renpy.run(Hide("say"))
     
     # Функция для включения мобильного режима чата
     def enable_mobile_chat_mode():
@@ -597,8 +679,8 @@ init python:
         # Очищаем историю перед новой перепиской
         clear_chat()
         
-        # Скрываем обычное диалоговое окно через window hide
-        renpy.run(renpy.curried_call_in_new_context("hide_window"))
+        # Скрываем обычное диалоговое окно
+        renpy.run(Hide("say"))
     
     # Функция для отключения режима чата
     def disable_chat_mode():
@@ -612,21 +694,11 @@ init python:
         k = original_k
         lib = original_lib
         
-        # Скрываем экран чата
-        renpy.hide_screen("messenger_chat_with_choices")
-        renpy.hide_screen("mobile_messenger")
+        # Закрываем чат
+        close_chat()
         
         # Очищаем историю
         clear_chat()
         
-        # Показываем обычное диалоговое окно через window show
-        renpy.run(renpy.curried_call_in_new_context("show_window"))
-    
-    # Добавляем метки для скрытия и показа окна
-label hide_window:
-    window hide
-    return
-
-label show_window:
-    window show
-    return
+        # Показываем обычное диалоговое окно
+        renpy.run(Show("say"))

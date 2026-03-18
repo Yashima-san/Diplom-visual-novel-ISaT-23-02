@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/script.rpy", line 1: expected statement.
-    ﻿define e = Character('Лина', color="#707ef6")
-            ^
+File "game/messenger.rpy", line 166: The if statement is not a valid child of the text statement.
+    text msg.character[0] if msg.character else "?":
+                            ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Wed Mar 18 00:11:44 2026
+Wed Mar 18 01:20:00 2026

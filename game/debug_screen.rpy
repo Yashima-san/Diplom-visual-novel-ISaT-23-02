@@ -37,7 +37,6 @@ screen debug_database():
                 spacing 20
                 xalign 0.5
                 textbutton "🔄 Обновить" action Show("debug_database")
-                textbutton "🏆 Сбросить достижения" action Function(reset_all_achievements)
                 textbutton "🗑️ Очистить БД" action Show("confirm_clear_db")
             
             null height 20
@@ -54,7 +53,7 @@ screen debug_database():
                     
                     text "Все игроки (нажмите на строку для просмотра деталей):" size 28 color gui.accent_color
                     
-                    # ИСПРАВЛЕНО: получаем список пользователей ДО его использования
+                    # Получаем список пользователей ДО его использования
                     $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
                     
                     if users:
@@ -301,7 +300,6 @@ screen confirm_clear_db():
             hbox:
                 spacing 10
                 xalign 0.5
-                # ИСПРАВЛЕНО: удалена строка "size 18"
                 
                 textbutton "Да, очистить":
                     style "debug_confirm_button_danger"
@@ -317,6 +315,8 @@ screen confirm_clear_db():
 
 init python:
     import time
+    import os
+    import json
     
     def get_user_progress(user_id):
         """Получение прогресса игрока по главам"""
@@ -368,13 +368,8 @@ init python:
         
         return last_time
     
-    def reset_all_achievements():
-        """Сброс всех достижений"""
-        persistent._achievements = {}
-        renpy.notify("✅ Все достижения сброшены")
-    
     def clear_database():
-        """Очистка базы данных"""
+        """Очистка базы данных и всех сохранений"""
         # Очищаем persistent данные
         persistent.user_data = {
             'users': {},
@@ -400,7 +395,44 @@ init python:
             finally:
                 db.disconnect()
         
-        renpy.notify("🗑️ База данных полностью очищена")
+        # Удаляем все файлы сохранений
+        try:
+            # Путь к папке сохранений
+            save_dir = renpy.config.savedir
+            
+            # Проходим по всем файлам в папке сохранений
+            for filename in os.listdir(save_dir):
+                filepath = os.path.join(save_dir, filename)
+                
+                # Удаляем файлы сохранений и связанные с ними JSON
+                if (filename.endswith('.save') or 
+                    filename.endswith('.json') or 
+                    filename.startswith('auto-') or 
+                    filename.startswith('quick-')):
+                    try:
+                        os.remove(filepath)
+                        print(f"Удален файл: {filename}")
+                    except:
+                        pass
+        except Exception as e:
+            print(f"Ошибка при удалении файлов сохранений: {e}")
+        
+        # Очищаем слоты Ren'Py
+        try:
+            # Обычные слоты 1-9
+            for i in range(1, 10):
+                renpy.unlink_save(str(i))
+            
+            # Автосохранения 1-9
+            for i in range(1, 10):
+                renpy.unlink_save(f"auto-{i}")
+            
+            # Быстрое сохранение
+            renpy.unlink_save("quick-save")
+        except:
+            pass
+        
+        renpy.notify("🗑️ База данных и все сохранения полностью очищены")
 
 ################################################################################
 ## Стили для отладки
@@ -472,21 +504,21 @@ style debug_confirm_button_danger:
     xsize 200
 
 style debug_confirm_button_danger_text:
-    color "#ff8d67"
-    hover_color "#ffffff"
+    color "#ffffff"
+    hover_color "#fb906d"
+    outlines[(2, "#671a1a", 0, 0)]
     size 20
     font gui.interface_text_font
     text_align 0.5
 
 style debug_confirm_button_cancel:
-    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background.png", 15, 15, 15, 15)
     padding (50, 10)
     xsize 200
 
 style debug_confirm_button_cancel_text:
-    color "#ff8d67"
-    hover_color "#ffffff"
-    size 14
+    color "#ffffff"
+    hover_color "#fb906d"
+    outlines[(2, "#671a1a", 0, 0)]
+    size 20
     font gui.interface_text_font
     text_align 0.5

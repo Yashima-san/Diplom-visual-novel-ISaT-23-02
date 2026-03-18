@@ -1,4 +1,5 @@
-﻿﻿define e = Character('Лина', color="#707ef6")
+﻿# Определения персонажей и изображений
+define e = Character('Лина', color="#707ef6")
 define user_char = Character("[persistent.user_name]", color="#ff9e5e")
 define thought_user = Character("[persistent.user_name]", what_italic=True)
 define narrator = Character(None, what_italic=True)
@@ -21,22 +22,28 @@ default chapter2_choice_2 = 0
 default chapter2_choice_final = 0
 default morning_choice = 0
 
-# Объявление изображений персонажей
-image lina neutral = "images/characters/lina.png"
-image lina speak = "images/characters/lina_speak.png"
-image lina smile = "images/characters/lina_smile.png"
+# Трансформация для масштабирования
+transform character_scale:
+    zoom 0.4
+    xalign 0.5
+    yalign 1.0
 
-image alex neutral = "images/characters/alex.png"
-image alex smile = "images/characters/alex_smile.png"
+# Объявление изображений персонажей через Transform
+image lina neutral = Transform("images/characters/lina_neutral.png", zoom=0.4, xalign=0.5, yalign=1.0)
+image lina speak = Transform("images/characters/lina_speak.png", zoom=0.4, xalign=0.5, yalign=1.0)
+image lina smile = Transform("images/characters/lina_smile.png", zoom=0.4, xalign=0.5, yalign=1.0)
 
-image katia neutral = "images/characters/katia.png"
-image katia smile = "images/characters/katia_smile.png"
+image alex neutral = Transform("images/characters/alex_neutral.png", zoom=0.4, xalign=0.5, yalign=1.0)
+image alex smile = Transform("images/characters/alex_smile.png", zoom=0.4, xalign=0.5, yalign=1.0)
 
-image teacher neutral = "images/characters/teacher.png"
-image teacher kind = "images/characters/teacher_kind.png"
+image katia neutral = Transform("images/characters/katia_neutral.png", zoom=0.4, xalign=0.5, yalign=1.0)
+image katia smile = Transform("images/characters/katia_smile.png", zoom=0.4, xalign=0.5, yalign=1.0)
 
-image librarian neutral = "images/characters/librarian.png"
-image librarian kind = "images/characters/librarian_kind.png"
+image teacher neutral = Transform("images/characters/teacher_neutral.png", zoom=0.4, xalign=0.5, yalign=1.0)
+image teacher kind = Transform("images/characters/teacher_kind.png", zoom=0.4, xalign=0.5, yalign=1.0)
+
+image librarian neutral = Transform("images/characters/librarian_neutral.png", zoom=0.4, xalign=0.5, yalign=1.0)
+image librarian kind = Transform("images/characters/librarian_kind.png", zoom=0.4, xalign=0.5, yalign=1.0)
 
 # Объявление изображений фона
 image bg room_evening = "images/room_evening.png"
@@ -51,6 +58,7 @@ image bg classroom = "images/classroom.png"
 image bg music_room = "images/music_room.png"
 image bg library = "images/library.png"
 
+####################################################################################
 
 # Единый init python блок со всеми функциями
 init python:
@@ -535,8 +543,8 @@ label start:
                 store.first_choice = 3
                 unlock_achievement("first_choice")
             
-            # Продолжаем диалог
-            renpy.call_in_new_context("continue_chat_after_first")
+            # Продолжаем диалог - используем renpy.jump
+            renpy.jump("continue_chat_after_first")
         
         # Показываем варианты
         show_chat_choices([
@@ -560,8 +568,8 @@ label continue_chat_after_first:
                     store.second_choice = 11
                 elif "Давай сначала посмотрим" in choice_text:
                     store.second_choice = 12
-                # Завершаем чат и переходим дальше
-                renpy.call_in_new_context("end_chat_scene")
+                # Завершаем чат и переходим дальше - используем renpy.jump
+                renpy.jump("end_chat_scene")
             
             show_chat_choices([
                 "Звучит здорово! Я согласна на все!",
@@ -579,7 +587,7 @@ label continue_chat_after_first:
                     store.second_choice = 21
                 elif "Спасибо, Лина" in choice_text:
                     store.second_choice = 22
-                renpy.call_in_new_context("end_chat_scene")
+                renpy.jump("end_chat_scene")
             
             show_chat_choices([
                 "Звучит здорово! Библиотека – отличная идея!",
@@ -597,7 +605,7 @@ label continue_chat_after_first:
                     store.second_choice = 31
                 elif "Спасибо, Лина! Я очень ценю твою дружбу" in choice_text:
                     store.second_choice = 32
-                renpy.call_in_new_context("end_chat_scene")
+                renpy.jump("end_chat_scene")
             
             show_chat_choices([
                 "Спасибо, Лина! Ты лучшая! Я уже чувствую себя спокойнее.",
@@ -656,7 +664,7 @@ label morning_scene:
                 store.morning_choice = 2
             elif "Увидимся у входа" in choice_text:
                 store.morning_choice = 3
-            renpy.call_in_new_context("continue_morning")
+            renpy.jump("continue_morning")
         
         show_chat_choices([
             "Спасибо, Лина! Я уже встаю. Увидимся у входа! ❤️",
