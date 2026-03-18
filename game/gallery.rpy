@@ -13,39 +13,31 @@ init python:
         def is_unlocked(self):
             if self.unlock_condition is None:
                 return True
-            # Проверяем, что persistent._gallery_unlocks - словарь
             if not isinstance(persistent._gallery_unlocks, dict):
                 return False
             return persistent._gallery_unlocks.get(self.unlock_condition, False)
     
-    # Инициализация persistent для галереи
     if not hasattr(persistent, '_gallery_unlocks') or persistent._gallery_unlocks is None:
         persistent._gallery_unlocks = {}
     else:
-        # Если уже существует, но это не словарь, конвертируем или создаем новый
         if not isinstance(persistent._gallery_unlocks, dict):
             old_data = persistent._gallery_unlocks
             persistent._gallery_unlocks = {}
-            # Если это было множество с разблокированными элементами
             if isinstance(old_data, set):
                 for item_key in old_data:
                     persistent._gallery_unlocks[item_key] = True
     
-    # Функция для разблокировки элемента галереи
     def unlock_gallery_item(key):
-        # Проверяем, что persistent._gallery_unlocks - словарь
         if not isinstance(persistent._gallery_unlocks, dict):
             persistent._gallery_unlocks = {}
         persistent._gallery_unlocks[key] = True
     
-    # Функция для проверки существования изображения
     def image_exists(path):
         try:
             return renpy.loadable(path)
         except:
             return False
     
-    # Словарь для хранения элементов галереи
     gallery_items = []
     
     # Персонажи
@@ -84,7 +76,7 @@ init python:
         "meet_librarian"
     ))
 
-    # Фоны (все локации из игры)
+    # Фоны
     gallery_items.append(GalleryItem(
         "Ночная комната", 
         "images/night_room.png",
@@ -173,7 +165,6 @@ screen gallery():
         vbox:
             spacing 20
             
-            # Вкладки категорий
             hbox:
                 spacing 10
                 xalign 0.6
@@ -192,7 +183,6 @@ screen gallery():
             
             null height 10
             
-            # Галерея изображений
             $ category_items = [item for item in gallery_items if item.category == selected_category]
             
             if category_items:
@@ -219,14 +209,12 @@ screen gallery():
                                         xalign 0.5
                                         yalign 0.5
                                         
-                                        # Проверяем существование файла перед отображением
                                         $ image_exists = renpy.loadable(item.image) if item.image else False
                                         if image_exists:
                                             add Transform(item.image, zoom=0.2, xalign=0.5, yalign=0.5) xysize (300, 160)
                                         else:
                                             text "Изображение\nне найдено" size 20 xalign 0.5 yalign 0.5
                                         
-                                        # Название
                                         text item.name:
                                             color "#ffffff"
                                             size 20
@@ -257,12 +245,10 @@ screen gallery():
             else:
                 text _("В этой категории пока нет изображений.") xalign 0.5
 
-# Всплывающее окно для просмотра изображения
 screen gallery_image_popup(image, title):
     modal True
     zorder 200
     
-    # Затемнение - всегда первым для правильного z-order
     add "gui/overlay/confirm.png"
     
     frame:
@@ -276,7 +262,6 @@ screen gallery_image_popup(image, title):
             xalign 0.5
             yalign 0.5
             
-            # Заголовок
             text title:
                 color "#ffffff"
                 size 32
@@ -284,14 +269,12 @@ screen gallery_image_popup(image, title):
                 outlines [(2, "#671a1a", 0, 0)]
                 xalign 0.5
             
-            # Изображение
             $ image_exists = renpy.loadable(image) if image else False
             if image_exists:
                 add Transform(image, zoom=0.8, xalign=0.5, yalign=0.5) xsize 1170 ysize 620
             else:
                 text "Изображение не найдено:\n[image]" size 30 xalign 0.5 yalign 0.5
             
-            # Кнопка закрытия
             textbutton _("Закрыть"):
                 xalign 0.5
                 ypos 50
@@ -302,7 +285,6 @@ screen gallery_image_popup(image, title):
                 action Hide("gallery_image_popup")
                 text_style "gallery_close_button_text"
     
-    # Закрытие по клику вне окна
     key "game_menu" action Hide("gallery_image_popup")
     key "K_ESCAPE" action Hide("gallery_image_popup")
 

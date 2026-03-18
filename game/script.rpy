@@ -14,7 +14,7 @@ define lib = Character('Библиотекарь', color="#a0522d")
 define persistent.user_name = ""
 define persistent.user_id = None
 define persistent.user_data = None
-default current_chapter = "Глава Первая: Связь"  # Глобальная переменная для главы
+default current_chapter = "Глава Первая: Связь"
 default first_choice = 0
 default second_choice = 0
 default chapter2_choice_1 = 0
@@ -28,37 +28,110 @@ transform character_scale:
     xalign 0.5
     yalign 1.0
 
-# Объявление изображений персонажей через Transform
-image lina neutral = Transform("images/characters/lina_neutral.png", zoom=0.4, xalign=0.5, yalign=1.0)
-image lina speak = Transform("images/characters/lina_speak.png", zoom=0.4, xalign=0.5, yalign=1.0)
-image lina smile = Transform("images/characters/lina_smile.png", zoom=0.4, xalign=0.5, yalign=1.0)
+# ПРАВИЛЬНОЕ объявление изображений с проверкой существования
+init python:
+    def safe_image(path, default=None):
+        if renpy.loadable(path):
+            return path
+        return default
 
-image alex neutral = Transform("images/characters/alex_neutral.png", zoom=0.4, xalign=0.5, yalign=1.0)
-image alex smile = Transform("images/characters/alex_smile.png", zoom=0.4, xalign=0.5, yalign=1.0)
+# Объявление изображений персонажей
+image lina neutral = ConditionSwitch(
+    "renpy.loadable('images/characters/lina_neutral.png')", "images/characters/lina_neutral.png",
+    "True", "images/characters/lina.png"
+)
+image lina speak = ConditionSwitch(
+    "renpy.loadable('images/characters/lina_speak.png')", "images/characters/lina_speak.png",
+    "True", "images/characters/lina.png"
+)
+image lina smile = ConditionSwitch(
+    "renpy.loadable('images/characters/lina_smile.png')", "images/characters/lina_smile.png",
+    "True", "images/characters/lina.png"
+)
 
-image katia neutral = Transform("images/characters/katia_neutral.png", zoom=0.4, xalign=0.5, yalign=1.0)
-image katia smile = Transform("images/characters/katia_smile.png", zoom=0.4, xalign=0.5, yalign=1.0)
+image alex neutral = ConditionSwitch(
+    "renpy.loadable('images/characters/alex_neutral.png')", "images/characters/alex_neutral.png",
+    "True", "images/characters/alex_neutral.png"
+)
+image alex smile = ConditionSwitch(
+    "renpy.loadable('images/characters/alex_smile.png')", "images/characters/alex_smile.png",
+    "True", "images/characters/alex_neutral.png"
+)
 
-image teacher neutral = Transform("images/characters/teacher_neutral.png", zoom=0.4, xalign=0.5, yalign=1.0)
-image teacher kind = Transform("images/characters/teacher_kind.png", zoom=0.4, xalign=0.5, yalign=1.0)
+image katia neutral = ConditionSwitch(
+    "renpy.loadable('images/characters/katia_neutral.png')", "images/characters/katia_neutral.png",
+    "True", "images/characters/katia_neutral.png"
+)
+image katia smile = ConditionSwitch(
+    "renpy.loadable('images/characters/katia_smile.png')", "images/characters/katia_smile.png",
+    "True", "images/characters/katia_neutral.png"
+)
 
-image librarian neutral = Transform("images/characters/librarian_neutral.png", zoom=0.4, xalign=0.5, yalign=1.0)
-image librarian kind = Transform("images/characters/librarian_kind.png", zoom=0.4, xalign=0.5, yalign=1.0)
+image teacher neutral = ConditionSwitch(
+    "renpy.loadable('images/characters/teacher_neutral.png')", "images/characters/teacher_neutral.png",
+    "True", "images/characters/teacher_neutral.png"
+)
+image teacher kind = ConditionSwitch(
+    "renpy.loadable('images/characters/teacher_kind.png')", "images/characters/teacher_kind.png",
+    "True", "images/characters/teacher_neutral.png"
+)
+
+image librarian neutral = ConditionSwitch(
+    "renpy.loadable('images/characters/librarian_neutral.png')", "images/characters/librarian_neutral.png",
+    "True", "images/characters/librarian_neutral.png"
+)
+image librarian kind = ConditionSwitch(
+    "renpy.loadable('images/characters/librarian_kind.png')", "images/characters/librarian_kind.png",
+    "True", "images/characters/librarian_neutral.png"
+)
 
 # Объявление изображений фона
-image bg night_room = "images/night_room.png"
-image bg room_pk = "images/room_pk.png"
-image bg bg_room_pk_light = "images/room_pk_light.png"
-image bg school_entrance = "images/school_entrance.png"
-image bg kitchen = "images/kitchen.png"
-image bg street = "images/street.png"
-image bg school_hallway = "images/school_hallway.png"
-image bg classroom = "images/classroom.png"
-image bg music_room = "images/music_room.png"
-image bg library = "images/library.png"
+image bg night_room = ConditionSwitch(
+    "renpy.loadable('images/night_room.png')", "images/night_room.png",
+    "True", "#000000"
+)
+image bg room_pk = ConditionSwitch(
+    "renpy.loadable('images/room_pk.png')", "images/room_pk.png",
+    "True", "#2a2a2a"
+)
+image bg bg_room_pk_light = ConditionSwitch(
+    "renpy.loadable('images/room_pk_light.png')", "images/room_pk_light.png",
+    "True", "#3a3a3a"
+)
+image bg school_entrance = ConditionSwitch(
+    "renpy.loadable('images/school_entrance.png')", "images/school_entrance.png",
+    "True", "#4a4a4a"
+)
+image bg kitchen = ConditionSwitch(
+    "renpy.loadable('images/kitchen.png')", "images/kitchen.png",
+    "True", "#5a5a5a"
+)
+image bg street = ConditionSwitch(
+    "renpy.loadable('images/street.png')", "images/street.png",
+    "True", "#6a6a6a"
+)
+image bg school_hallway = ConditionSwitch(
+    "renpy.loadable('images/school_hallway.png')", "images/school_hallway.png",
+    "True", "#7a7a7a"
+)
+image bg classroom = ConditionSwitch(
+    "renpy.loadable('images/classroom.png')", "images/classroom.png",
+    "True", "#8a8a8a"
+)
+image bg music_room = ConditionSwitch(
+    "renpy.loadable('images/music_room.png')", "images/music_room.png",
+    "True", "#9a9a9a"
+)
+image bg library = ConditionSwitch(
+    "renpy.loadable('images/library.png')", "images/library.png",
+    "True", "#aaaaaa"
+)
 
-# CG-арты (отдельно от обычных фонов)
-image cg room_evening = "images/cg/room_evening.png"
+# CG-арты
+image cg room_evening = ConditionSwitch(
+    "renpy.loadable('images/cg/room_evening.png')", "images/cg/room_evening.png",
+    "True", "#2b2b2b"
+)
 
 ####################################################################################
 
@@ -76,66 +149,53 @@ init python:
     original_k = k
     original_lib = lib
 
-    
     # Функция для перехода к следующей главе
     def continue_to_next_chapter(old_chapter, new_chapter_title, new_chapter_subtitle):
         """Только переходит к следующей главе, без сохранения"""
-        # Обновляем текущую главу
         store.current_chapter = new_chapter_title
         
-        # Определяем, на какую главу переходить
         if "Вторая" in new_chapter_title or "Новые знакомства" in new_chapter_title:
-            # Проверяем, существует ли метка chapter_two
             if renpy.has_label("chapter_two"):
                 renpy.jump("chapter_two")
             else:
                 renpy.notify("Глава в разработке")
                 renpy.jump("main_menu")
         elif "Третья" in new_chapter_title or "Испытание" in new_chapter_title:
-            # Проверяем, существует ли метка chapter_three
             if renpy.has_label("chapter_three"):
                 renpy.jump("chapter_three")
             else:
                 renpy.notify("Глава в разработке")
                 renpy.jump("main_menu")
         else:
-            # По умолчанию пытаемся перейти к chapter_two
             if renpy.has_label("chapter_two"):
                 renpy.jump("chapter_two")
             else:
                 renpy.notify("Глава в разработке")
                 renpy.jump("main_menu")
 
-    # Функция для выхода в главное меню
     def exit_to_main_menu(old_chapter):
         """Выходит в главное меню"""
         renpy.jump("main_menu")
 
-    # Функция для автоматического сохранения при завершении главы
     def auto_save_chapter_complete(chapter_name):
         """Автоматически сохраняет прогресс при завершении главы"""
-        # Сохраняем только для готовых глав (первая и вторая)
         if "Первая" in chapter_name or "Связь" in chapter_name:
-            # Первая глава - сохраняем
             if hasattr(persistent, 'user_id') and persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
                 try:
                     db.update_save_progress(persistent.user_id, chapter_name)
                 except:
                     pass
             
-            # Разблокируем достижение за прохождение главы
             try:
                 unlock_achievement("chapter_one_complete")
             except:
                 pass
             
-            # Делаем скриншот и сохраняем
             try:
                 renpy.take_screenshot()
                 slot_name = f"chapter1-complete-{int(time.time())}"
                 renpy.save(slot_name, f"Автосохранение: {chapter_name}")
                 
-                # Обновляем JSON с информацией о главе
                 try:
                     save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
                     if save_json is None:
@@ -154,29 +214,25 @@ init python:
             except:
                 pass
             
-            renpy.notify(f"Глава завершена! Прогресс сохранен.")
+            renpy.notify("Глава завершена! Прогресс сохранен.")
         
         elif "Вторая" in chapter_name or "Новые знакомства" in chapter_name:
-            # Вторая глава - сохраняем
             if hasattr(persistent, 'user_id') and persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
                 try:
                     db.update_save_progress(persistent.user_id, chapter_name)
                 except:
                     pass
             
-            # Разблокируем достижение за прохождение главы
             try:
                 unlock_achievement("chapter_two_complete")
             except:
                 pass
             
-            # Делаем скриншот и сохраняем
             try:
                 renpy.take_screenshot()
                 slot_name = f"chapter2-complete-{int(time.time())}"
                 renpy.save(slot_name, f"Автосохранение: {chapter_name}")
                 
-                # Обновляем JSON с информацией о главе
                 try:
                     save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
                     if save_json is None:
@@ -195,29 +251,19 @@ init python:
             except:
                 pass
             
-            renpy.notify(f"Глава завершена! Прогресс сохранен.")
+            renpy.notify("Глава завершена! Прогресс сохранен.")
         
         else:
-            # Главы в разработке - не сохраняем
-            renpy.notify(f"Глава в разработке. Прогресс не сохранен.")
+            renpy.notify("Глава в разработке. Прогресс не сохранен.")
 
-    # Функция для сохранения информации о пользователе
-    def save_user_info():
-        """Сохраняет информацию о текущем пользователе в файл сохранения"""
-        renpy.save_persistent()
-        return
-    
-    # Функция для добавления информации о пользователе в JSON сохранения
     def add_user_info_to_save(json_data):
         """Добавляет информацию о пользователе в JSON сохранения"""
         try:
-            # Безопасно получаем имя пользователя
             user_name = ""
             if hasattr(persistent, 'user_name') and persistent.user_name:
                 user_name = persistent.user_name
             json_data["user_name"] = user_name
             
-            # Безопасно получаем ID пользователя
             user_id = None
             if hasattr(persistent, 'user_id') and persistent.user_id is not None:
                 user_id = persistent.user_id
@@ -226,61 +272,38 @@ init python:
             json_data["chapter"] = get_current_chapter_safe()
             json_data["_timestamp"] = time.time()
         except Exception:
-            # В случае любой ошибки, просто продолжаем с минимальными данными
             json_data["chapter"] = "Глава Первая: Связь"
             json_data["_timestamp"] = time.time()
         
         return json_data
     
-    # Очищаем и добавляем функцию в колбэки
     if hasattr(config, 'save_json_callbacks'):
         config.save_json_callbacks = []
         config.save_json_callbacks.append(add_user_info_to_save)
     
-    # Функция для сохранения прогресса пользователя
-    def save_user_progress():
-        """Сохраняет текущий прогресс пользователя"""
-        if hasattr(persistent, 'user_id') and persistent.user_id:
-            # Сохраняем в базу данных
-            current_chapter = get_current_chapter_safe()
-            if hasattr(db, 'update_save_progress'):
-                try:
-                    db.update_save_progress(persistent.user_id, current_chapter)
-                except:
-                    pass
-            
-            # Также сохраняем информацию в файл сохранения
-            renpy.take_screenshot()
-            renpy.save("quick-save", "Быстрое сохранение")
-    
-    # Функция continue_game
     def continue_game():
         """Показывает экран выбора пользователя для продолжения игры"""
         renpy.show_screen("select_user_screen")
         return
     
-    # Функция custom_file_action
     def custom_file_action(slot):
         """Кастомное действие для загрузки с проверкой пользователя"""
-        # Проверяем, существует ли сохранение
         if not renpy.can_load(str(slot)):
+            renpy.notify(f"Слот {slot} пуст")
             return
         
         try:
             save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
-            # Получаем текущий ID пользователя
             current_user_id = None
             if hasattr(persistent, 'user_id') and persistent.user_id is not None:
                 current_user_id = persistent.user_id
                 
             if save_json and save_json.get("user_id") != current_user_id and save_json.get("user_id") is not None:
-                # Если сохранение принадлежит другому пользователю
                 renpy.show_screen("confirm_user_switch", slot=slot)
                 return
         except:
             pass
         
-        # Используем FileAction для загрузки
         renpy.run(FileAction(slot))
     
     def load_other_user_save(slot):
@@ -297,31 +320,23 @@ init python:
         
         renpy.run(FileAction(slot))
 
-    # ИСПРАВЛЕННАЯ функция для кастомного действия сохранения
     def custom_save_action(slot):
         """Кастомное действие для сохранения с информацией о пользователе и главе"""
         try:
-            # Получаем текущую главу
             current_chapter = get_current_chapter_safe()
             
-            # Делаем скриншот
             renpy.take_screenshot()
-            
-            # Сохраняем игру
             renpy.save(str(slot), f"Сохранение в слот {slot}")
             
-            # Обновляем информацию в JSON
             save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
             if save_json is None:
                 save_json = {}
             
-            # Сохраняем ID пользователя
             if hasattr(persistent, 'user_id') and persistent.user_id is not None:
                 save_json["user_id"] = persistent.user_id
             else:
                 save_json["user_id"] = None
                 
-            # Сохраняем имя пользователя
             if hasattr(persistent, 'user_name') and persistent.user_name:
                 save_json["user_name"] = persistent.user_name
             else:
@@ -330,11 +345,9 @@ init python:
             save_json["chapter"] = current_chapter
             save_json["_timestamp"] = time.time()
             
-            # Сохраняем обратно в файл
             with open(renpy.slot_json_filename(str(slot)), 'w', encoding='utf-8') as f:
                 json.dump(save_json, f, ensure_ascii=False, indent=2)
             
-            # Дополнительно сохраняем прогресс в базу данных
             if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
                 try:
                     db.update_save_progress(persistent.user_id, current_chapter)
@@ -347,7 +360,6 @@ init python:
             renpy.notify(f"Ошибка при сохранении: {str(e)}")
             print(f"Ошибка в custom_save_action: {e}")
     
-    # ИСПРАВЛЕННАЯ функция для загрузки последнего сохранения
     def load_last_save_for_user(user_id):
         """Загружает последнее сохранение для указанного пользователя"""
         saves = []
@@ -372,7 +384,6 @@ init python:
         except Exception as e:
             print(f"Ошибка при поиске сохранений: {e}")
         
-        # Сортируем по времени (от новых к старым)
         saves.sort(key=lambda x: x[1], reverse=True)
         
         if saves:
@@ -384,17 +395,14 @@ init python:
                 return False
         return False
     
-    # ЕДИНСТВЕННАЯ функция для определения текущей главы
     def get_current_chapter_safe():
-        """Безопасно определяет текущую главу, работает даже во время сохранения"""
+        """Безопасно определяет текущую главу"""
         try:
-            # Пробуем получить из глобальной переменной
             if hasattr(store, 'current_chapter') and store.current_chapter:
                 return store.current_chapter
         except:
             pass
         
-        # По умолчанию возвращаем первую главу
         return "Глава Первая: Связь"
     
     def set_current_user(user_id, user_name):

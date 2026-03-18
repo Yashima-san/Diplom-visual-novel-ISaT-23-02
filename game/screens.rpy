@@ -972,7 +972,9 @@ style about_label_text:
     size gui.label_text_size
 
 
-## Экраны загрузки и сохранения ################################################
+################################################################################
+## Экраны загрузки и сохранения
+################################################################################
 
 screen save():
     tag menu
@@ -985,7 +987,6 @@ screen load():
 screen file_slots_with_user(title, is_save=True):
     default page_name_value = FilePageNameInputValue(pattern=_("{} страница"), auto=_("Автосохранения"), quick=_("Быстрые сохранения"))
     
-    # Отображаем информацию о текущем пользователе
     frame:
         style "user_info_frame"
         xalign 0.5
@@ -1004,8 +1005,6 @@ screen file_slots_with_user(title, is_save=True):
     use game_menu(title):
         fixed:
             yoffset 80
-            
-            order_reverse True
             
             button:
                 style "page_label"
@@ -1031,32 +1030,44 @@ screen file_slots_with_user(title, is_save=True):
                     $ slot = i + 1
                     
                     button:
-                        # Разные действия для сохранения и загрузки
-                        if is_save:
-                            action Function(custom_save_action, slot)
+                        if renpy.can_load(str(slot)):
+                            if is_save:
+                                action Function(custom_save_action, slot)
+                            else:
+                                action Function(custom_file_action, slot)
                         else:
-                            action Function(custom_file_action, slot)
+                            if is_save:
+                                action Function(custom_save_action, slot)
+                            else:
+                                action NullAction()
                         
                         has vbox
                         
-                        add FileScreenshot(slot) xalign 0.5
+                        $ thumbnail = FileScreenshot(slot)
+                        if thumbnail:
+                            add thumbnail xalign 0.5
+                        else:
+                            frame:
+                                xysize (config.thumbnail_width, config.thumbnail_height)
+                                background "#2a2a2a"
+                                text "Нет\nскриншота" size 20 xalign 0.5 yalign 0.5 color "#666666"
                         
-                        text FileTime(slot, format=_("{#file_time}%A, %d %B %Y, %H:%M"), empty=_("Пустой слот")):
+                        $ file_time = FileTime(slot, format=_("{#file_time}%d.%m.%Y %H:%M"), empty=_("Пустой слот"))
+                        text file_time:
                             style "slot_time_text"
                         
-                        text FileSaveName(slot):
-                            style "slot_name_text"
+                        $ file_name = FileSaveName(slot)
+                        if file_name:
+                            text file_name:
+                                style "slot_name_text"
                         
-                        # Добавляем информацию о пользователе в слот
                         $ save_user = FileJson(slot, "user_name", empty="")
                         if save_user:
                             text "Игрок: [save_user]":
                                 style "slot_user_text"
                         
-                        # Добавляем информацию о главе в слот
                         $ save_chapter = FileJson(slot, "chapter", empty="")
                         if save_chapter:
-                            # Сокращаем название главы для отображения
                             if "Первая" in save_chapter or "Связь" in save_chapter:
                                 $ display_chapter = "Глава 1"
                             elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
@@ -1069,7 +1080,8 @@ screen file_slots_with_user(title, is_save=True):
                             text "Глава: [display_chapter]":
                                 style "slot_chapter_text"
                         
-                        key "save_delete" action FileDelete(slot)
+                        if renpy.can_load(str(slot)):
+                            key "save_delete" action FileDelete(slot)
             
             vbox:
                 style_prefix "page"
@@ -1096,70 +1108,7 @@ screen file_slots_with_user(title, is_save=True):
                     
                     textbutton _(">") action FilePageNext()
                     key "save_page_next" action FilePageNext()
-                
-                if config.has_sync:
-                    if CurrentScreenName() == "save":
-                        textbutton _("Загрузить Sync"):
-                            action UploadSync()
-                            xalign 0.5
-                    else:
-                        textbutton _("Скачать Sync"):
-                            action DownloadSync()
-                            xalign 0.5
-
-style page_label is gui_label
-style page_label_text is gui_label_text
-style page_button is gui_button
-style page_button_text is gui_button_text
-
-style slot_button is gui_button
-style slot_button_text is gui_button_text
-style slot_time_text is slot_button_text
-style slot_name_text is slot_button_text
-
-style page_label:
-    xpadding 75
-    ypadding 5
-    xalign 0.5
-
-style page_label_text:
-    textalign 0.5
-    layout "subtitle"
-    hover_color gui.hover_color
-
-style page_button:
-    properties gui.button_properties("page_button")
-
-style page_button_text:
-    properties gui.text_properties("page_button")
-
-style slot_button:
-    properties gui.button_properties("slot_button")
-
-style slot_button_text:
-    properties gui.text_properties("slot_button")
-
-style user_info_frame:
-    background Frame("gui/frame.png", 15, 15, 15, 15)
-    xalign 0.5
-    yalign 0.05
-    xsize 600
-    padding (15, 10)
-
-style slot_user_text:
-    size 16
-    color "#ff832b"
-    font gui.interface_text_font
-    xalign 0.5
-
-# Стиль для текста главы в слоте
-style slot_chapter_text:
-    size 16
-    color "#ff9e5e"
-    font gui.interface_text_font
-    xalign 0.5
-
-
+                    
 ## Экран настроек ##############################################################
 
 screen preferences():
