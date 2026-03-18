@@ -4,6 +4,7 @@
 
 init python:
     import time as tm
+    import threading
     
     # Класс для сообщений в чате
     class ChatMessage:
@@ -35,33 +36,59 @@ init python:
     chat_choices = []
     chat_choice_callback = None
     chat_active = False  # Флаг активности чата
+    chat_choices_shown = False  # Флаг, были ли показаны варианты
+    current_chat_partner = "Лина"  # Имя персонажа для чата
+    chat_status = "В сети"  # Статус чата
     
     # Функция для показа вариантов ответа в чате
     def show_chat_choices(choices, callback):
-        global chat_choices, chat_choice_callback, chat_active
+        global chat_choices, chat_choice_callback, chat_active, chat_choices_shown
         chat_choices = choices
         chat_choice_callback = callback
         chat_active = True
+        chat_choices_shown = True
         renpy.show_screen("messenger_chat_with_choices", _layer="screens")
     
     # Функция для обработки выбора
     def select_chat_choice(choice_text):
-        global chat_choices, chat_choice_callback, chat_active
+        global chat_choices, chat_choice_callback, chat_active, chat_choices_shown
         if chat_choice_callback:
             # Добавляем сообщение пользователя в историю чата
             add_chat_message(persistent.user_name if persistent.user_name else "Вы", choice_text, is_user=True)
             # Вызываем callback с выбранным текстом
             chat_choice_callback(choice_text)
-        # Очищаем варианты
+        # Очищаем варианты, но оставляем чат открытым
         chat_choices = []
         chat_choice_callback = None
+        chat_choices_shown = False
         
     # Функция для закрытия чата
     def close_chat():
-        global chat_active
+        global chat_active, chat_choices_shown
         chat_active = False
+        chat_choices_shown = False
         renpy.hide_screen("messenger_chat_with_choices")
         renpy.hide_screen("mobile_messenger")
+    
+    # Функция для отправки сообщения от персонажа с задержкой
+    def send_message_with_delay(character, text, delay=5.0):
+        global chat_status
+        
+        # Меняем статус на "Печатает..."
+        chat_status = "Печатает..."
+        renpy.restart_interaction()
+        
+        # Ждем указанное количество секунд
+        renpy.pause(delay)
+        
+        # Возвращаем статус "В сети"
+        chat_status = "В сети"
+        renpy.restart_interaction()
+        
+        # Отправляем сообщение
+        char_name = character.name if hasattr(character, 'name') else str(character)
+        add_chat_message(char_name, text, False)
+        renpy.restart_interaction()
 
 # ИСПРАВЛЕННЫЙ экран чата с вариантами ответа
 screen messenger_chat_with_choices():
@@ -78,7 +105,7 @@ screen messenger_chat_with_choices():
         ysize 900
         
         vbox:
-            # Шапка чата
+            # Шапка мессенджера
             frame:
                 style "messenger_header"
                 xfill True
@@ -89,31 +116,44 @@ screen messenger_chat_with_choices():
                     # Иконка мессенджера
                     text "💬" size 36 xpos 20 yalign 0.5
                     
-                    # Название и статус
-                    vbox:
+                    # Название мессенджера
+                    text MESSENGER_NAME:
+                        style "messenger_title"
+                        size 24
+                        color "#ffffff"
+                        bold True
                         xalign 0.5
                         yalign 0.5
-                        text MESSENGER_NAME:
-                            style "messenger_title"
-                            size 24
-                            color "#ffffff"
-                            bold True
-                        text "онлайн":
-                            style "messenger_status"
-                            size 16
-                            color "#4caf50"
                     
-                    # Кнопка закрытия
-                    textbutton "✕":
-                        style "messenger_close_button"
-                        action Function(close_chat)
-                        xalign 1.0
-                        yalign 0.5
+                    # Пустое место для баланса
+                    null width 50
+            
+            # Информация о собеседнике
+            frame:
+                style "chat_partner_info"
+                xfill True
+                
+                vbox:
+                    spacing 5
+                    xalign 0.5
+                    
+                    text current_chat_partner:
+                        style "chat_partner_name"
+                        size 28
+                        color "#ffffff"
+                        bold True
+                        xalign 0.5
+                    
+                    text chat_status:
+                        style "chat_partner_status"
+                        size 18
+                        color "#4caf50" if chat_status == "В сети" else "#ffaa00"
+                        xalign 0.5
             
             # Область сообщений
             viewport:
                 id "chat_viewport"
-                ysize 550
+                ysize 450
                 scrollbars "vertical"
                 mousewheel True
                 draggable True
@@ -156,20 +196,6 @@ screen messenger_chat_with_choices():
                             hbox:
                                 xfill True
                                 
-                                # Аватар персонажа
-                                frame:
-                                    style "messenger_avatar"
-                                    xysize (60, 60)
-                                    background "#c66b2f"
-                                    
-                                    # Первая буква имени как аватар
-                                    text msg.character[0] if msg.character else "?":
-                                        size 30
-                                        color "#ffffff"
-                                        xalign 0.5
-                                        yalign 0.5
-                                        substitute False
-                                
                                 frame:
                                     style "messenger_other_bubble"
                                     xmaximum 600
@@ -202,40 +228,59 @@ screen messenger_chat_with_choices():
                 ypadding 0
                 margin (0, 5)
             
-            # Область с вариантами ответа
+            # Панель ввода
             frame:
-                style "messenger_choices_area"
+                style "input_panel"
                 xfill True
-                ysize 250
                 
-                viewport:
-                    ysize 230
-                    scrollbars "vertical"
-                    mousewheel True
-                    draggable True
+                hbox:
+                    xfill True
+                    spacing 10
                     
-                    vbox:
-                        spacing 10
+                    frame:
+                        style "input_field"
                         xfill True
+                        xsize 800
                         
-                        for choice_text in chat_choices:
-                            button:
-                                style "messenger_choice_button"
-                                xfill True
-                                action Function(select_chat_choice, choice_text)
-                                
-                                text choice_text:
-                                    style "messenger_choice_text"
-                                    size 20
-                                    color "#2b2b2b"
-                                    xalign 0.0
-                                    yalign 0.5
-                                    line_spacing 5
-                                    substitute False
-    
-    # Закрытие по Escape
-    key "K_ESCAPE" action Function(close_chat)
-    key "game_menu" action Function(close_chat)
+                        text "Введите текст...":
+                            style "input_placeholder"
+                            size 20
+                            color "#888888"
+                            xalign 0.0
+                            yalign 0.5
+                            left_margin 15
+            
+            # Область с вариантами ответа (показываем только если есть варианты)
+            if chat_choices:
+                frame:
+                    style "messenger_choices_area"
+                    xfill True
+                    ysize 200
+                    
+                    viewport:
+                        ysize 180
+                        scrollbars "vertical"
+                        mousewheel True
+                        draggable True
+                        
+                        vbox:
+                            spacing 10
+                            xfill True
+                            
+                            for choice_text in chat_choices:
+                                button:
+                                    style "messenger_choice_button"
+                                    xfill True
+                                    action Function(select_chat_choice, choice_text)
+                                    
+                                    text choice_text:
+                                        style "messenger_choice_text"
+                                        size 20
+                                        color "#2b2b2b"
+                                        xalign 0.5
+                                        yalign 0.5
+                                        line_spacing 5
+                                        substitute False
 
 # ИСПРАВЛЕННЫЙ экран чата для мобильного телефона
 screen mobile_messenger():
@@ -262,7 +307,7 @@ screen mobile_messenger():
                     text "9:41" size 24 color "#ffffff" xalign 0.0
                     text "📶 🔋 100%" size 20 color "#ffffff" xalign 1.0
             
-            # Шапка чата с именем контакта
+            # Шапка чата
             frame:
                 style "mobile_chat_header"
                 xfill True
@@ -270,36 +315,39 @@ screen mobile_messenger():
                 hbox:
                     xfill True
                     
-                    # Кнопка назад
-                    textbutton "←":
-                        style "mobile_back_button"
-                        action Function(close_chat)
-                    
-                    # Аватар и имя контакта
-                    hbox:
+                    text MESSENGER_NAME:
+                        size 24
+                        color "#ffffff"
+                        bold True
                         xalign 0.5
-                        spacing 10
-                        
-                        frame:
-                            style "mobile_contact_avatar"
-                            xysize (60, 60)
-                            background "#c66b2f"
-                            text "Л" size 40 color "#ffffff" xalign 0.5 yalign 0.5
-                        
-                        vbox:
-                            yalign 0.5
-                            text "Лина" size 28 color "#ffffff" bold True
-                            text "онлайн" size 18 color "#4caf50"
+                        yalign 0.5
+            
+            # Информация о собеседнике
+            frame:
+                style "mobile_chat_partner_info"
+                xfill True
+                
+                hbox:
+                    xalign 0.5
+                    spacing 15
                     
-                    # Кнопка меню
-                    textbutton "⋮":
-                        style "mobile_menu_button"
-                        action NullAction()
+                    frame:
+                        style "mobile_contact_avatar"
+                        xysize (60, 60)
+                        background "#c66b2f"
+                        text "Л" size 40 color "#ffffff" xalign 0.5 yalign 0.5
+                    
+                    vbox:
+                        yalign 0.5
+                        text "Лина" size 28 color "#ffffff" bold True
+                        text chat_status:
+                            size 18
+                            color "#4caf50" if chat_status == "В сети" else "#ffaa00"
             
             # Область сообщений
             viewport:
                 id "mobile_chat_viewport"
-                ysize 950
+                ysize 800
                 scrollbars "vertical"
                 mousewheel True
                 draggable True
@@ -344,7 +392,13 @@ screen mobile_messenger():
                                     style "mobile_avatar"
                                     xysize (60, 60)
                                     background "#c66b2f"
-                                    text "Л" size 40 color "#ffffff" xalign 0.5 yalign 0.5
+                                    $ char_initial = msg.character[0] if msg.character else "?"
+                                    text "[char_initial]":
+                                        size 40
+                                        color "#ffffff"
+                                        xalign 0.5
+                                        yalign 0.5
+                                        substitute False
                                 
                                 frame:
                                     style "mobile_other_bubble"
@@ -369,79 +423,112 @@ screen mobile_messenger():
                                             color "#888888"
                                             xalign 1.0
                                             substitute False
-                    
-                    # Индикатор "Лина печатает..."
-                    if renpy.random.random() < 0.3:
-                        hbox:
-                            xfill True
-                            
-                            frame:
-                                style "mobile_avatar"
-                                xysize (60, 60)
-                                background "#c66b2f"
-                                text "Л" size 40 color "#ffffff" xalign 0.5 yalign 0.5
-                            
-                            frame:
-                                style "mobile_typing_bubble"
-                                xmaximum 200
-                                
-                                hbox:
-                                    spacing 5
-                                    xalign 0.5
-                                    text "•" size 40 color "#888888"
-                                    text "•" size 40 color "#888888"
-                                    text "•" size 40 color "#888888"
             
-            # Нижняя панель с вариантами ответа
+            # Разделитель
             frame:
-                style "mobile_input_area"
+                xfill True
+                ysize 2
+                background "#3b3b3b"
+                ypadding 0
+                margin (5, 5)
+            
+            # Панель ввода
+            frame:
+                style "mobile_input_panel"
                 xfill True
                 
-                viewport:
-                    ysize 180
-                    scrollbars "vertical"
-                    mousewheel True
-                    draggable True
+                hbox:
+                    xfill True
+                    spacing 10
                     
-                    vbox:
-                        spacing 10
+                    frame:
+                        style "mobile_input_field"
                         xfill True
                         
-                        for choice_text in chat_choices:
-                            button:
-                                style "mobile_choice_button"
-                                xfill True
-                                action Function(select_chat_choice, choice_text)
-                                
-                                text choice_text:
-                                    style "mobile_choice_text"
-                                    size 22
-                                    color "#2b2b2b"
-                                    xalign 0.5
-                                    yalign 0.5
-                                    line_spacing 5
-                                    substitute False
-    
-    # Закрытие по Escape
-    key "K_ESCAPE" action Function(close_chat)
-    key "game_menu" action Function(close_chat)
+                        text "Введите текст...":
+                            style "mobile_input_placeholder"
+                            size 18
+                            color "#888888"
+                            xalign 0.0
+                            yalign 0.5
+                            left_margin 15
+            
+            # Нижняя панель с вариантами ответа (показываем только если есть варианты)
+            if chat_choices:
+                frame:
+                    style "mobile_input_area"
+                    xfill True
+                    
+                    viewport:
+                        ysize 150
+                        scrollbars "vertical"
+                        mousewheel True
+                        draggable True
+                        
+                        vbox:
+                            spacing 8
+                            xfill True
+                            
+                            for choice_text in chat_choices:
+                                button:
+                                    style "mobile_choice_button"
+                                    xfill True
+                                    action Function(select_chat_choice, choice_text)
+                                    
+                                    text choice_text:
+                                        style "mobile_choice_text"
+                                        size 20
+                                        color "#2b2b2b"
+                                        xalign 0.5
+                                        yalign 0.5
+                                        line_spacing 4
+                                        substitute False
 
-# ИСПРАВЛЕННЫЕ стили для мессенджера
+# Стили для мессенджера
 style messenger_frame:
     background Frame("gui/frame.png", 25, 25, 25, 25)
     padding (0, 0)
 
 style messenger_header:
     background "#2b2b2b"
-    ysize 80
+    ysize 60
     padding (20, 10)
 
 style messenger_title:
     font gui.interface_text_font
     outlines [(2, "#000000", 0, 0)]
+    xalign 0.5
+    yalign 0.5
 
-style messenger_status:
+style chat_partner_info:
+    background "#363636"
+    ysize 80
+    padding (20, 10)
+    xfill True
+
+style chat_partner_name:
     font gui.interface_text_font
+    outlines [(2, "#000000", 0, 0)]
+    xalign 0.5
+
+style chat_partner_status:
+    font gui.interface_text_font
+    xalign 0.5
+
+style input_panel:
+    background "#2b2b2b"
+    ysize 70
+    padding (15, 10)
+    xfill True
+
+style input_field:
+    background "#3b3b3b"
+    ysize 50
+    xfill True
+
+style input_placeholder:
+    font gui.interface_text_font
+    yalign 0.5
 
 style messenger_user_bubble:
     background "#c66b2f"
@@ -453,12 +540,6 @@ style messenger_other_bubble:
     background "#f0f0f0"
     padding (20, 15)
     margin (10, 5, 30, 5)
-
-style messenger_avatar:
-    background "#c66b2f"
-    xysize (60, 60)
-    xalign 0.0
-    margin (10, 0, 5, 0)
 
 style messenger_name:
     font gui.interface_text_font
@@ -475,33 +556,26 @@ style messenger_time:
 
 style messenger_choices_area:
     background "#2b2b2b"
-    ysize 250
-    padding (20, 15)
+    ysize 200
+    padding (15, 10)
+    xfill True
 
 style messenger_choice_button:
     background "gui/thoughtbubble.png"
     hover_background "gui/thoughtbubble_hover.png"
-    padding (15, 12)
+    padding (15, 10)
     xfill True
     xalign 0.5
 
 style messenger_choice_text:
     hover_color "#ffffff"
-    xalign 0.0
+    xalign 0.5
     yalign 0.5
-    left_margin 20
+    size 20
+    line_spacing 5
+    color "#2b2b2b"
 
-style messenger_close_button:
-    background None
-    hover_background None
-    padding (10, 10)
-
-style messenger_close_button_text:
-    color "#ffffff"
-    size 30
-    hover_color "#ff6b6b"
-
-# ИСПРАВЛЕННЫЕ стили для мобильного мессенджера
+# Стили для мобильного мессенджера
 style mobile_messenger_frame:
     background "#1a1a1a"
     padding (0, 0)
@@ -513,31 +587,22 @@ style mobile_status_bar:
 
 style mobile_chat_header:
     background "#2b2b2b"
+    ysize 60
+    padding (10, 10)
+
+style mobile_chat_partner_info:
+    background "#363636"
     ysize 100
     padding (10, 10)
-
-style mobile_back_button:
-    background None
-    hover_background None
-    padding (10, 10)
-
-style mobile_back_button_text:
-    color "#ffffff"
-    size 40
-
-style mobile_menu_button:
-    background None
-    hover_background None
-    padding (10, 10)
-
-style mobile_menu_button_text:
-    color "#ffffff"
-    size 40
 
 style mobile_contact_avatar:
     background "#c66b2f"
     xysize (60, 60)
-    xalign 0.0
+
+style mobile_avatar:
+    background "#c66b2f"
+    xysize (60, 60)
+    margin (10, 0, 5, 0)
 
 style mobile_user_bubble:
     background "#c66b2f"
@@ -549,17 +614,6 @@ style mobile_other_bubble:
     background "#f0f0f0"
     padding (20, 15)
     margin (10, 5, 30, 5)
-
-style mobile_typing_bubble:
-    background "#f0f0f0"
-    padding (20, 10)
-    margin (10, 5, 30, 5)
-
-style mobile_avatar:
-    background "#c66b2f"
-    xysize (60, 60)
-    xalign 0.0
-    margin (10, 0, 5, 0)
 
 style mobile_name:
     font gui.interface_text_font
@@ -578,15 +632,30 @@ style mobile_time:
     xalign 1.0
     yalign 1.0
 
+style mobile_input_panel:
+    background "#2b2b2b"
+    ysize 60
+    padding (10, 5)
+
+style mobile_input_field:
+    background "#3b3b3b"
+    ysize 45
+    xfill True
+
+style mobile_input_placeholder:
+    font gui.interface_text_font
+    size 18
+    yalign 0.5
+
 style mobile_input_area:
     background "#2b2b2b"
-    ysize 200
-    padding (15, 15)
+    ysize 170
+    padding (10, 8)
 
 style mobile_choice_button:
     background "gui/thoughtbubble.png"
     hover_background "gui/thoughtbubble_hover.png"
-    padding (15, 12)
+    padding (12, 8)
     xfill True
     xalign 0.5
 
@@ -594,23 +663,39 @@ style mobile_choice_text:
     hover_color "#ffffff"
     xalign 0.5
     yalign 0.5
-    size 22
+    size 20
+    line_spacing 4
+    color "#2b2b2b"
 
-# ИСПРАВЛЕННЫЕ функции для работы с чатом
+# Функции для работы с чатом
 init python:
-    def chat_send(character, text):
-        """Отправляет сообщение от персонажа в чат"""
-        char_name = character.name if hasattr(character, 'name') else str(character)
-        add_chat_message(char_name, text, False)
+    def chat_send(character, text, delay=5.0):
+        """Отправляет сообщение от персонажа в чат с задержкой"""
+        global chat_status, current_chat_partner
+        
+        # Устанавливаем имя собеседника
+        current_chat_partner = character.name if hasattr(character, 'name') else str(character)
+        
+        # Показываем экран чата
         renpy.show_screen("messenger_chat_with_choices", _layer="screens")
         renpy.pause(0.2)
+        
+        # Отправляем сообщение с задержкой
+        send_message_with_delay(character, text, delay)
     
-    def mobile_chat_send(character, text):
-        """Отправляет сообщение в мобильный чат"""
-        char_name = character.name if hasattr(character, 'name') else str(character)
-        add_chat_message(char_name, text, False)
+    def mobile_chat_send(character, text, delay=5.0):
+        """Отправляет сообщение в мобильный чат с задержкой"""
+        global chat_status, current_chat_partner
+        
+        # Устанавливаем имя собеседника
+        current_chat_partner = character.name if hasattr(character, 'name') else str(character)
+        
+        # Показываем экран чата
         renpy.show_screen("mobile_messenger", _layer="screens")
         renpy.pause(0.2)
+        
+        # Отправляем сообщение с задержкой
+        send_message_with_delay(character, text, delay)
     
     # Класс для чат-персонажей
     class ChatCharacter:
@@ -618,9 +703,9 @@ init python:
             self.original = original_char
             self.name = original_char.name if hasattr(original_char, 'name') else str(original_char)
         
-        def __call__(self, text, **kwargs):
-            # Отправляем сообщение в чат
-            chat_send(self, text)
+        def __call__(self, text, delay=5.0, **kwargs):
+            # Отправляем сообщение в чат с задержкой
+            chat_send(self, text, delay)
     
     # Класс для мобильного чата
     class MobileChatCharacter:
@@ -628,13 +713,13 @@ init python:
             self.original = original_char
             self.name = original_char.name if hasattr(original_char, 'name') else str(original_char)
         
-        def __call__(self, text, **kwargs):
-            # Отправляем сообщение в мобильный чат
-            mobile_chat_send(self, text)
+        def __call__(self, text, delay=5.0, **kwargs):
+            # Отправляем сообщение в мобильный чат с задержкой
+            mobile_chat_send(self, text, delay)
     
     # Функция для включения режима чата
     def enable_chat_mode():
-        global e, a, t, k, lib
+        global e, a, t, k, lib, chat_status, chat_history
         global original_e, original_a, original_t, original_k, original_lib
         
         # Сохраняем оригинальных персонажей
@@ -654,12 +739,15 @@ init python:
         # Очищаем историю перед новой перепиской
         clear_chat()
         
+        # Устанавливаем статус
+        chat_status = "В сети"
+        
         # Скрываем обычное диалоговое окно
         renpy.run(Hide("say"))
     
     # Функция для включения мобильного режима чата
     def enable_mobile_chat_mode():
-        global e, a, t, k, lib
+        global e, a, t, k, lib, chat_status, chat_history
         global original_e, original_a, original_t, original_k, original_lib
         
         # Сохраняем оригинальных персонажей
@@ -679,12 +767,15 @@ init python:
         # Очищаем историю перед новой перепиской
         clear_chat()
         
+        # Устанавливаем статус
+        chat_status = "В сети"
+        
         # Скрываем обычное диалоговое окно
         renpy.run(Hide("say"))
     
     # Функция для отключения режима чата
     def disable_chat_mode():
-        global e, a, t, k, lib
+        global e, a, t, k, lib, chat_status
         global original_e, original_a, original_t, original_k, original_lib
         
         # Возвращаем оригинальные персонажи
@@ -699,6 +790,9 @@ init python:
         
         # Очищаем историю
         clear_chat()
+        
+        # Сбрасываем статус
+        chat_status = "В сети"
         
         # Показываем обычное диалоговое окно
         renpy.run(Show("say"))

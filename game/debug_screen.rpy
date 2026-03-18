@@ -12,18 +12,18 @@ screen debug_database():
             xfill True  # Растягиваем по ширине
             
             # Заголовок
-            text "Информация об игроках" size 40 xalign 0.5 color gui.accent_color outlines [(2, "#a43c13", 0, 0)]
+            text "Информация об игроках" size 40 xalign 0.5 color gui.accent_color
             
             # Информация о текущем пользователе
             frame:
                 style "debug_info_frame"
                 xalign 0.5
-                xsize 1100
+                xsize 1250
                 padding (20, 15)
                 
                 hbox:
                     spacing 30
-                    xalign 0.5
+                    xalign 0.2
                     text "Текущий игрок:" size 28 color "#ffffff"
                     $ current_user_name = persistent.user_name if hasattr(persistent, 'user_name') and persistent.user_name else "Не задан"
                     $ current_user_id = persistent.user_id if hasattr(persistent, 'user_id') and persistent.user_id else "Не задан"
@@ -44,8 +44,9 @@ screen debug_database():
             # Список всех пользователей с прогрессом
             frame:
                 style "debug_table_frame"
-                xsize 1380
-                padding (20, 20)
+                xsize 1250
+                xalign 0.5
+                padding (20, 15)
                 
                 vbox:
                     spacing 15
@@ -272,8 +273,8 @@ screen confirm_clear_db():
         style "debug_confirm_frame"
         xalign 0.5
         yalign 0.5
-        xsize 450
-        ysize 500
+        xsize 650
+        ysize 700
         padding (30, 30)
         
         vbox:
@@ -282,18 +283,17 @@ screen confirm_clear_db():
             yalign 0.5
             
             text "⚠️ ОЧИСТКА БАЗЫ ДАННЫХ ⚠️":
-                size 24
+                size 28
                 color "#ff7171"
                 xalign 0.5
                 text_align 0.5
-                outlines [(2, "#a84343", 0, 0)]
+                outlines [(2, "#671a1a", 0, 0)]
             
             text "Все игроки и их прогресс будут безвозвратно удалены!":
-                size 20
-                color "#ffffff"
+                size 24
+                color "#3a3a3a"
                 xalign 0.5
                 text_align 0.5
-                outlines [(2, "#671a1a", 0, 0)]
             
             null height 10
             
@@ -444,6 +444,7 @@ style debug_info_frame:
 
 style debug_table_frame:
     background Frame("gui/frame.png", 15, 15, 15, 15)
+    xmaximum 1000
 
 style debug_table_header:
     background "#ffa46f"
@@ -498,9 +499,7 @@ style debug_confirm_frame:
     padding (25, 25)
 
 style debug_confirm_button_danger:
-    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background.png", 15, 15, 15, 15)
-    padding (50, 10)
+    padding (0, 0)
     xsize 200
 
 style debug_confirm_button_danger_text:
@@ -512,7 +511,7 @@ style debug_confirm_button_danger_text:
     text_align 0.5
 
 style debug_confirm_button_cancel:
-    padding (50, 10)
+    padding (0, 0)
     xsize 200
 
 style debug_confirm_button_cancel_text:
