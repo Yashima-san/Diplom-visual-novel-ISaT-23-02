@@ -1,4 +1,4 @@
-﻿################################################################################
+################################################################################
 ## Инициализация
 ################################################################################
 
@@ -205,25 +205,11 @@ style frame:
 
 ###### Стили курсоров ######
 
-# Базовый стиль для всех кнопок с правильными курсорами
+# Временно отключаем пользовательские курсоры до создания файлов
+# Используем стандартные курсоры Ren'Py
 style button:
     properties gui.button_properties("button")
-    mouse "default"                     # Обычное состояние
-    hover_mouse "hover"                  # Наведение
-    selected_mouse "click"              # Выбранное состояние
-    selected_hover_mouse "click"          # Наведение на выбранном состоянии
-    insensitive_mouse "default"           # Неактивное состояние
-
-# Стили для курсоров (определяем их один раз)
-init python:
-    # Создаем курсоры если нужно (опционально)
-    config.mouse = {
-        "default": [ ("gui/cursor/default.png", 0, 0) ],
-        "hover": [ ("gui/cursor/hover.png", 0, 0) ],
-        "selected": [ ("gui/cursor/click.png", 0, 0) ],
-        "selected_hover": [ ("gui/cursor/click.png", 0, 0) ],
-        "insensitive": [ ("gui/cursor/default.png", 0, 0) ],
-    }
+    mouse "default"
 
 
 # Для кнопок навигации
@@ -662,6 +648,43 @@ init python:
         
         return last_chapter if last_chapter else "Нет сохранений"
     
+    # ДОБАВЛЯЕМ НЕДОСТАЮЩУЮ ФУНКЦИЮ
+    def load_last_save_for_user(user_id):
+        """Загружает последнее сохранение для указанного пользователя"""
+        saves = []
+        
+        try:
+            all_slots = []
+            for i in range(1, 10):
+                all_slots.append(str(i))
+            for i in range(1, 10):
+                all_slots.append(f"auto-{i}")
+            all_slots.append("quick-save")
+            
+            for slot_name in all_slots:
+                if renpy.can_load(slot_name):
+                    try:
+                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
+                        if save_json and save_json.get("user_id") == user_id:
+                            timestamp = save_json.get("_timestamp", 0)
+                            saves.append((slot_name, timestamp))
+                    except:
+                        continue
+        except Exception as e:
+            print(f"Ошибка при поиске сохранений: {e}")
+        
+        # Сортируем по времени (от новых к старым)
+        saves.sort(key=lambda x: x[1], reverse=True)
+        
+        if saves:
+            try:
+                renpy.load(str(saves[0][0]))
+                return True
+            except Exception as e:
+                print(f"Ошибка при загрузке: {e}")
+                return False
+        return False
+
     def load_last_save_or_start():
         """Загружает последнее сохранение или начинает новую игру"""
         if persistent.user_id and load_last_save_for_user(persistent.user_id):
@@ -2132,3 +2155,43 @@ style chapter_transition_button_text:
     size 18
     font gui.interface_text_font
     text_align 0.5
+
+################################################################################
+## Экран подтверждения переключения пользователя
+################################################################################
+
+screen confirm_user_switch(slot):
+    modal True
+    zorder 200
+    
+    style_prefix "confirm"
+    
+    add "gui/overlay/confirm.png"
+    
+    frame:
+        style "confirm_frame"
+        xalign 0.5
+        yalign 0.5
+        xsize 600
+        ysize 400
+        
+        vbox:
+            spacing 25
+            xalign 0.5
+            yalign 0.5
+            
+            text "ВНИМАНИЕ" size 36 color "#ff7171" xalign 0.5
+            
+            text "Это сохранение принадлежит другому игроку." size 24 xalign 0.5 text_align 0.5
+            text "Загрузка переключит текущего пользователя." size 24 xalign 0.5 text_align 0.5
+            
+            null height 20
+            
+            hbox:
+                spacing 30
+                xalign 0.5
+                
+                textbutton "Загрузить" action [Function(load_other_user_save, slot), Hide("confirm_user_switch")]
+                textbutton "Отмена" action Hide("confirm_user_switch")
+    
+    key "K_ESCAPE" action Hide("confirm_user_switch")

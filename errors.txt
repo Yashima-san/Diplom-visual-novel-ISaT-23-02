@@ -2,13 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/messenger.rpy", line 253: 'left_margin' is not a keyword argument or valid child of the text statement.
-    left_margin 15
-               ^
-
-File "game/messenger.rpy", line 458: 'left_margin' is not a keyword argument or valid child of the text statement.
-    left_margin 15
-               ^
+File "game/screens.rpy", line 1: expected statement.
+    ﻿
+    ^
 
 Ren'Py Version: Ren'Py 8.5.3.26020901+nightly
-Wed Mar 18 14:04:57 2026
+Wed Mar 18 18:43:35 2026

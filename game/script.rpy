@@ -11,9 +11,9 @@ define k = Character('Катя', color="#fe7d90")
 define lib = Character('Библиотекарь', color="#a0522d")
 
 # Определяем persistent переменные
-define persistent.user_name = ""
-define persistent.user_id = None
-define persistent.user_data = None
+default persistent.user_name = ""
+default persistent.user_id = None
+default persistent.user_data = None
 default current_chapter = "Глава Первая: Связь"  # Глобальная переменная для главы
 default first_choice = 0
 default second_choice = 0
@@ -75,7 +75,6 @@ init python:
     original_t = t
     original_k = k
     original_lib = lib
-
     
     # Функция для перехода к следующей главе
     def continue_to_next_chapter(old_chapter, new_chapter_title, new_chapter_subtitle):
@@ -297,7 +296,7 @@ init python:
         
         renpy.run(FileAction(slot))
 
-    # ИСПРАВЛЕННАЯ функция для кастомного действия сохранения
+    # Функция для кастомного действия сохранения
     def custom_save_action(slot):
         """Кастомное действие для сохранения с информацией о пользователе и главе"""
         try:
@@ -347,42 +346,6 @@ init python:
             renpy.notify(f"Ошибка при сохранении: {str(e)}")
             print(f"Ошибка в custom_save_action: {e}")
     
-    # ИСПРАВЛЕННАЯ функция для загрузки последнего сохранения
-    def load_last_save_for_user(user_id):
-        """Загружает последнее сохранение для указанного пользователя"""
-        saves = []
-        
-        try:
-            all_slots = []
-            for i in range(1, 10):
-                all_slots.append(str(i))
-            for i in range(1, 10):
-                all_slots.append(f"auto-{i}")
-            all_slots.append("quick-save")
-            
-            for slot_name in all_slots:
-                if renpy.can_load(slot_name):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                        if save_json and save_json.get("user_id") == user_id:
-                            timestamp = save_json.get("_timestamp", 0)
-                            saves.append((slot_name, timestamp))
-                    except:
-                        continue
-        except Exception as e:
-            print(f"Ошибка при поиске сохранений: {e}")
-        
-        # Сортируем по времени (от новых к старым)
-        saves.sort(key=lambda x: x[1], reverse=True)
-        
-        if saves:
-            try:
-                renpy.load(str(saves[0][0]))
-                return True
-            except Exception as e:
-                print(f"Ошибка при загрузке: {e}")
-                return False
-        return False
     
     # ЕДИНСТВЕННАЯ функция для определения текущей главы
     def get_current_chapter_safe():
@@ -532,6 +495,7 @@ label start:
     thought_user "Что я могу сказать?"
 
     # Показываем варианты ответа в чате
+    $ first_choice = 0
     python:
         def first_choice_callback(choice_text):
             # Здесь можно сохранить выбор и продолжить
@@ -564,6 +528,7 @@ label continue_chat_after_first:
         $ e("Ура! Я так рада!")
         $ e("Я уже придумала, что мы можем пойти в кафе после уроков, если захочешь! Или в парк! Что скажешь?")
         
+        $ second_choice = 0
         python:
             def second_choice_callback(choice_text):
                 if "Звучит здорово! Я согласна" in choice_text:
@@ -583,6 +548,7 @@ label continue_chat_after_first:
         $ e("Ой, я понимаю! Но не переживай! Мы же вместе!")
         $ e("Я придумала, что мы можем ходить в библиотеку, там так тихо и уютно! Ты как?")
         
+        $ second_choice = 0
         python:
             def second_choice_callback(choice_text):
                 if "Звучит здорово! Библиотека" in choice_text:
@@ -601,6 +567,7 @@ label continue_chat_after_first:
         $ e("Ой, [persistent.user_name]! 🥺 Я так тронута!")
         $ e("Я тоже очень рада, что мы будем вместе! И ты не волнуйся, я буду рядом!")
         
+        $ second_choice = 0
         python:
             def second_choice_callback(choice_text):
                 if "Спасибо, Лина! Ты лучшая!" in choice_text:
@@ -615,7 +582,8 @@ label continue_chat_after_first:
             ], second_choice_callback)
             renpy.pause(None)
     
-    return
+    else:
+        jump end_chat_scene
 
 label end_chat_scene:
     # Отключаем режим чата
@@ -659,6 +627,7 @@ label morning_scene:
     
     thought_user "Ее энтузиазм заразителен... Может, и мне удастся почувствовать то же самое? Я не хочу подвести ее."
     
+    $ morning_choice = 0
     python:
         def morning_choice_callback(choice_text):
             if "Спасибо, Лина! Я уже встаю" in choice_text:

@@ -1,28 +1,20 @@
-2026-03-18 05:54:08 UTC
+2026-03-18 11:43:32 UTC
 Windows-11-10.0.26200-SP0
 Ren'Py 8.5.3.26020901+nightly
 
-Early init took 312 ms
-Loading error handling took 224 ms
-Loading script took 3827 ms
-Loading save slot metadata took 169 ms
+Early init took 240 ms
+Loading error handling took 205 ms
+Loading script took 3151 ms
+Loading save slot metadata took 42 ms
 Loading persistent took 0 ms
 
-File "game/messenger.rpy", line 150: The if statement is not a valid child of the text statement.
-    color "#4caf50" if chat_status == "В сети" else "#ffaa00"
-                      ^
-
-File "game/messenger.rpy", line 345: The if statement is not a valid child of the text statement.
-    color "#4caf50" if chat_status == "В сети" else "#ffaa00"
-                      ^
-
-File "game/script.rpy", line 1: expected statement.
+File "game/screens.rpy", line 1: expected statement.
     ﻿
     ^
 DPI scale factor: 1.250000
 nvdrs: Loaded, about to disable thread optimizations.
 nvdrs: b"Couldn't load nvlib." (can be ignored)
-Interface start took 1131 ms
+Interface start took 949 ms
 
 Initializing gl2 renderer:
 primary display bounds: (0, 0, 1920, 1080)
@@ -32,102 +24,5 @@ Vendor: 'Intel'
 Renderer: 'Intel(R) UHD Graphics 600'
 Version: '4.6.0 - Build 31.0.101.2125'
 Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
-Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
-Maximum texture size: 4096x4096
-Resetting cache.
-Early init took 35 ms
-Loading error handling took 53 ms
-Loading script took 580 ms
-Loading save slot metadata took 129 ms
-Loading persistent took 0 ms
-
-File "game/messenger.rpy", line 150: The if statement is not a valid child of the text statement.
-    color "#4caf50" if chat_status == "В сети" else "#ffaa00"
-                      ^
-
-File "game/messenger.rpy", line 345: The if statement is not a valid child of the text statement.
-    color "#4caf50" if chat_status == "В сети" else "#ffaa00"
-                      ^
-DPI scale factor: 1.250000
-nvdrs: Loaded, about to disable thread optimizations.
-nvdrs: b"Couldn't load nvlib." (can be ignored)
-Interface start took 414 ms
-
-Initializing gl2 renderer:
-primary display bounds: (0, 0, 1920, 1080)
-swap interval: 1 frames
-Windowed mode.
-Vendor: 'Intel'
-Renderer: 'Intel(R) UHD Graphics 600'
-Version: '4.6.0 - Build 31.0.101.2125'
-Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
-Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
-Maximum texture size: 4096x4096
-Resetting cache.
-Early init took 39 ms
-Loading error handling took 49 ms
-Loading script took 738 ms
-Loading save slot metadata took 210 ms
-Loading persistent took 0 ms
-
-File "game/messenger.rpy", line 253: 'left_margin' is not a keyword argument or valid child of the text statement.
-    left_margin 15
-               ^
-
-File "game/messenger.rpy", line 458: 'left_margin' is not a keyword argument or valid child of the text statement.
-    left_margin 15
-               ^
-DPI scale factor: 1.250000
-nvdrs: Loaded, about to disable thread optimizations.
-nvdrs: b"Couldn't load nvlib." (can be ignored)
-Interface start took 385 ms
-
-Initializing gl2 renderer:
-primary display bounds: (0, 0, 1920, 1080)
-swap interval: 1 frames
-Windowed mode.
-Vendor: 'Intel'
-Renderer: 'Intel(R) UHD Graphics 600'
-Version: '4.6.0 - Build 31.0.101.2125'
-Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
-Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
-Maximum texture size: 4096x4096
-Resetting cache.
-Early init took 39 ms
-Loading error handling took 47 ms
-Loading script took 890 ms
-Loading save slot metadata took 117 ms
-Loading persistent took 0 ms
-Running init code took 355 ms
-Loading analysis data took 18 ms
-Analyze and compile ATL took 5 ms
-Reloading save slot metadata took 163 ms
-Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
-Dump and make backups took 172 ms
-Cleaning cache took 0 ms
-Making clean stores took 1 ms
-Initial gc took 166 ms
-DPI scale factor: 1.250000
-nvdrs: Loaded, about to disable thread optimizations.
-nvdrs: b"Couldn't load nvlib." (can be ignored)
-Creating interface object took 1 ms
-Init translation took 1 ms
-Cleaning stores took 0 ms
-Load screen analysis took 3 ms
-Analyze screens took 55 ms
-Save screen analysis took 63 ms
-Save pyanalysis took 18 ms
-Save bytecode took 9 ms
-Running _start took 3 ms
-Interface start took 1267 ms
-
-Initializing gl2 renderer:
-primary display bounds: (0, 0, 1920, 1080)
-swap interval: 1 frames
-Windowed mode.
-Vendor: 'Intel'
-Renderer: 'Intel(R) UHD Graphics 600'
-Version: '4.6.0 - Build 31.0.101.2125'
-Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
-Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Screen sizes: virtual=(1280, 720) physical=(1600, 900) drawable=(1600, 900)
 Maximum texture size: 4096x4096
