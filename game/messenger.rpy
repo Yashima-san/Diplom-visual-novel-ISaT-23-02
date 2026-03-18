@@ -21,7 +21,9 @@ init python:
     chat_choices_shown = False
     current_chat_partner = "Лина"
     chat_status = "В сети"
-    chat_pause_active = False  # Флаг для предотвращения рекурсии
+    chat_pause_active = False
+    chat_in_callback = False
+    chat_processing_choice = False  # Флаг для предотвращения множественных вызовов
     
     # Функция для добавления сообщения в историю
     def add_chat_message(character, text, is_user=False):
@@ -54,7 +56,13 @@ init python:
     
     # Функция для выбора варианта
     def select_chat_choice(choice_text):
-        global chat_choices, chat_choice_callback, chat_choices_shown
+        global chat_choices, chat_choice_callback, chat_choices_shown, chat_in_callback, chat_processing_choice
+        
+        # Предотвращаем множественные вызовы
+        if chat_processing_choice:
+            return
+        
+        chat_processing_choice = True
         
         # Добавляем сообщение пользователя в историю
         user_name = persistent.user_name if persistent.user_name else "Вы"
@@ -67,9 +75,16 @@ init python:
         chat_choice_callback = None
         chat_choices_shown = False
         
+        # Устанавливаем флаг, что мы в callback
+        chat_in_callback = True
+        
         # Вызываем колбэк (он должен выполнить renpy.jump)
         if callback:
             callback(choice_text)
+        
+        # Сбрасываем флаги
+        chat_in_callback = False
+        chat_processing_choice = False
     
     # Функция для показа сообщения в чате (без паузы)
     def show_chat_message_now(character, text, is_user=False):
@@ -90,7 +105,12 @@ init python:
     # Функция для показа сообщения в чате с паузой
     def show_chat_message(character, text, is_user=False):
         """Показывает сообщение в чате с паузой"""
-        global chat_pause_active
+        global chat_pause_active, chat_in_callback, chat_processing_choice
+        
+        # Если мы в callback или обрабатываем выбор, показываем без паузы
+        if chat_in_callback or chat_processing_choice:
+            show_chat_message_now(character, text, is_user)
+            return
         
         # Предотвращаем рекурсию
         if chat_pause_active:
@@ -177,12 +197,15 @@ init python:
     
     def enable_mobile_chat_mode():
         """Включает мобильный режим чата"""
-        enable_chat_mode()  # Пока используем тот же режим
+        enable_chat_mode()
     
     def disable_chat_mode():
         """Выключает режим чата"""
         global original_e, original_user_char, original_a, original_t, original_k, original_lib
         global e, user_char, a, t, k, lib
+        
+        # Сначала скрываем чат
+        hide_chat()
         
         # Восстанавливаем оригиналы
         if original_e:
@@ -198,14 +221,8 @@ init python:
         if original_lib:
             lib = original_lib
         
-        # Скрываем чат
-        hide_chat()
-        
         # Очищаем историю
         clear_chat()
-        
-        # Показываем стандартное диалоговое окно
-        renpy.run(Show("say"))
 
 
 # Экран чата (простой, без вариантов)
@@ -497,6 +514,7 @@ screen messenger_chat_with_choices():
                             for choice_text in chat_choices:
                                 button:
                                     style "messenger_choice_button"
+                                    xfill True
                                     action Function(select_chat_choice, choice_text)
                                     
                                     text choice_text:

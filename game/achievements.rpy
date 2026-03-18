@@ -65,9 +65,7 @@ init -1 python:
                 for ach_id in old_data:
                     persistent._achievements[ach_id] = True
 
-# Регистрация достижений
-init -1 python:
-    # Существующие достижения
+    # Регистрация существующих достижений
     register_achievement(
         "wake_up",
         "Проснулась?",
@@ -152,6 +150,38 @@ init -1 python:
         "Глава 2 пройдена",
         "Вы завершили вторую главу"
     )
+    
+    # Новые достижения для эмоциональной мини-игры
+    register_achievement(
+        "emotion_beginner",
+        "Юный эмоциональный детектив",
+        "Впервые определил своё эмоциональное состояние"
+    )
+    
+    register_achievement(
+        "emotion_treasure_hunter",
+        "Охотник за эмоциями",
+        "Распознал тревогу"
+    )
+    
+    register_achievement(
+        "emotion_pioneer",
+        "Первопроходец чувств",
+        "Смог определить страх"
+    )
+    
+    register_achievement(
+        "emotion_explorer",
+        "Исследователь эмоций",
+        "Почувствовал предвкушение"
+    )
+    
+    register_achievement(
+        "emotion_seeker",
+        "Искатель надежды",
+        "Обнаружил в себе надежду"
+    )
+    
 # Экран достижений
 screen achievements():
     tag menu

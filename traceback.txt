@@ -1,137 +1,41 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
 While running game code:
-  File "game/script.rpy", line 543, in script
-    python:
-  File "game/script.rpy", line 565, in <module>
-    renpy.pause(None)
-    ~~~~~~~~~~~^^^^^^
-  File "game/messenger.rpy", line 72, in select_chat_choice
-    callback(choice_text)
-    ~~~~~~~~^^^^^^^^^^^^^
-  File "game/script.rpy", line 556, in first_choice_callback
-    user_say(choice_text)
-    ~~~~~~~~^^^^^^^^^^^^^
-  File "game/messenger.rpy", line 144, in user_say
-    show_chat_message(TempUser(name), text, is_user=True)
-    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/messenger.rpy", line 102, in show_chat_message
-    renpy.pause(1.5)
-    ~~~~~~~~~~~^^^^^
-Exception: Cannot start an interaction in the middle of an interaction, without creating a new context.
+AttributeError: Can't get attribute 'first_choice_callback' on <renpy.python.StoreModule object at 0x0000000006856b70>
 
 -- Full Traceback ------------------------------------------------------------
 
 Traceback (most recent call last):
-  File "game/script.rpy", line 543, in script
-    python:
+  File "renpy/common/00start.rpy", line 234, in script call
+    call _load_reload_game from _call__load_reload_game_1
+  File "renpy/common/00keymap.rpy", line 551, in script
+    python hide:
   File "renpy/ast.py", line 1187, in execute
     renpy.python.py_exec_bytecode(self.code.bytecode, self.hide, store=self.store)
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "renpy/python.py", line 1332, in py_exec_bytecode
     exec(bytecode, globals, locals)
     ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/script.rpy", line 565, in <module>
-    renpy.pause(None)
-    ~~~~~~~~~~~^^^^^^
-  File "renpy/exports/statementexports.py", line 198, in pause
-    rv = renpy.ui.interact(mouse="pause", type="pause", roll_forward=roll_forward, pause=delay, pause_modal=modal)
-         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/ui.py", line 306, in interact
-    rv = renpy.game.interface.interact(roll_forward=roll_forward, **kwargs)
-         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/core.py", line 2156, in interact
-    repeat, rv = self.interact_core(
-                 ~~~~~~~~~~~~~~~~~~^
-        preloads=preloads,
-        ^^^^^^^^^^^^^^^^^^
-    ...<4 lines>...
-        **kwargs,
-        ^^^^^^^^^
-    )
-    ^
-  File "renpy/display/core.py", line 3250, in interact_core
-    rv = root_widget.event(ev, x, y, 0)
-         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/screen.py", line 805, in event
-    rv = self.child.event(ev, x, y, st)
-         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1510, in event
-    rv = super(Window, self).event(ev, x, y, st)
-         ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 273, in event
-    rv = d.event(ev, x - xo, y - yo, st)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1510, in event
-    rv = super(Window, self).event(ev, x, y, st)
-         ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 273, in event
-    rv = d.event(ev, x - xo, y - yo, st)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 273, in event
-    rv = d.event(ev, x - xo, y - yo, st)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/viewport.py", line 581, in event
-    rv = super(Viewport, self).event(ev, x, y, st)
-         ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 273, in event
-    rv = d.event(ev, x - xo, y - yo, st)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/behavior.py", line 1185, in event
-    return handle_click(self.clicked)
-           ~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/behavior.py", line 1107, in handle_click
-    rv = run(action)
-         ~~~^^^^^^^^
-  File "renpy/display/behavior.py", line 411, in run
-    return action(*args, **kwargs)
-           ~~~~~~^^^^^^^^^^^^^^^^^
-  File "renpy/common/00action_other.rpy", line 618, in __call__
-    rv = self.callable(*self.args, **self.kwargs)
-         ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/messenger.rpy", line 72, in select_chat_choice
-    callback(choice_text)
-    ~~~~~~~~^^^^^^^^^^^^^
-  File "game/script.rpy", line 556, in first_choice_callback
-    user_say(choice_text)
-    ~~~~~~~~^^^^^^^^^^^^^
-  File "game/messenger.rpy", line 144, in user_say
-    show_chat_message(TempUser(name), text, is_user=True)
-    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/messenger.rpy", line 102, in show_chat_message
-    renpy.pause(1.5)
-    ~~~~~~~~~~~^^^^^
-  File "renpy/exports/statementexports.py", line 198, in pause
-    rv = renpy.ui.interact(mouse="pause", type="pause", roll_forward=roll_forward, pause=delay, pause_modal=modal)
-         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/ui.py", line 306, in interact
-    rv = renpy.game.interface.interact(roll_forward=roll_forward, **kwargs)
-         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/core.py", line 2122, in interact
-    raise Exception(
-        "Cannot start an interaction in the middle of an interaction, without creating a new context."
-    )
-Exception: Cannot start an interaction in the middle of an interaction, without creating a new context.
+  File "renpy/common/00keymap.rpy", line 551, in <module>
+    python hide:
+  File "renpy/common/00keymap.rpy", line 565, in _execute_python_hide
+    renpy.load(renpy.session["_reload_slot"])
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/loadsave.py", line 636, in load
+    roots, log = loads(log_data)
+                 ~~~~~^^^^^^^^^^
+  File "renpy/compat/pickle.py", line 307, in loads
+    return load(io.BytesIO(s))
+           ~~~~^^^^^^^^^^^^^^^
+  File "renpy/compat/pickle.py", line 299, in load
+    return Unpickler(f, fix_imports=True, encoding="utf-8", errors="surrogateescape").load()
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "renpy/compat/pickle.py", line 291, in find_class
+    return super().find_class(module, name)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+AttributeError: Can't get attribute 'first_choice_callback' on <renpy.python.StoreModule object at 0x0000000006856b70>
 
 Windows-11-10.0.26200-SP0 AMD64
 Ren'Py 8.6.0.26031705+nightly
 За гранью чувств 0.0
-Thu Mar 19 00:25:48 2026
+Thu Mar 19 00:54:56 2026

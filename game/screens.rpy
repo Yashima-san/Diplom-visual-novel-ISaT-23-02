@@ -2235,3 +2235,335 @@ screen confirm_user_switch(slot):
     
     key "K_ESCAPE" action Hide("confirm_user_switch")
     key "game_menu" action Hide("confirm_user_switch")
+
+################################################################################
+## Экран выбора эмоции (Колесо эмоций Плутчика)
+################################################################################
+
+screen emotion_selection():
+    modal True
+    zorder 100
+    
+    # Затемнение фона
+    add "#000000CC"
+    
+    # Основной фрейм
+    frame:
+        style "emotion_frame"
+        xalign 0.5
+        yalign 0.5
+        xsize 1400
+        ysize 900
+        
+        vbox:
+            spacing 20
+            xfill True
+            
+            text "Какое чувство ты испытываешь сейчас?":
+                size 40
+                color "#ffffff"
+                font gui.interface_text_font
+                xalign 0.5
+                yalign 0.5
+                outlines [(3, "#671a1a", 0, 0)]
+            
+            text "Выбери самое точное слово, описывающее твоё состояние:":
+                size 24
+                color "#cccccc"
+                font gui.interface_text_font
+                xalign 0.5
+                yalign 0.5
+            
+            null height 20
+            
+            # Колесо эмоций (визуальное представление)
+            frame:
+                style "emotion_wheel_frame"
+                xalign 0.5
+                xsize 800
+                ysize 300
+                
+                hbox:
+                    spacing 10
+                    xalign 0.5
+                    yalign 0.5
+                    
+                    # Базовые эмоции (центральный круг)
+                    frame:
+                        style "emotion_central"
+                        xysize (120, 120)
+                        background "#ff6b6b"
+                        text "Страх" size 16 color "#ffffff" xalign 0.5 yalign 0.5
+            
+            # Таблица с эмоциями по категориям
+            frame:
+                style "emotion_table_frame"
+                xfill True
+                
+                viewport:
+                    ysize 400
+                    scrollbars "vertical"
+                    mousewheel True
+                    draggable True
+                    
+                    vbox:
+                        spacing 15
+                        xfill True
+                        
+                        # Страх и его оттенки
+                        frame:
+                            style "emotion_category_frame"
+                            background "#ff9999"
+                            
+                            vbox:
+                                text "Страх — ожидание угрозы, опасности":
+                                    size 22
+                                    color "#ffffff"
+                                    bold True
+                                
+                                grid 3 2:
+                                    spacing 10
+                                    xalign 0.5
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Тревога", "Смутное, неприятное предчувствие, ощущение надвигающейся опасности без явной причины."))
+                                        text "Тревога" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Беспокойство", "Состояние, вызванное мыслями о возможных проблемах."))
+                                        text "Беспокойство" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Робость", "Неуверенность в себе, боязнь проявить себя."))
+                                        text "Робость" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Ужас", "Крайняя степень страха, оцепенение."))
+                                        text "Ужас" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Паника", "Внезапный неконтролируемый страх."))
+                                        text "Паника" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Нервозность", "Состояние возбуждения и раздражительности."))
+                                        text "Нервозность" style "emotion_choice_button_text"
+                        
+                        # Радость и её оттенки
+                        frame:
+                            style "emotion_category_frame"
+                            background "#ffff99"
+                            
+                            vbox:
+                                text "Радость — ощущение счастья, удовольствия":
+                                    size 22
+                                    color "#000000"
+                                    bold True
+                                
+                                grid 3 2:
+                                    spacing 10
+                                    xalign 0.5
+                                    
+                                    button:
+                                        style "emotion_choice_button_light"
+                                        action Return(("Счастье", "Глубокое удовлетворение от жизни."))
+                                        text "Счастье" style "emotion_choice_button_text_light"
+                                    
+                                    button:
+                                        style "emotion_choice_button_light"
+                                        action Return(("Восторг", "Кратковременная, но очень сильная радость."))
+                                        text "Восторг" style "emotion_choice_button_text_light"
+                                    
+                                    button:
+                                        style "emotion_choice_button_light"
+                                        action Return(("Удовольствие", "Приятные ощущения от процесса."))
+                                        text "Удовольствие" style "emotion_choice_button_text_light"
+                                    
+                                    button:
+                                        style "emotion_choice_button_light"
+                                        action Return(("Гордость", "Удовлетворение от своих достижений."))
+                                        text "Гордость" style "emotion_choice_button_text_light"
+                                    
+                                    button:
+                                        style "emotion_choice_button_light"
+                                        action Return(("Надежда", "Ожидание хорошего, оптимизм."))
+                                        text "Надежда" style "emotion_choice_button_text_light"
+                                    
+                                    button:
+                                        style "emotion_choice_button_light"
+                                        action Return(("Облегчение", "Уход от негативного состояния."))
+                                        text "Облегчение" style "emotion_choice_button_text_light"
+                        
+                        # Гнев и его оттенки
+                        frame:
+                            style "emotion_category_frame"
+                            background "#ff6666"
+                            
+                            vbox:
+                                text "Гнев — сильное возмущение, негодование":
+                                    size 22
+                                    color "#ffffff"
+                                    bold True
+                                
+                                grid 3 2:
+                                    spacing 10
+                                    xalign 0.5
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Злость", "Раздражение, враждебность."))
+                                        text "Злость" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Раздражение", "Лёгкая форма гнева."))
+                                        text "Раздражение" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Ярость", "Крайняя степень гнева."))
+                                        text "Ярость" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Обида", "Чувство несправедливости по отношению к себе."))
+                                        text "Обида" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Зависть", "Желание обладать тем, что есть у другого."))
+                                        text "Зависть" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Презрение", "Чувство превосходства над другим."))
+                                        text "Презрение" style "emotion_choice_button_text"
+                        
+                        # Печаль и её оттенки
+                        frame:
+                            style "emotion_category_frame"
+                            background "#9999ff"
+                            
+                            vbox:
+                                text "Печаль — чувство утраты, грусти":
+                                    size 22
+                                    color "#ffffff"
+                                    bold True
+                                
+                                grid 3 2:
+                                    spacing 10
+                                    xalign 0.5
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Грусть", "Лёгкое уныние, сожаление."))
+                                        text "Грусть" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Тоска", "Тяжёлое, гнетущее чувство."))
+                                        text "Тоска" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Одиночество", "Ощущение изоляции, покинутости."))
+                                        text "Одиночество" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Разочарование", "Несовпадение ожиданий с реальностью."))
+                                        text "Разочарование" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Апатия", "Безразличие, отсутствие интереса."))
+                                        text "Апатия" style "emotion_choice_button_text"
+                                    
+                                    button:
+                                        style "emotion_choice_button"
+                                        action Return(("Жалость к себе", "Сосредоточенность на своих несчастьях."))
+                                        text "Жалость к себе" style "emotion_choice_button_text"
+            
+            null height 20
+            
+            # Кнопка для пропуска (если игрок не хочет выбирать)
+            textbutton "Пропустить задание":
+                style "emotion_skip_button"
+                xalign 0.5
+                action Return(("Пропуск", ""))
+
+
+# Стили для экрана эмоций
+style emotion_frame:
+    background Frame("gui/frame.png", 25, 25, 25, 25)
+    padding (30, 30)
+
+style emotion_wheel_frame:
+    background None
+    padding (0, 0)
+
+style emotion_central:
+    background "#ff6b6b"
+    xysize (120, 120)
+    xalign 0.5
+    yalign 0.5
+
+style emotion_table_frame:
+    background Frame("gui/frame.png", 15, 15, 15, 15)
+    padding (20, 20)
+
+style emotion_category_frame:
+    background "#ff9999"
+    padding (15, 10)
+    margin (5, 5)
+    xfill True
+
+style emotion_choice_button:
+    background Frame("gui/button/choice_idle_background_1.png", 10, 10, 10, 10)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 10, 10, 10, 10)
+    padding (10, 8)
+    xsize 200
+
+style emotion_choice_button_text:
+    color "#ffffff"
+    hover_color "#ffcccc"
+    size 18
+    font gui.interface_text_font
+    outlines [(1, "#671a1a", 0, 0)]
+    text_align 0.5
+    xalign 0.5
+
+style emotion_choice_button_light:
+    background Frame("gui/button/choice_idle_background_1.png", 10, 10, 10, 10)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 10, 10, 10, 10)
+    padding (10, 8)
+    xsize 200
+
+style emotion_choice_button_text_light:
+    color "#000000"
+    hover_color "#333333"
+    size 18
+    font gui.interface_text_font
+    outlines [(1, "#ffffff", 0, 0)]
+    text_align 0.5
+    xalign 0.5
+
+style emotion_skip_button:
+    background Frame("gui/button/choice_idle_background_0.png", 10, 10, 10, 10)
+    hover_background Frame("gui/button/choice_hover_background_2.png", 10, 10, 10, 10)
+    padding (15, 8)
+    xsize 200
+
+style emotion_skip_button_text:
+    color "#ffffff"
+    hover_color "#ff9999"
+    size 20
+    font gui.interface_text_font
+    outlines [(1, "#671a1a", 0, 0)]
+    text_align 0.5

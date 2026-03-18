@@ -413,6 +413,49 @@ init python:
             persistent.user_name = user_name
         renpy.notify(f"Выбран игрок: {user_name}")
 
+    # Глобальные callback-функции для чата
+    def first_choice_callback(choice_text):
+        global first_choice
+        if "Привет! Да, готова" in choice_text:
+            first_choice = 1
+            unlock_achievement("first_choice")
+        elif "Привет! Я тоже очень рада" in choice_text:
+            first_choice = 2
+            unlock_achievement("first_choice")
+        elif "Привет! Я очень рада" in choice_text:
+            first_choice = 3
+            unlock_achievement("first_choice")
+        
+        renpy.jump("continue_chat_after_first")
+    
+    def second_choice_callback(choice_text):
+        global second_choice
+        if "Звучит здорово! Я согласна" in choice_text:
+            second_choice = 11
+        elif "Давай сначала посмотрим" in choice_text:
+            second_choice = 12
+        elif "Звучит здорово! Библиотека" in choice_text:
+            second_choice = 21
+        elif "Спасибо, Лина" in choice_text and "буду просто наблюдать" in choice_text:
+            second_choice = 22
+        elif "Спасибо, Лина! Ты лучшая!" in choice_text:
+            second_choice = 31
+        elif "Спасибо, Лина! Я очень ценю твою дружбу" in choice_text:
+            second_choice = 32
+        
+        renpy.jump("end_chat_scene")
+    
+    def morning_choice_callback(choice_text):
+        global morning_choice
+        if "Спасибо, Лина! Я уже встаю" in choice_text:
+            morning_choice = 1
+        elif "Я тоже волнуюсь" in choice_text:
+            morning_choice = 2
+        elif "Увидимся у входа" in choice_text:
+            morning_choice = 3
+        
+        renpy.jump("continue_morning")
+
 
 ################################################################################
 ## Глава Первая: Связь
@@ -540,98 +583,48 @@ label start:
     thought_user "Что я могу сказать?"
 
     # Показываем варианты ответа в чате
-    python:
-        def first_choice_callback(choice_text):
-            if "Привет! Да, готова" in choice_text:
-                store.first_choice = 1
-                unlock_achievement("first_choice")
-            elif "Привет! Я тоже очень рада" in choice_text:
-                store.first_choice = 2
-                unlock_achievement("first_choice")
-            elif "Привет! Я очень рада" in choice_text:
-                store.first_choice = 3
-                unlock_achievement("first_choice")
-            
-            # Отправляем выбранное сообщение в чат
-            user_say(choice_text)
-            renpy.jump("continue_chat_after_first")
-        
-        show_chat_choices([
-            "Привет! Да, готова. Уже жду не дождусь! 😊",
-            "Привет! Я тоже очень рада! Немного волнуюсь, но уверена, что с тобой будет весело! 😊",
-            "Привет! Я очень рада, что мы будем учиться вместе. Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг. ❤️"
-        ], first_choice_callback)
-        
-        renpy.pause(None)
+    $ show_chat_choices([
+        "Привет! Да, готова. Уже жду не дождусь! 😊",
+        "Привет! Я тоже очень рада! Немного волнуюсь, но уверена, что с тобой будет весело! 😊",
+        "Привет! Я очень рада, что мы будем учиться вместе. Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг. ❤️"
+    ], first_choice_callback)
+    
+    $ renpy.pause(None)
 
 label continue_chat_after_first:
     if first_choice == 1:
         $ e("Ура! Я так рада!")
         $ e("Я уже придумала, что мы можем пойти в кафе после уроков, если захочешь! Или в парк! Что скажешь?")
         
-        python:
-            def second_choice_callback(choice_text):
-                if "Звучит здорово! Я согласна" in choice_text:
-                    store.second_choice = 11
-                elif "Давай сначала посмотрим" in choice_text:
-                    store.second_choice = 12
-                
-                # Отправляем выбранное сообщение в чат
-                user_say(choice_text)
-                renpy.jump("end_chat_scene")
-            
-            show_chat_choices([
-                "Звучит здорово! Я согласна на все!",
-                "Давай сначала посмотрим, как пройдет день. Я немного устала сегодня."
-            ], second_choice_callback)
-            renpy.pause(None)
+        $ show_chat_choices([
+            "Звучит здорово! Я согласна на все!",
+            "Давай сначала посмотрим, как пройдет день. Я немного устала сегодня."
+        ], second_choice_callback)
+        $ renpy.pause(None)
     
     elif first_choice == 2:
         $ e("Ой, я понимаю! Но не переживай! Мы же вместе!")
         $ e("Я придумала, что мы можем ходить в библиотеку, там так тихо и уютно! Ты как?")
         
-        python:
-            def second_choice_callback(choice_text):
-                if "Звучит здорово! Библиотека" in choice_text:
-                    store.second_choice = 21
-                elif "Спасибо, Лина" in choice_text:
-                    store.second_choice = 22
-                
-                # Отправляем выбранное сообщение в чат
-                user_say(choice_text)
-                renpy.jump("end_chat_scene")
-            
-            show_chat_choices([
-                "Звучит здорово! Библиотека – отличная идея!",
-                "Спасибо, Лина! Я, наверное, пока буду просто наблюдать."
-            ], second_choice_callback)
-            renpy.pause(None)
+        $ show_chat_choices([
+            "Звучит здорово! Библиотека – отличная идея!",
+            "Спасибо, Лина! Я, наверное, пока буду просто наблюдать."
+        ], second_choice_callback)
+        $ renpy.pause(None)
     
     elif first_choice == 3:
         $ e("Ой, [persistent.user_name]! 🥺 Я так тронута!")
         $ e("Я тоже очень рада, что мы будем вместе! И ты не волнуйся, я буду рядом!")
         
-        python:
-            def second_choice_callback(choice_text):
-                if "Спасибо, Лина! Ты лучшая!" in choice_text:
-                    store.second_choice = 31
-                elif "Спасибо, Лина! Я очень ценю твою дружбу" in choice_text:
-                    store.second_choice = 32
-                
-                # Отправляем выбранное сообщение в чат
-                user_say(choice_text)
-                renpy.jump("end_chat_scene")
-            
-            show_chat_choices([
-                "Спасибо, Лина! Ты лучшая! Я уже чувствую себя спокойнее.",
-                "Спасибо, Лина! Я очень ценю твою дружбу."
-            ], second_choice_callback)
-            renpy.pause(None)
+        $ show_chat_choices([
+            "Спасибо, Лина! Ты лучшая! Я уже чувствую себя спокойнее.",
+            "Спасибо, Лина! Я очень ценю твою дружбу."
+        ], second_choice_callback)
+        $ renpy.pause(None)
     
     return
 
 label end_chat_scene:
-    # Отключаем режим чата
     $ disable_chat_mode()
     jump night_scene
 
@@ -643,8 +636,55 @@ label night_scene:
     narrator "Ночь опустилась на город мягко, как шелковое одеяло."
     narrator "[persistent.user_name] лежала в постели, уставившись в потолок, где плясали тени от уличного фонаря."
     narrator "Сообщения Лины все еще крутились в голове, теплые и поддерживающие."
-    narrator "Засыпая, [persistent.user_name] думала только об одном…"
-
+    
+    thought_user "Завтрашний день в новой школе… Это не просто новый этап — это будет прыжок в неизвестность, где моя тревога может либо раствориться в дружбе с Линой, либо накрыть с головой."
+    
+    thought_user "Хотя… может, стоит прямо сейчас чем-то заняться? Отвлечься от этих мыслей."
+    thought_user "Психолог говорила, что важно анализировать свои состояния. Дала то самое задание — расширять эмоциональный словарь."
+    
+    narrator "[persistent.user_name] села на кровати и посмотрела на стол, где лежала распечатанная таблица чувств."
+    
+    thought_user "«Колесо эмоций» Роберта Плутчика. Нужно носить с собой и в моменты дискомфорта пытаться подобрать точное слово."
+    thought_user "Может, попробовать прямо сейчас? Описать то, что я чувствую перед завтрашним днём..."
+    
+    narrator "Она подошла к столу, включила настольную лампу и взяла в руки таблицу с разноцветным кругом, разделённым на множество сегментов."
+    
+    show table_emotions at truecenter with dissolve
+    $ renpy.pause(2.0)
+    hide table_emotions with dissolve
+    
+    thought_user "В центре — базовые эмоции: радость, доверие, страх, удивление, печаль, отвращение, гнев, предвкушение."
+    thought_user "А дальше — оттенки. Например, страх может переходить в тревогу, беспокойство, робость…"
+    
+    
+    # Мини-игра: выбор эмоции
+    call screen emotion_selection
+    
+    # После выбора продолжаем
+    if _return:
+        $ selected_emotion = _return[0]
+        $ emotion_description = _return[1]
+        
+        thought_user "[selected_emotion]... Да, пожалуй, это самое точное слово."
+        thought_user "[emotion_description]"
+        
+        if selected_emotion == "Тревога":
+            $ unlock_achievement("emotion_treasure_hunter")
+            thought_user "Интересно, получается, я смогла определить своё состояние. Может, это задание действительно работает?"
+        elif selected_emotion == "Страх":
+            $ unlock_achievement("emotion_pioneer")
+            thought_user "Страх — это нормально, говорила психолог. Главное — не позволять ему парализовать тебя."
+        elif selected_emotion == "Предвкушение":
+            $ unlock_achievement("emotion_explorer")
+            thought_user "Предвкушение… Оно больше похоже на смесь радости и надежды. Может, я действительно жду чего-то хорошего?"
+        elif selected_emotion == "Надежда":
+            $ unlock_achievement("emotion_seeker")
+            thought_user "Надежда. Тёплое слово. Может, не всё так плохо?"
+        else:
+            $ unlock_achievement("emotion_beginner")
+            thought_user "Записала в дневник наблюдений. Завтра расскажу психологу."
+    
+    thought_user "Засыпая, [persistent.user_name] думала только об одном…"
     thought_user "Завтрашний день в новой школе… Это не просто новый этап — это будет прыжок в неизвестность, где моя тревога может либо раствориться в дружбе с Линой, либо накрыть с головой."
     
     stop sound fadeout 3.0
@@ -659,7 +699,6 @@ label morning_scene:
     narrator "Утро пришло слишком быстро. Солнце пробивалось сквозь шторы, окрашивая комнату в золотистый свет."
     narrator "[persistent.user_name] проснулась с тяжелым сердцем, но с решимостью. Она села на кровати, потянулась и бросила взгляд на телефон."
 
-    # Включаем режим чата
     $ enable_chat_mode()
     
     $ e("Доброе утро, [persistent.user_name]! 🌅")
@@ -668,29 +707,15 @@ label morning_scene:
     
     thought_user "Ее энтузиазм заразителен... Может, и мне удастся почувствовать то же самое? Я не хочу подвести ее."
     
-    python:
-        def morning_choice_callback(choice_text):
-            if "Спасибо, Лина! Я уже встаю" in choice_text:
-                store.morning_choice = 1
-            elif "Я тоже волнуюсь" in choice_text:
-                store.morning_choice = 2
-            elif "Увидимся у входа" in choice_text:
-                store.morning_choice = 3
-            
-            # Отправляем выбранное сообщение в чат
-            user_say(choice_text)
-            renpy.jump("continue_morning")
-        
-        show_chat_choices([
-            "Спасибо, Лина! Я уже встаю. Увидимся у входа! ❤️",
-            "Я тоже волнуюсь... Но спасибо, что ты рядом!",
-            "Увидимся у входа в школу! Я постараюсь не опоздать 😊"
-        ], morning_choice_callback)
-        
-        renpy.pause(None)
+    $ show_chat_choices([
+        "Спасибо, Лина! Я уже встаю. Увидимся у входа! ❤️",
+        "Я тоже волнуюсь... Но спасибо, что ты рядом!",
+        "Увидимся у входа в школу! Я постараюсь не опоздать 😊"
+    ], morning_choice_callback)
+    
+    $ renpy.pause(None)
 
 label continue_morning:
-    # Отключаем режим чата
     $ disable_chat_mode()
     
     narrator "[persistent.user_name] улыбнулась, чувствуя себя немного увереннее."
