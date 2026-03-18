@@ -83,23 +83,6 @@ init -2 python:
                     )
                 ''')
                 
-                # Создание таблицы game_versions
-                self.cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS game_versions (
-                        game_version_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        release_date DATE
-                    )
-                ''')
-                
-                # Создание таблицы update_version
-                self.cursor.execute('''
-                    CREATE TABLE IF NOT EXISTS update_version (
-                        update_version_ID INTEGER PRIMARY KEY AUTOINCREMENT,
-                        game_version_ID INTEGER NOT NULL,
-                        last_release_date DATE
-                    )
-                ''')
-                
                 # Создание индексов для оптимизации
                 self.cursor.execute('''
                     CREATE INDEX IF NOT EXISTS idx_user_id ON save_progress_users(user_ID)
@@ -107,10 +90,6 @@ init -2 python:
                 
                 self.cursor.execute('''
                     CREATE INDEX IF NOT EXISTS idx_achievement_user ON achievements(user_ID)
-                ''')
-                
-                self.cursor.execute('''
-                    CREATE INDEX IF NOT EXISTS idx_update_version ON update_version(game_version_ID)
                 ''')
                 
                 self.connection.commit()
@@ -488,32 +467,3 @@ init -2 python:
     
     # Глобальный экземпляр базы данных
     db = Database()
-
-# Инициализация версии игры
-init -1 python:
-    def init_game_version():
-        if db.sqlite_available:
-            try:
-                db.connect()
-                # Проверяем, есть ли уже запись о версии
-                db.cursor.execute("SELECT * FROM game_versions")
-                if not db.cursor.fetchone():
-                    # Добавляем текущую версию
-                    db.cursor.execute(
-                        "INSERT INTO game_versions (release_date) VALUES (date('now'))"
-                    )
-                    game_version_id = db.cursor.lastrowid
-                    
-                    # Добавляем запись об обновлении
-                    db.cursor.execute(
-                        "INSERT INTO update_version (game_version_ID, last_release_date) VALUES (?, date('now'))",
-                        (game_version_id,)
-                    )
-                    db.connection.commit()
-            except Exception as e:
-                renpy.notify(f"Ошибка при инициализации версии: {str(e)}")
-            finally:
-                db.disconnect()
-    
-    # Вызываем инициализацию версии
-    init_game_version()

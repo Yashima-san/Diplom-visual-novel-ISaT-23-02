@@ -257,59 +257,6 @@ screen user_details(user_id, user_name):
             
 
 ################################################################################
-## Экран подтверждения очистки БД
-################################################################################
-
-
-screen confirm_clear_db():
-    modal True
-    zorder 200
-    
-    style_prefix "confirm"
-    
-    add "gui/overlay/confirm.png"
-    
-    frame:
-        style "debug_confirm_frame"
-        xalign 0.5
-        yalign 0.5
-        xsize 650
-        ysize 700
-        padding (30, 30)
-        
-        vbox:
-            spacing 25
-            xalign 0.5
-            yalign 0.5
-            
-            text "⚠️ ОЧИСТКА БАЗЫ ДАННЫХ ⚠️":
-                size 28
-                color "#ff7171"
-                xalign 0.5
-                text_align 0.5
-                outlines [(2, "#671a1a", 0, 0)]
-            
-            text "Все игроки и их прогресс будут безвозвратно удалены!":
-                size 24
-                color "#3a3a3a"
-                xalign 0.5
-                text_align 0.5
-            
-            null height 10
-            
-            hbox:
-                spacing 10
-                xalign 0.5
-                
-                textbutton "Да, очистить":
-                    style "debug_confirm_button_danger"
-                    action [Function(clear_database), Show("debug_database")]
-                
-                textbutton "Нет, отмена":
-                    style "debug_confirm_button_cancel"
-                    action Hide("confirm_clear_db")
-
-################################################################################
 ## Функции для работы с данными
 ################################################################################
 

@@ -144,13 +144,17 @@ screen messenger_chat_with_choices():
                         bold True
                         xalign 0.5
                     
-                    # ИСПРАВЛЕНО: используем отдельный блок python для определения цвета
-                    $ status_color = "#4caf50" if chat_status == "В сети" else "#ffaa00"
-                    text chat_status:
-                        style "chat_partner_status"
-                        size 18
-                        color status_color
-                        xalign 0.5
+                    # ИСПРАВЛЕНО: Используем два разных текстовых элемента с условием показа
+                    if chat_status == "В сети":
+                        text "В сети":
+                            style "chat_partner_status_online"
+                            size 18
+                            xalign 0.5
+                    else:
+                        text "Печатает...":
+                            style "chat_partner_status_typing"
+                            size 18
+                            xalign 0.5
             
             # Область сообщений
             viewport:
@@ -244,12 +248,12 @@ screen messenger_chat_with_choices():
                         xfill True
                         xsize 800
                         
-                        # ИСПРАВЛЕНО: убран left_margin, вместо этого используем padding во frame
+                        # ИСПРАВЛЕНО: Убираем left_margin, используем xpos для отступа
                         text "Введите текст...":
                             style "input_placeholder"
                             size 20
                             color "#888888"
-                            xalign 0.0
+                            xpos 15
                             yalign 0.5
             
             # Область с вариантами ответа (показываем только если есть варианты)
@@ -342,11 +346,17 @@ screen mobile_messenger():
                     vbox:
                         yalign 0.5
                         text "Лина" size 28 color "#ffffff" bold True
-                        # ИСПРАВЛЕНО: используем отдельный блок python для определения цвета
-                        $ status_color = "#4caf50" if chat_status == "В сети" else "#ffaa00"
-                        text chat_status:
-                            size 18
-                            color status_color
+                        # ИСПРАВЛЕНО: Используем два разных текстовых элемента с условием показа
+                        if chat_status == "В сети":
+                            text "В сети":
+                                size 18
+                                color "#4caf50"
+                                xalign 0.5
+                        else:
+                            text "Печатает...":
+                                size 18
+                                color "#ffaa00"
+                                xalign 0.5
             
             # Область сообщений
             viewport:
@@ -449,12 +459,12 @@ screen mobile_messenger():
                         style "mobile_input_field"
                         xfill True
                         
-                        # ИСПРАВЛЕНО: убран left_margin, вместо этого используем padding во frame
+                        # ИСПРАВЛЕНО: Убираем left_margin, используем xpos для отступа
                         text "Введите текст...":
                             style "mobile_input_placeholder"
                             size 18
                             color "#888888"
-                            xalign 0.0
+                            xpos 15
                             yalign 0.5
             
             # Нижняя панель с вариантами ответа (показываем только если есть варианты)
@@ -515,8 +525,15 @@ style chat_partner_name:
     outlines [(2, "#000000", 0, 0)]
     xalign 0.5
 
-style chat_partner_status:
+# ИСПРАВЛЕНО: Добавлены отдельные стили для статусов
+style chat_partner_status_online:
     font gui.interface_text_font
+    color "#4caf50"
+    xalign 0.5
+
+style chat_partner_status_typing:
+    font gui.interface_text_font
+    color "#ffaa00"
     xalign 0.5
 
 style input_panel:
@@ -529,12 +546,10 @@ style input_field:
     background "#3b3b3b"
     ysize 50
     xfill True
-    padding (15, 0)  # Добавляем отступы здесь вместо left_margin
 
 style input_placeholder:
     font gui.interface_text_font
     yalign 0.5
-    xalign 0.0
 
 style messenger_user_bubble:
     background "#c66b2f"
@@ -647,13 +662,11 @@ style mobile_input_field:
     background "#3b3b3b"
     ysize 45
     xfill True
-    padding (15, 0)  # Добавляем отступы здесь вместо left_margin
 
 style mobile_input_placeholder:
     font gui.interface_text_font
     size 18
     yalign 0.5
-    xalign 0.0
 
 style mobile_input_area:
     background "#2b2b2b"

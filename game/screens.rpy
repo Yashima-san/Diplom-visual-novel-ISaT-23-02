@@ -2068,6 +2068,98 @@ init -1 python:
     style.input_confirm_button_text.xalign = 0.5
 
 ################################################################################
+## Экран подтверждения #########################################################
+################################################################################
+
+screen confirm(message, yes_action, no_action):
+    modal True
+    zorder 200
+    style_prefix "confirm"
+
+    # Затемнение - всегда первым для правильного z-order
+    add "gui/overlay/confirm.png"
+
+    frame:
+        style "confirm_frame"
+
+        vbox:
+            xalign .5
+            yalign .5
+            spacing 75
+            xysize (600, 450)
+
+            label _(message):
+                style "confirm_prompt"
+                xalign 0.5
+                yalign 0.5
+
+            hbox:
+                xalign 0.5
+                spacing 120
+
+                textbutton _("Да") action yes_action
+                textbutton _("Нет") action no_action
+
+    key "game_menu" action no_action
+    key "K_ESCAPE" action no_action
+
+
+################################################################################
+## Экран подтверждения очистки БД (наследует confirm)
+################################################################################
+
+screen confirm_clear_db():
+    modal True
+    zorder 200
+    
+    # Затемнение - всегда первым для правильного z-order
+    add "gui/overlay/confirm.png"
+    
+    frame:
+        style "debug_confirm_frame"
+        xalign 0.5
+        yalign 0.5
+        xsize 650
+        ysize 700
+        padding (30, 30)
+        
+        vbox:
+            spacing 25
+            xalign 0.5
+            yalign 0.5
+            
+            text "⚠️ ОЧИСТКА БАЗЫ ДАННЫХ ⚠️":
+                size 28
+                color "#ff7171"
+                xalign 0.5
+                text_align 0.5
+                outlines [(2, "#671a1a", 0, 0)]
+            
+            text "Все игроки и их прогресс будут безвозвратно удалены!":
+                size 24
+                color "#3a3a3a"
+                xalign 0.5
+                text_align 0.5
+            
+            null height 10
+            
+            hbox:
+                spacing 10
+                xalign 0.5
+                
+                textbutton "Да, очистить":
+                    style "debug_confirm_button_danger"
+                    action [Function(clear_database), Show("debug_database")]
+                
+                textbutton "Нет, отмена":
+                    style "debug_confirm_button_cancel"
+                    action Hide("confirm_clear_db")
+    
+    key "game_menu" action Hide("confirm_clear_db")
+    key "K_ESCAPE" action Hide("confirm_clear_db")
+
+
+################################################################################
 ## Экран перехода между главами
 ################################################################################
 
@@ -2077,7 +2169,7 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
     
     style_prefix "chapter_transition"
     
-    # Затемненный фон
+    # Затемненный фон - всегда первым для правильного z-order
     add "#000000CC"
     
     frame:
@@ -2136,25 +2228,8 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
         true=Return(("continue", old_chapter, new_chapter_title, new_chapter_subtitle)), 
         false=Return(("exit", old_chapter)))
     key "K_ESCAPE" action Return(("exit", old_chapter))
+    key "game_menu" action Return(("exit", old_chapter))
 
-## Стили для экрана перехода
-style chapter_transition_frame:
-    background Frame("gui/confirm_frame.png", 25, 25, 25, 25)
-    padding (40, 40)
-
-style chapter_transition_button:
-    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
-    padding (30, 15)
-    xsize 380
-
-style chapter_transition_button_text:
-    color "#ffffff"
-    hover_color "#ff9e5e"
-    outlines [(2, "#671a1a",0, 0)]
-    size 18
-    font gui.interface_text_font
-    text_align 0.5
 
 ################################################################################
 ## Экран подтверждения переключения пользователя
@@ -2166,6 +2241,7 @@ screen confirm_user_switch(slot):
     
     style_prefix "confirm"
     
+    # Затемнение - всегда первым для правильного z-order
     add "gui/overlay/confirm.png"
     
     frame:
@@ -2195,3 +2271,4 @@ screen confirm_user_switch(slot):
                 textbutton "Отмена" action Hide("confirm_user_switch")
     
     key "K_ESCAPE" action Hide("confirm_user_switch")
+    key "game_menu" action Hide("confirm_user_switch")

@@ -21,10 +21,6 @@ define config.name = _("За гранью чувств")
 define gui.show_name = True
 
 
-## Это необходимо для корректной работы курсоров
-define config.mouse = None
-
-
 ## Версия игры.
 
 define config.version = "0.0"

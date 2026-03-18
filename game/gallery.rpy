@@ -38,15 +38,50 @@ init python:
             persistent._gallery_unlocks = {}
         persistent._gallery_unlocks[key] = True
     
+    # Функция для проверки существования изображения
+    def image_exists(path):
+        try:
+            return renpy.loadable(path)
+        except:
+            return False
+    
     # Словарь для хранения элементов галереи
     gallery_items = []
     
-    # Персонажи (удален user)
+    # Персонажи
     gallery_items.append(GalleryItem(
         "Лина", 
         "images/characters/lina.png", 
         "characters",
         "meet_lina"
+    ))
+    
+    gallery_items.append(GalleryItem(
+        "Алекс", 
+        "images/characters/alex_neutral.png", 
+        "characters",
+        "meet_alex"
+    ))
+    
+    gallery_items.append(GalleryItem(
+        "Катя", 
+        "images/characters/katia_neutral.png", 
+        "characters",
+        "meet_katya"
+    ))
+    
+    gallery_items.append(GalleryItem(
+        "Анна Сергеевна", 
+        "images/characters/teacher_neutral.png", 
+        "characters",
+        "meet_teacher"
+    ))
+    
+    gallery_items.append(GalleryItem(
+        "Библиотекарь", 
+        "images/characters/librarian_neutral.png", 
+        "characters",
+        "meet_librarian"
     ))
 
     # Фоны (все локации из игры)
@@ -226,6 +261,8 @@ screen gallery():
 screen gallery_image_popup(image, title):
     modal True
     zorder 200
+    
+    # Затемнение - всегда первым для правильного z-order
     add "gui/overlay/confirm.png"
     
     frame:
@@ -267,6 +304,7 @@ screen gallery_image_popup(image, title):
     
     # Закрытие по клику вне окна
     key "game_menu" action Hide("gallery_image_popup")
+    key "K_ESCAPE" action Hide("gallery_image_popup")
 
 # Стили для галереи
 style gallery_tab_button:
