@@ -413,47 +413,60 @@ init python:
             persistent.user_name = user_name
         renpy.notify(f"Выбран игрок: {user_name}")
 
-    # Глобальные callback-функции для чата
     def first_choice_callback(choice_text):
         global first_choice
+        # Убедимся, что first_choice доступна в store
+        store.first_choice = 0
+        
+        # НЕ отправляем сообщение здесь - оно уже отправлено в select_chat_choice
+        
         if "Привет! Да, готова" in choice_text:
-            first_choice = 1
+            store.first_choice = 1
             unlock_achievement("first_choice")
         elif "Привет! Я тоже очень рада" in choice_text:
-            first_choice = 2
+            store.first_choice = 2
             unlock_achievement("first_choice")
         elif "Привет! Я очень рада" in choice_text:
-            first_choice = 3
+            store.first_choice = 3
             unlock_achievement("first_choice")
-        
+
         renpy.jump("continue_chat_after_first")
-    
+
     def second_choice_callback(choice_text):
         global second_choice
+        # Убедимся, что second_choice доступна в store
+        store.second_choice = 0
+
+        # НЕ отправляем сообщение здесь - оно уже отправлено в select_chat_choice
+
         if "Звучит здорово! Я согласна" in choice_text:
-            second_choice = 11
+            store.second_choice = 11
         elif "Давай сначала посмотрим" in choice_text:
-            second_choice = 12
+            store.second_choice = 12
         elif "Звучит здорово! Библиотека" in choice_text:
-            second_choice = 21
+            store.second_choice = 21
         elif "Спасибо, Лина" in choice_text and "буду просто наблюдать" in choice_text:
-            second_choice = 22
+            store.second_choice = 22
         elif "Спасибо, Лина! Ты лучшая!" in choice_text:
-            second_choice = 31
+            store.second_choice = 31
         elif "Спасибо, Лина! Я очень ценю твою дружбу" in choice_text:
-            second_choice = 32
-        
+            store.second_choice = 32
+
         renpy.jump("end_chat_scene")
-    
+
     def morning_choice_callback(choice_text):
         global morning_choice
+        store.morning_choice = 0
+
+        # НЕ отправляем сообщение здесь - оно уже отправлено в select_chat_choice
+
         if "Спасибо, Лина! Я уже встаю" in choice_text:
-            morning_choice = 1
+            store.morning_choice = 1
         elif "Я тоже волнуюсь" in choice_text:
-            morning_choice = 2
+            store.morning_choice = 2
         elif "Увидимся у входа" in choice_text:
-            morning_choice = 3
-        
+            store.morning_choice = 3
+
         renpy.jump("continue_morning")
 
 
@@ -571,6 +584,7 @@ label start:
     narrator "На экране появилось приветствие от Лины, яркое и жизнерадостное, словно солнечный луч, пробившийся сквозь тучи."
 
     # Включаем режим чата для этой сцены
+    # Включаем режим чата для этой сцены
     $ enable_chat_mode()
 
     # Лина отправляет сообщение
@@ -594,7 +608,9 @@ label start:
 label continue_chat_after_first:
     if first_choice == 1:
         $ e("Ура! Я так рада!")
+        $ renpy.pause(0.3)
         $ e("Я уже придумала, что мы можем пойти в кафе после уроков, если захочешь! Или в парк! Что скажешь?")
+        $ renpy.pause(0.3)
         
         $ show_chat_choices([
             "Звучит здорово! Я согласна на все!",
@@ -604,7 +620,9 @@ label continue_chat_after_first:
     
     elif first_choice == 2:
         $ e("Ой, я понимаю! Но не переживай! Мы же вместе!")
+        $ renpy.pause(0.3)
         $ e("Я придумала, что мы можем ходить в библиотеку, там так тихо и уютно! Ты как?")
+        $ renpy.pause(0.3)
         
         $ show_chat_choices([
             "Звучит здорово! Библиотека – отличная идея!",
@@ -614,7 +632,9 @@ label continue_chat_after_first:
     
     elif first_choice == 3:
         $ e("Ой, [persistent.user_name]! 🥺 Я так тронута!")
+        $ renpy.pause(0.3)
         $ e("Я тоже очень рада, что мы будем вместе! И ты не волнуйся, я буду рядом!")
+        $ renpy.pause(0.3)
         
         $ show_chat_choices([
             "Спасибо, Лина! Ты лучшая! Я уже чувствую себя спокойнее.",

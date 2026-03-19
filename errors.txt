@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/screens.rpy", line 2239: 'register_achievement' is not a keyword argument or valid child of the screen statement.
-    register_achievement(
-                        ^
+File "game/messenger.rpy", line 73: unexpected indent
+    chat_choices = []
+       ^
 
 Ren'Py Version: Ren'Py 8.6.0.26031705+nightly
-Thu Mar 19 01:30:49 2026
+Thu Mar 19 09:20:46 2026

@@ -1,5 +1,5 @@
 ################################################################################
-## Система мессенджера
+## Система мессенджера (ИСПРАВЛЕННАЯ ВЕРСИЯ)
 ################################################################################
 
 init python:
@@ -23,7 +23,9 @@ init python:
     chat_status = "В сети"
     chat_pause_active = False
     chat_in_callback = False
-    chat_processing_choice = False  # Флаг для предотвращения множественных вызовов
+    chat_processing_choice = False
+    chat_waiting_for_response = False  # Флаг ожидания ответа от персонажа
+    chat_pending_messages = []  # Очередь сообщений для отправки с задержкой
     
     # Функция для добавления сообщения в историю
     def add_chat_message(character, text, is_user=False):
@@ -42,6 +44,8 @@ init python:
     # Функция для показа вариантов ответа
     def show_chat_choices(choices, callback):
         global chat_choices, chat_choice_callback, chat_choices_shown, chat_mode_active
+        
+        # Очищаем флаги перед показом новых вариантов
         chat_choices = choices
         chat_choice_callback = callback
         chat_choices_shown = True
@@ -56,7 +60,7 @@ init python:
     
     # Функция для выбора варианта
     def select_chat_choice(choice_text):
-        global chat_choices, chat_choice_callback, chat_choices_shown, chat_in_callback, chat_processing_choice
+        global chat_choices, chat_choice_callback, chat_choices_shown, chat_in_callback, chat_processing_choice, chat_waiting_for_response
         
         # Предотвращаем множественные вызовы
         if chat_processing_choice:
@@ -66,23 +70,36 @@ init python:
         
         # Добавляем сообщение пользователя в историю
         user_name = persistent.user_name if persistent.user_name else "Вы"
+        
         add_chat_message(user_name, choice_text, is_user=True)
+    
+        # Скрываем варианты выбора
+        chat_choices = []
+        chat_choices_shown = False
+        
+        # Обновляем экран
         renpy.restart_interaction()
         
         # Сохраняем callback и очищаем перед вызовом
         callback = chat_choice_callback
-        chat_choices = []
         chat_choice_callback = None
-        chat_choices_shown = False
         
         # Устанавливаем флаг, что мы в callback
         chat_in_callback = True
         
-        # Вызываем колбэк (он должен выполнить renpy.jump)
+        # Скрываем экран с вариантами и показываем обычный чат
+        renpy.hide_screen("messenger_chat_with_choices")
+        renpy.show_screen("messenger_chat", _layer="screens")
+        renpy.restart_interaction()
+        
+        # Устанавливаем флаг ожидания ответа
+        chat_waiting_for_response = True
+        
+        # Вызываем колбэк
         if callback:
             callback(choice_text)
         
-        # Сбрасываем флаги
+        # Сбрасываем флаги (кроме chat_waiting_for_response, который сбросится после отправки сообщений)
         chat_in_callback = False
         chat_processing_choice = False
     
@@ -102,10 +119,10 @@ init python:
         # Обновляем экран
         renpy.restart_interaction()
     
-    # Функция для показа сообщения в чате с паузой
+    # Функция для показа сообщения в чате с паузой 5 секунд
     def show_chat_message(character, text, is_user=False):
-        """Показывает сообщение в чате с паузой"""
-        global chat_pause_active, chat_in_callback, chat_processing_choice
+        """Показывает сообщение в чате с паузой 5 секунд"""
+        global chat_pause_active, chat_in_callback, chat_processing_choice, chat_waiting_for_response
         
         # Если мы в callback или обрабатываем выбор, показываем без паузы
         if chat_in_callback or chat_processing_choice:
@@ -118,15 +135,86 @@ init python:
             return
         
         chat_pause_active = True
-        show_chat_message_now(character, text, is_user)
-        renpy.pause(1.5)
+        
+        # Если это сообщение от персонажа и есть флаг ожидания ответа
+        if not is_user and chat_waiting_for_response:
+            # Добавляем в очередь сообщений
+            chat_pending_messages.append((character, text, is_user))
+            
+            # Запускаем обработку очереди, если она еще не запущена
+            if not renpy.game.interface and not renpy.game.context().init_phase:
+                renpy.run(QueueMessages())
+        else:
+            # Показываем сразу
+            show_chat_message_now(character, text, is_user)
+        
         chat_pause_active = False
+    
+    # Класс для отправки сообщений с задержкой
+    class QueueMessages(renpy.Displayable):
+        def __init__(self):
+            super(QueueMessages, self).__init__()
+            self.start_time = None
+        
+        def render(self, width, height, st, at):
+            global chat_waiting_for_response, chat_pending_messages
+            
+            if self.start_time is None:
+                self.start_time = st
+            
+            # Прошло 5 секунд?
+            if st - self.start_time >= 5.0:
+                if chat_pending_messages:
+                    # Отправляем первое сообщение из очереди
+                    character, text, is_user = chat_pending_messages.pop(0)
+                    show_chat_message_now(character, text, is_user)
+                    
+                    # Если очередь не пуста, сбрасываем таймер для следующего сообщения
+                    if chat_pending_messages:
+                        self.start_time = st
+                        renpy.redraw(self, 0)
+                        return renpy.Render(width, height)
+                
+                # Если очередь пуста, снимаем флаг ожидания
+                if not chat_pending_messages:
+                    chat_waiting_for_response = False
+                    return Null()
+            
+            # Продолжаем ждать
+            renpy.redraw(self, 0)
+            return renpy.Render(width, height)
+        
+        def visit(self):
+            return []
+    
+    # Функция для отправки нескольких сообщений с задержкой
+    def send_messages_with_delay(messages):
+        """Отправляет несколько сообщений с задержкой 5 секунд между ними"""
+        global chat_pending_messages, chat_waiting_for_response
+        
+        # Очищаем очередь
+        chat_pending_messages = []
+        
+        # Добавляем все сообщения в очередь
+        for msg in messages:
+            character = msg[0]
+            text = msg[1]
+            is_user = msg[2] if len(msg) > 2 else False
+            chat_pending_messages.append((character, text, is_user))
+        
+        # Устанавливаем флаг ожидания
+        chat_waiting_for_response = True
+        
+        # Запускаем обработку очереди
+        renpy.run(QueueMessages())
     
     # Функция для скрытия чата
     def hide_chat():
-        global chat_mode_active, chat_choices_shown
+        global chat_mode_active, chat_choices_shown, chat_waiting_for_response, chat_pending_messages
         chat_mode_active = False
         chat_choices_shown = False
+        chat_waiting_for_response = False
+        chat_pending_messages = []
         renpy.hide_screen("messenger_chat")
         renpy.hide_screen("messenger_chat_with_choices")
         renpy.restart_interaction()
@@ -192,8 +280,11 @@ init python:
         k = ChatCharacter("Катя")
         lib = ChatCharacter("Библиотекарь")
         
-        # Очищаем историю
+        # Очищаем историю и флаги
         clear_chat()
+        global chat_waiting_for_response, chat_pending_messages
+        chat_waiting_for_response = False
+        chat_pending_messages = []
     
     def enable_mobile_chat_mode():
         """Включает мобильный режим чата"""
@@ -204,7 +295,7 @@ init python:
         global original_e, original_user_char, original_a, original_t, original_k, original_lib
         global e, user_char, a, t, k, lib
         
-        # Сначала скрываем чат
+        # Сначала скрываем чат и очищаем очередь
         hide_chat()
         
         # Восстанавливаем оригиналы
@@ -221,8 +312,11 @@ init python:
         if original_lib:
             lib = original_lib
         
-        # Очищаем историю
+        # Очищаем историю и флаги
         clear_chat()
+        global chat_waiting_for_response, chat_pending_messages
+        chat_waiting_for_response = False
+        chat_pending_messages = []
 
 
 # Экран чата (простой, без вариантов)
@@ -271,7 +365,6 @@ screen messenger_chat():
                 scrollbars "vertical"
                 mousewheel True
                 draggable True
-                yinitial 1.0
                 
                 vbox:
                     spacing 10
