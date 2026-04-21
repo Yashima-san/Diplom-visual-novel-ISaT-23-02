@@ -1,5 +1,5 @@
 ################################################################################
-## Инициализация
+## ИНИЦИАЛИЗАЦИЯ
 ################################################################################
 
 init offset = -1
@@ -26,13 +26,10 @@ init python:
             
             # Проверяем все возможные слоты сохранений
             all_slots = []
-            # Обычные слоты 1-9
             for i in range(1, 10):
                 all_slots.append(str(i))
-            # Автосохранения 1-9
             for i in range(1, 10):
                 all_slots.append(f"auto-{i}")
-            # Быстрое сохранение
             all_slots.append("quick-save")
             
             for slot_name in all_slots:
@@ -50,13 +47,11 @@ init python:
                                     except:
                                         result['time'] = "Недавно"
                                 
-                                # Получаем название главы из сохранения
                                 save_chapter = save_json.get("chapter", "")
                                 if save_chapter:
                                     if save_chapter in chapter_display:
                                         last_chapter = chapter_display[save_chapter]
                                     else:
-                                        # Пытаемся определить главу по содержимому
                                         if "Первая" in save_chapter or "Связь" in save_chapter:
                                             last_chapter = "Глава 1"
                                         elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
@@ -70,7 +65,6 @@ init python:
             
             result['chapter'] = last_chapter
             
-            # Если нашли сохранение, но глава не определилась, проверяем в БД
             if result['chapter'] == "Нет данных" and last_time > 0:
                 if hasattr(db, 'get_user_progress'):
                     progress = db.get_user_progress(user_id)
@@ -85,7 +79,6 @@ init python:
         """Получение прогресса игрока по главам"""
         progress = []
         
-        # Словарь для форматирования названий глав
         chapter_formats = {
             "Глава Первая: Связь": "Глава 1",
             "Глава Вторая: Новые знакомства": "Глава 2",
@@ -93,7 +86,6 @@ init python:
         }
         
         try:
-            # Проверяем все сохранения в JSON
             all_slots = []
             for i in range(1, 10):
                 all_slots.append(str(i))
@@ -113,7 +105,6 @@ init python:
                                 if chapter in chapter_formats:
                                     chapters_found.add(chapter_formats[chapter])
                                 else:
-                                    # Пытаемся определить главу по содержимому
                                     if "Первая" in chapter or "Связь" in chapter:
                                         chapters_found.add("Глава 1")
                                     elif "Вторая" in chapter or "Новые знакомства" in chapter:
@@ -123,7 +114,6 @@ init python:
                     except:
                         continue
             
-            # Преобразуем в список и сортируем
             chapter_order = {"Глава 1": 1, "Глава 2": 2, "Глава 3": 3}
             progress = sorted(list(chapters_found), key=lambda x: chapter_order.get(x, 0))
             
@@ -133,7 +123,7 @@ init python:
         return progress
 
 ################################################################################
-## Стили
+## СТИЛИ
 ################################################################################
 
 style default:
@@ -205,18 +195,15 @@ style frame:
 
 ###### Стили курсоров ######
 
-# Базовый стиль для всех кнопок с правильными курсорами
 style button:
     properties gui.button_properties("button")
-    mouse "default"                     # Обычное состояние
-    hover_mouse "hover"                  # Наведение
-    selected_mouse "click"              # Выбранное состояние
-    selected_hover_mouse "click"          # Наведение на выбранном состоянии
-    insensitive_mouse "default"           # Неактивное состояние
+    mouse "default"
+    hover_mouse "hover"
+    selected_mouse "click"
+    selected_hover_mouse "click"
+    insensitive_mouse "default"
 
-# Стили для курсоров (определяем их один раз)
 init python:
-    # Создаем курсоры если нужно (опционально)
     config.mouse = {
         "default": [ ("gui/cursor/default.png", 0, 0) ],
         "hover": [ ("gui/cursor/hover.png", 0, 0) ],
@@ -226,21 +213,18 @@ init python:
     }
 
 
-# Для кнопок навигации
 style navigation_button:
     size_group "navigation"
     properties gui.button_properties("navigation_button")
 
-# Для кнопок быстрого меню
 style quick_button:
     properties gui.button_properties("quick_button")
 
-# Для кнопок выбора
 style choice_button:
     properties gui.button_properties("choice_button")
 
 ################################################################################
-## Внутриигровые экраны
+## ВНУТРИИГРОВЫЕ ЭКРАНЫ
 ################################################################################
 
 ## Экран разговора #############################################################
@@ -362,8 +346,7 @@ screen quick_menu():
 
     zorder 100
 
-    # Убираем условие quick_menu или делаем его всегда True во время диалогов
-    if True:  # Всегда показываем quick_menu
+    if True:
 
         hbox:
             style_prefix "quick"
@@ -382,9 +365,6 @@ screen quick_menu():
 init python:
     config.overlay_screens.append("quick_menu")
 
-# Убираем или комментируем эту строку, так как она не нужна
-# default quick_menu = True
-
 style quick_menu is hbox
 style quick_button is default
 style quick_button_text is button_text
@@ -400,7 +380,7 @@ style quick_button_text:
     properties gui.text_properties("quick_button")
 
 ################################################################################
-## Экраны Главного и Игрового меню
+## ЭКРАНЫ ГЛАВНОГО И ИГРОВОГО МЕНЮ
 ################################################################################
 
 ## Экран навигации #############################################################
@@ -459,7 +439,7 @@ style navigation_button_text:
 
 
 ################################################################################
-## Экран выбора пользователя для продолжения игры
+## ЭКРАН ВЫБОРА ПОЛЬЗОВАТЕЛЯ ДЛЯ ПРОДОЛЖЕНИЯ ИГРЫ
 ################################################################################
 
 screen select_user_screen():
@@ -491,11 +471,9 @@ screen select_user_screen():
             
             null height 10
             
-            # Получаем список всех пользователей
             $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
             
             if users:
-                # Заголовок таблицы
                 frame:
                     style "select_user_header"
                     xfill True
@@ -510,7 +488,6 @@ screen select_user_screen():
                         text "Прогресс" size 22 color "#ffffff" xsize 250 text_align 0.5
                         text "Достижений" size 22 color "#ffffff" xsize 150 text_align 0.5
                 
-                # Список пользователей
                 viewport:
                     ysize 350
                     scrollbars "vertical"
@@ -525,20 +502,16 @@ screen select_user_screen():
                             $ user_id = user['user_ID']
                             $ user_name = user['name']
                             
-                            # Получаем информацию о последнем сохранении
                             $ last_save_info = get_last_save_info(user_id)
                             $ last_save_time = last_save_info['time']
                             $ last_save_chapter = last_save_info['chapter']
                             
-                            # Получаем прогресс пользователя (все пройденные главы)
                             $ user_progress = get_user_progress(user_id)
                             $ progress_text = ", ".join(user_progress) if user_progress else "Нет данных"
                             
-                            # Получаем количество достижений
                             $ user_achievements = db.get_user_achievements(user_id) if hasattr(db, 'get_user_achievements') else []
                             $ ach_count = len(user_achievements)
                             
-                            # Кнопка выбора пользователя
                             button:
                                 style "select_user_row"
                                 xfill True
@@ -553,7 +526,6 @@ screen select_user_screen():
                                     text "[progress_text]" size 22 color "#ffffff" xsize 250 text_align 0.5
                                     text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
             else:
-                # Сообщение когда нет пользователей
                 vbox:
                     spacing 30
                     xalign 0.5
@@ -566,13 +538,11 @@ screen select_user_screen():
             
             null height 20
             
-            # Кнопки действий
             hbox:
                 spacing 5
                 xalign 0.5
                 yalign 0.1
                 
-                # Кнопка для начала новой игры прямо отсюда
                 textbutton "Начать новую игру" style "select_user_button" action [Start(), Hide("select_user_screen")]
                 
                 textbutton "Отмена" style "select_user_button" action Hide("select_user_screen")
@@ -580,7 +550,6 @@ screen select_user_screen():
     key "game_menu" action Hide("select_user_screen")
     key "K_ESCAPE" action Hide("select_user_screen")
 
-# Стили для экрана выбора пользователя
 style select_user_frame:
     background Frame("gui/confirm_frame.png", 25, 25, 25, 25)
     padding (30, 30)
@@ -620,7 +589,6 @@ init python:
         last_time = 0
         
         try:
-            # Проверяем сохранения в файлах
             for i in range(1, 10):
                 if renpy.can_load(str(i)):
                     try:
@@ -629,12 +597,10 @@ init python:
                             timestamp = save_json.get("_timestamp", 0)
                             if timestamp > last_time:
                                 last_time = timestamp
-                                # Пытаемся получить название главы из сохранения
                                 last_chapter = save_json.get("chapter", "Глава 1")
                     except:
                         continue
             
-            # Если не нашли в сохранениях, проверяем в БД
             if not last_chapter and hasattr(db, 'sqlite_available') and db.sqlite_available:
                 try:
                     db.connect()
@@ -650,7 +616,6 @@ init python:
                 finally:
                     db.disconnect()
             
-            # Если все еще нет, проверяем в persistent
             if not last_chapter and hasattr(persistent, 'user_data') and persistent.user_data:
                 str_user_id = str(user_id)
                 if 'save_progress' in persistent.user_data and str_user_id in persistent.user_data['save_progress']:
@@ -662,7 +627,6 @@ init python:
         
         return last_chapter if last_chapter else "Нет сохранений"
     
-    # ДОБАВЛЯЕМ НЕДОСТАЮЩУЮ ФУНКЦИЮ
     def load_last_save_for_user(user_id):
         """Загружает последнее сохранение для указанного пользователя"""
         saves = []
@@ -687,7 +651,6 @@ init python:
         except Exception as e:
             print(f"Ошибка при поиске сохранений: {e}")
         
-        # Сортируем по времени (от новых к старым)
         saves.sort(key=lambda x: x[1], reverse=True)
         
         if saves:
@@ -704,7 +667,6 @@ init python:
         if persistent.user_id and load_last_save_for_user(persistent.user_id):
             return
         else:
-            # Если нет сохранений, начинаем новую игру
             renpy.call_in_new_context("start")
 
     def set_current_user(user_id, user_name):
@@ -720,21 +682,17 @@ screen main_menu():
     
     tag menu
 
-    # Фон из папки gui
     add "gui/main_menu.png"
     
-    # Название игры сверху по центру
     if gui.show_name:
         text "[config.name!t]":
             style "main_menu_title"
     
-    # Версия игры в нижнем левом углу
     text "Версия [config.version]":
         style "main_menu_version"
         at transform:
             alpha 0.5
     
-    # Центрированное меню на стикере
     frame:
         style "main_menu_frame"
         xalign 0.5
@@ -742,7 +700,6 @@ screen main_menu():
         xsize 500
         ysize 650
         
-        # Фон для рамки - стикер
         background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
         
         vbox:
@@ -750,7 +707,6 @@ screen main_menu():
             yalign 0.5
             spacing 1
             
-            # Кнопки меню
             textbutton _("Продолжить"):
                 style "main_menu_button"
                 action Function(continue_game)
@@ -779,12 +735,10 @@ screen main_menu():
                 style "main_menu_button"
                 action Quit(confirm=True)
     
-    # Кнопка "Игроки" слева от стикера
     button:
         style "players_button"
         action ShowMenu("debug_database")
 
-## Стили для главного меню
 style main_menu_title:
     color "#ffffff"
     size gui.title_text_size
@@ -838,7 +792,6 @@ style players_button:
     background Frame("gui/button/choice_idle_background_3.png", 15, 15, 15, 15)
     hover_background Frame("gui/button/choice_hover_background_2.png", 15, 15, 15, 15)
     padding (20, 20)
-
 
 
 ## Экран игрового меню #########################################################
@@ -987,7 +940,7 @@ style about_label_text:
 
 
 ################################################################################
-## Экраны загрузки и сохранения
+## ЭКРАНЫ ЗАГРУЗКИ И СОХРАНЕНИЯ
 ################################################################################
 
 screen save():
@@ -1131,9 +1084,8 @@ screen preferences():
     use game_menu(_("Настройки"), scroll="viewport"):
 
         vbox:
-            # Первая строка - режим экрана и пропуск
             hbox:
-                spacing 100  # Добавляем расстояние между колонками
+                spacing 100
                 
                 if renpy.variant("pc") or renpy.variant("web"):
                     vbox:
@@ -1151,14 +1103,12 @@ screen preferences():
 
             null height (4 * gui.pref_spacing)
 
-            # Вторая строка - слайдеры в две колонки
             hbox:
                 style_prefix "slider"
-                spacing 100  # Расстояние между колонками
+                spacing 100
                 
-                # Левая колонка
                 vbox:
-                    xsize 300  # Фиксированная ширина для левой колонки
+                    xsize 300
                     
                     label _("Скорость текста")
                     bar value Preference("text speed")
@@ -1166,9 +1116,8 @@ screen preferences():
                     label _("Скорость авточтения")
                     bar value Preference("auto-forward time")
                 
-                # Правая колонка
                 vbox:
-                    xsize 400  # Фиксированная ширина для правой колонки
+                    xsize 400
                     
                     if config.has_music:
                         label _("Громкость музыки")
@@ -1501,7 +1450,7 @@ style help_label_text:
 
 
 ################################################################################
-## Дополнительные экраны
+## ДОПОЛНИТЕЛЬНЫЕ ЭКРАНЫ
 ################################################################################
 
 ## Экран подтверждения #########################################################
@@ -1534,6 +1483,7 @@ screen confirm(message, yes_action, no_action):
                 textbutton _("Нет") action no_action
 
     key "game_menu" action no_action
+    key "K_ESCAPE" action no_action
 
 
 style confirm_frame is gui_frame
@@ -1831,9 +1781,8 @@ define bubble.expand_area = {
 }
 
 
-
 ################################################################################
-## Мобильные варианты
+## МОБИЛЬНЫЕ ВАРИАНТЫ
 ################################################################################
 
 style pref_vbox:
@@ -1941,17 +1890,16 @@ style slider_slider:
     variant "small"
     xsize 900
 
-###########################################################################
-###########################################################################
 
-# Экран для ввода имени
+################################################################################
+## ЭКРАН ДЛЯ ВВОДА ИМЕНИ
+################################################################################
+
 screen input_name_screen():
     modal True
     
-    # Затемненный фон
     add "#00000080"
     
-    # Создаем переменную для хранения введенного текста
     default input_name = ""
     
     frame:
@@ -1973,7 +1921,6 @@ screen input_name_screen():
                 xalign 0.5
                 outlines [(2, "#a83c1f", 0, 0)]
             
-            # Поле ввода с закругленными углами
             frame:
                 style "input_field_frame"
                 xysize (550, 60)
@@ -1990,7 +1937,6 @@ screen input_name_screen():
                     xalign 0.5
                     yalign 0.5
             
-            # Кнопка для подтверждения
             textbutton "Продолжить":
                 xalign 0.5
                 style "input_confirm_button"
@@ -2006,7 +1952,6 @@ screen input_name_screen():
     key "K_RETURN" action Return(input_name)
 
 init -1 python:
-    # Добавляем стили для экрана ввода имени
     style.create("input_frame", "default")
     style.input_frame.background = Frame("gui/frame.png", 25, 25, 25, 25)
     style.input_frame.xalign = 0.5
@@ -2030,100 +1975,9 @@ init -1 python:
     style.input_confirm_button_text.text_align = 0.5
     style.input_confirm_button_text.xalign = 0.5
 
-################################################################################
-## Экран подтверждения #########################################################
-################################################################################
-
-screen confirm(message, yes_action, no_action):
-    modal True
-    zorder 200
-    style_prefix "confirm"
-
-    # Затемнение - всегда первым для правильного z-order
-    add "gui/overlay/confirm.png"
-
-    frame:
-        style "confirm_frame"
-
-        vbox:
-            xalign .5
-            yalign .5
-            spacing 75
-            xysize (600, 450)
-
-            label _(message):
-                style "confirm_prompt"
-                xalign 0.5
-                yalign 0.5
-
-            hbox:
-                xalign 0.5
-                spacing 120
-
-                textbutton _("Да") action yes_action
-                textbutton _("Нет") action no_action
-
-    key "game_menu" action no_action
-    key "K_ESCAPE" action no_action
-
 
 ################################################################################
-## Экран подтверждения очистки БД (наследует confirm)
-################################################################################
-
-screen confirm_clear_db():
-    modal True
-    zorder 200
-    
-    # Затемнение - всегда первым для правильного z-order
-    add "gui/overlay/confirm.png"
-    
-    frame:
-        style "debug_confirm_frame"
-        xalign 0.5
-        yalign 0.5
-        xsize 650
-        ysize 700
-        padding (30, 30)
-        
-        vbox:
-            spacing 25
-            xalign 0.5
-            yalign 0.5
-            
-            text "⚠️ ОЧИСТКА БАЗЫ ДАННЫХ ⚠️":
-                size 28
-                color "#ff7171"
-                xalign 0.5
-                text_align 0.5
-                outlines [(2, "#671a1a", 0, 0)]
-            
-            text "Все игроки и их прогресс будут безвозвратно удалены!":
-                size 24
-                color "#3a3a3a"
-                xalign 0.5
-                text_align 0.5
-            
-            null height 10
-            
-            hbox:
-                spacing 10
-                xalign 0.5
-                
-                textbutton "Да, очистить":
-                    style "debug_confirm_button_danger"
-                    action [Function(clear_database), Show("debug_database")]
-                
-                textbutton "Нет, отмена":
-                    style "debug_confirm_button_cancel"
-                    action Hide("confirm_clear_db")
-    
-    key "game_menu" action Hide("confirm_clear_db")
-    key "K_ESCAPE" action Hide("confirm_clear_db")
-
-
-################################################################################
-## Экран перехода между главами
+## ЭКРАН ПЕРЕХОДА МЕЖДУ ГЛАВАМИ
 ################################################################################
 
 screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
@@ -2132,7 +1986,6 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
     
     style_prefix "chapter_transition"
     
-    # Затемненный фон - всегда первым для правильного z-order
     add "#000000CC"
     
     frame:
@@ -2160,7 +2013,6 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
             
             null height 30
             
-            # Проверяем, существует ли следующая глава
             $ next_chapter_exists = False
             if "Вторая" in new_chapter_title or "Новые знакомства" in new_chapter_title:
                 $ next_chapter_exists = renpy.has_label("chapter_two")
@@ -2168,7 +2020,6 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
                 $ next_chapter_exists = renpy.has_label("chapter_three")
             
             if next_chapter_exists:
-                # Если глава существует, показываем обе кнопки
                 hbox:
                     spacing 30
                     xalign 0.5
@@ -2181,7 +2032,6 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
                         style "chapter_transition_button"
                         action [Return(("exit", old_chapter))]
             else:
-                # Если глава в разработке, показываем только одну кнопку
                 textbutton "Выйти в главное меню":
                     style "chapter_transition_button"
                     xalign 0.5
@@ -2195,7 +2045,7 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
 
 
 ################################################################################
-## Экран подтверждения переключения пользователя
+## ЭКРАН ПОДТВЕРЖДЕНИЯ ПЕРЕКЛЮЧЕНИЯ ПОЛЬЗОВАТЕЛЯ
 ################################################################################
 
 screen confirm_user_switch(slot):
@@ -2204,7 +2054,6 @@ screen confirm_user_switch(slot):
     
     style_prefix "confirm"
     
-    # Затемнение - всегда первым для правильного z-order
     add "gui/overlay/confirm.png"
     
     frame:
@@ -2236,334 +2085,203 @@ screen confirm_user_switch(slot):
     key "K_ESCAPE" action Hide("confirm_user_switch")
     key "game_menu" action Hide("confirm_user_switch")
 
+
 ################################################################################
-## Экран выбора эмоции (Колесо эмоций Плутчика)
+## ЭКРАН ДЛЯ ОТОБРАЖЕНИЯ СТАТИСТИКИ ИГРОКА
 ################################################################################
 
-screen emotion_selection():
-    modal True
-    zorder 100
-    
-    # Затемнение фона
-    add "#000000CC"
-    
-    # Основной фрейм
-    frame:
-        style "emotion_frame"
-        xalign 0.5
-        yalign 0.5
-        xsize 1400
-        ysize 900
+screen player_stats_screen():
+    tag menu
+    use game_menu(_("Статистика игрока"), scroll="viewport"):
         
         vbox:
             spacing 20
             xfill True
             
-            text "Какое чувство ты испытываешь сейчас?":
-                size 40
-                color "#ffffff"
-                font gui.interface_text_font
-                xalign 0.5
-                yalign 0.5
-                outlines [(3, "#671a1a", 0, 0)]
+            text "📊 Твой эмоциональный интеллект" size 36 color gui.accent_color xalign 0.5 outlines [(2, "#671a1a", 0, 0)]
             
-            text "Выбери самое точное слово, описывающее твоё состояние:":
-                size 24
-                color "#cccccc"
-                font gui.interface_text_font
-                xalign 0.5
-                yalign 0.5
+            null height 10
             
-            null height 20
-            
-            # Колесо эмоций (визуальное представление)
             frame:
-                style "emotion_wheel_frame"
-                xalign 0.5
-                xsize 800
-                ysize 300
-                
-                hbox:
-                    spacing 10
-                    xalign 0.5
-                    yalign 0.5
-                    
-                    # Базовые эмоции (центральный круг)
-                    frame:
-                        style "emotion_central"
-                        xysize (120, 120)
-                        background "#ff6b6b"
-                        text "Страх" size 16 color "#ffffff" xalign 0.5 yalign 0.5
-            
-            # Таблица с эмоциями по категориям
-            frame:
-                style "emotion_table_frame"
+                style "stats_frame"
                 xfill True
                 
-                viewport:
-                    ysize 400
-                    scrollbars "vertical"
-                    mousewheel True
-                    draggable True
+                vbox:
+                    spacing 15
                     
-                    vbox:
-                        spacing 15
-                        xfill True
-                        
-                        # Страх и его оттенки
-                        frame:
-                            style "emotion_category_frame"
-                            background "#ff9999"
-                            
-                            vbox:
-                                text "Страх — ожидание угрозы, опасности":
-                                    size 22
-                                    color "#ffffff"
-                                    bold True
-                                
-                                grid 3 2:
-                                    spacing 10
-                                    xalign 0.5
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Тревога", "Смутное, неприятное предчувствие, ощущение надвигающейся опасности без явной причины."))
-                                        text "Тревога" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Беспокойство", "Состояние, вызванное мыслями о возможных проблемах."))
-                                        text "Беспокойство" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Робость", "Неуверенность в себе, боязнь проявить себя."))
-                                        text "Робость" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Ужас", "Крайняя степень страха, оцепенение."))
-                                        text "Ужас" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Паника", "Внезапный неконтролируемый страх."))
-                                        text "Паника" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Нервозность", "Состояние возбуждения и раздражительности."))
-                                        text "Нервозность" style "emotion_choice_button_text"
-                        
-                        # Радость и её оттенки
-                        frame:
-                            style "emotion_category_frame"
-                            background "#ffff99"
-                            
-                            vbox:
-                                text "Радость — ощущение счастья, удовольствия":
-                                    size 22
-                                    color "#000000"
-                                    bold True
-                                
-                                grid 3 2:
-                                    spacing 10
-                                    xalign 0.5
-                                    
-                                    button:
-                                        style "emotion_choice_button_light"
-                                        action Return(("Счастье", "Глубокое удовлетворение от жизни."))
-                                        text "Счастье" style "emotion_choice_button_text_light"
-                                    
-                                    button:
-                                        style "emotion_choice_button_light"
-                                        action Return(("Восторг", "Кратковременная, но очень сильная радость."))
-                                        text "Восторг" style "emotion_choice_button_text_light"
-                                    
-                                    button:
-                                        style "emotion_choice_button_light"
-                                        action Return(("Удовольствие", "Приятные ощущения от процесса."))
-                                        text "Удовольствие" style "emotion_choice_button_text_light"
-                                    
-                                    button:
-                                        style "emotion_choice_button_light"
-                                        action Return(("Гордость", "Удовлетворение от своих достижений."))
-                                        text "Гордость" style "emotion_choice_button_text_light"
-                                    
-                                    button:
-                                        style "emotion_choice_button_light"
-                                        action Return(("Надежда", "Ожидание хорошего, оптимизм."))
-                                        text "Надежда" style "emotion_choice_button_text_light"
-                                    
-                                    button:
-                                        style "emotion_choice_button_light"
-                                        action Return(("Облегчение", "Уход от негативного состояния."))
-                                        text "Облегчение" style "emotion_choice_button_text_light"
-                        
-                        # Гнев и его оттенки
-                        frame:
-                            style "emotion_category_frame"
-                            background "#ff6666"
-                            
-                            vbox:
-                                text "Гнев — сильное возмущение, негодование":
-                                    size 22
-                                    color "#ffffff"
-                                    bold True
-                                
-                                grid 3 2:
-                                    spacing 10
-                                    xalign 0.5
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Злость", "Раздражение, враждебность."))
-                                        text "Злость" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Раздражение", "Лёгкая форма гнева."))
-                                        text "Раздражение" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Ярость", "Крайняя степень гнева."))
-                                        text "Ярость" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Обида", "Чувство несправедливости по отношению к себе."))
-                                        text "Обида" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Зависть", "Желание обладать тем, что есть у другого."))
-                                        text "Зависть" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Презрение", "Чувство превосходства над другим."))
-                                        text "Презрение" style "emotion_choice_button_text"
-                        
-                        # Печаль и её оттенки
-                        frame:
-                            style "emotion_category_frame"
-                            background "#9999ff"
-                            
-                            vbox:
-                                text "Печаль — чувство утраты, грусти":
-                                    size 22
-                                    color "#ffffff"
-                                    bold True
-                                
-                                grid 3 2:
-                                    spacing 10
-                                    xalign 0.5
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Грусть", "Лёгкое уныние, сожаление."))
-                                        text "Грусть" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Тоска", "Тяжёлое, гнетущее чувство."))
-                                        text "Тоска" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Одиночество", "Ощущение изоляции, покинутости."))
-                                        text "Одиночество" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Разочарование", "Несовпадение ожиданий с реальностью."))
-                                        text "Разочарование" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Апатия", "Безразличие, отсутствие интереса."))
-                                        text "Апатия" style "emotion_choice_button_text"
-                                    
-                                    button:
-                                        style "emotion_choice_button"
-                                        action Return(("Жалость к себе", "Сосредоточенность на своих несчастьях."))
-                                        text "Жалость к себе" style "emotion_choice_button_text"
+                    text "Понимание своих эмоций:" size 24 color "#ffffff"
+                    bar:
+                        value player_self_awareness
+                        range 100
+                        xsize 800
+                        ysize 25
+                        left_bar "#c66b2f"
+                        right_bar "#3a3a3a"
+                    text f"{player_self_awareness}%" size 20 color "#cccccc" xalign 1.0
+                    
+                    text "Понимание чужих эмоций (эмпатия):" size 24 color "#ffffff"
+                    bar:
+                        value player_empathy
+                        range 100
+                        xsize 800
+                        ysize 25
+                        left_bar "#c66b2f"
+                        right_bar "#3a3a3a"
+                    text f"{player_empathy}%" size 20 color "#cccccc" xalign 1.0
+                    
+                    text "Эмоциональный словарь:" size 24 color "#ffffff"
+                    bar:
+                        value player_emotional_vocabulary
+                        range 100
+                        xsize 800
+                        ysize 25
+                        left_bar "#c66b2f"
+                        right_bar "#3a3a3a"
+                    text f"{player_emotional_vocabulary}%" size 20 color "#cccccc" xalign 1.0
+                    
+                    text "Уровень тревожности:" size 24 color "#ffffff"
+                    bar:
+                        value player_anxiety_level
+                        range 100
+                        xsize 800
+                        ysize 25
+                        left_bar "#ff6666"
+                        right_bar "#3a3a3a"
+                    text f"{player_anxiety_level}%" size 20 color "#cccccc" xalign 1.0
+                    
+                    text "Уровень доверия:" size 24 color "#ffffff"
+                    bar:
+                        value player_trust_level
+                        range 100
+                        xsize 800
+                        ysize 25
+                        left_bar "#4caf50"
+                        right_bar "#3a3a3a"
+                    text f"{player_trust_level}%" size 20 color "#cccccc" xalign 1.0
             
             null height 20
             
-            # Кнопка для пропуска (если игрок не хочет выбирать)
-            textbutton "Пропустить задание":
-                style "emotion_skip_button"
+            if persistent.user_id:
+                $ stats_total_attempts = 0
+                $ stats_correct_matches = 0
+                $ stats_emotions_chosen = {}
+                
+                python:
+                    try:
+                        if 'get_emotion_stats' in globals():
+                            temp_stats = get_emotion_stats(persistent.user_id)
+                            stats_total_attempts = temp_stats.get('total_attempts', 0)
+                            stats_correct_matches = temp_stats.get('correct_matches', 0)
+                            stats_emotions_chosen = temp_stats.get('emotions_chosen', {})
+                        else:
+                            stats_total_attempts = 0
+                            stats_correct_matches = 0
+                            stats_emotions_chosen = {}
+                    except Exception:
+                        stats_total_attempts = 0
+                        stats_correct_matches = 0
+                        stats_emotions_chosen = {}
+                
+                frame:
+                    style "stats_frame"
+                    xfill True
+                    
+                    vbox:
+                        spacing 10
+                        
+                        text "🎮 Статистика мини-игры «Колесо эмоций»:" size 26 color gui.accent_color xalign 0.5
+                        
+                        hbox:
+                            spacing 50
+                            xalign 0.5
+                            
+                            vbox:
+                                text "Всего попыток:" size 22
+                                text f"{stats_total_attempts}" size 28 color "#c66b2f" bold True
+                            
+                            vbox:
+                                text "Правильных ответов:" size 22
+                                text f"{stats_correct_matches}" size 28 color "#4caf50" bold True
+                            
+                            vbox:
+                                text "Точность:" size 22
+                                $ accuracy = int((stats_correct_matches / max(stats_total_attempts, 1)) * 100)
+                                text f"{accuracy}%" size 28 color "#ffaa00" bold True
+                        
+                        if stats_emotions_chosen:
+                            text "Частота выбора эмоций:" size 22 xalign 0.5
+                            $ sorted_emotions = sorted(stats_emotions_chosen.items(), key=lambda x: x[1], reverse=True)[:5]
+                            for emotion, count in sorted_emotions:
+                                hbox:
+                                    spacing 20
+                                    xalign 0.5
+                                    text f"• {emotion}:" size 20
+                                    text f"{count} раз" size 20 color "#cccccc"
+            
+            null height 30
+            
+            textbutton "Закрыть":
+                style "stats_close_button"
                 xalign 0.5
-                action Return(("Пропуск", ""))
+                action Hide("player_stats_screen")
 
 
-# Стили для экрана эмоций
-style emotion_frame:
-    background Frame("gui/frame.png", 25, 25, 25, 25)
-    padding (30, 30)
-
-style emotion_wheel_frame:
-    background None
-    padding (0, 0)
-
-style emotion_central:
-    background "#ff6b6b"
-    xysize (120, 120)
-    xalign 0.5
-    yalign 0.5
-
-style emotion_table_frame:
+style stats_frame:
     background Frame("gui/frame.png", 15, 15, 15, 15)
-    padding (20, 20)
+    padding (25, 20)
 
-style emotion_category_frame:
-    background "#ff9999"
-    padding (15, 10)
-    margin (5, 5)
-    xfill True
+style stats_close_button:
+    background Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    padding (25, 12)
+    xsize 300
 
-style emotion_choice_button:
-    background Frame("gui/button/choice_idle_background_1.png", 10, 10, 10, 10)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 10, 10, 10, 10)
-    padding (10, 8)
-    xsize 200
-
-style emotion_choice_button_text:
+style stats_close_button_text:
     color "#ffffff"
-    hover_color "#ffcccc"
-    size 18
-    font gui.interface_text_font
-    outlines [(1, "#671a1a", 0, 0)]
+    hover_color "#ff9999"
+    size 24
     text_align 0.5
-    xalign 0.5
 
-style emotion_choice_button_light:
-    background Frame("gui/button/choice_idle_background_1.png", 10, 10, 10, 10)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 10, 10, 10, 10)
-    padding (10, 8)
-    xsize 200
 
-style emotion_choice_button_text_light:
-    color "#000000"
-    hover_color "#333333"
-    size 18
-    font gui.interface_text_font
-    outlines [(1, "#ffffff", 0, 0)]
-    text_align 0.5
-    xalign 0.5
+################################################################################
+## СТИЛИ ДЛЯ ПЕРЕХОДОВ МЕЖДУ ГЛАВАМИ
+################################################################################
 
-style emotion_skip_button:
-    background Frame("gui/button/choice_idle_background_0.png", 10, 10, 10, 10)
-    hover_background Frame("gui/button/choice_hover_background_2.png", 10, 10, 10, 10)
-    padding (15, 8)
-    xsize 200
+style chapter_transition_frame:
+    background Frame("gui/frame.png", 25, 25, 25, 25)
+    padding (40, 40)
 
-style emotion_skip_button_text:
+style chapter_transition_button:
+    background Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    padding (20, 10)
+    xsize 250
+
+style chapter_transition_button_text:
     color "#ffffff"
     hover_color "#ff9999"
     size 20
-    font gui.interface_text_font
-    outlines [(1, "#671a1a", 0, 0)]
     text_align 0.5
+
+
+################################################################################
+## ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЗАГРУЗКИ
+################################################################################
+
+init python:
+    def load_other_user_save(slot):
+        """Загружает сохранение другого пользователя и переключает на него"""
+        try:
+            save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
+            if save_json:
+                persistent.user_id = save_json.get("user_id")
+                persistent.user_name = save_json.get("user_name", "")
+                if "player_state" in save_json:
+                    store.player_self_awareness = save_json["player_state"].get("self_awareness", 0)
+                    store.player_empathy = save_json["player_state"].get("empathy", 0)
+                    store.player_emotional_vocabulary = save_json["player_state"].get("vocabulary", 0)
+                    store.player_anxiety_level = save_json["player_state"].get("anxiety", 50)
+                    store.player_trust_level = save_json["player_state"].get("trust", 30)
+        except:
+            pass
+        renpy.run(FileAction(slot))
