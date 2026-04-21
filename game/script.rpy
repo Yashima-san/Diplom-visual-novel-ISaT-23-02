@@ -16,11 +16,11 @@ define persistent.user_id = None
 define persistent.user_data = None
 
 # Переменные для отслеживания состояния игрока
-default player_self_awareness = 0      # Понимание своих эмоций (0-100)
-default player_empathy = 0             # Понимание чужих эмоций (0-100)
-default player_emotional_vocabulary = 0 # Эмоциональный словарь (0-100)
-default player_anxiety_level = 50      # Уровень тревожности (0-100)
-default player_trust_level = 30        # Уровень доверия к другим (0-100)
+default player_self_awareness = 0
+default player_empathy = 0
+default player_emotional_vocabulary = 0
+default player_anxiety_level = 50
+default player_trust_level = 30
 
 # Переменные для выбора
 default current_chapter = "Глава Первая: Связь"
@@ -45,14 +45,12 @@ init python:
     
     def update_player_state(self_awareness_change=0, empathy_change=0, 
                            vocabulary_change=0, anxiety_change=0, trust_change=0):
-        """Обновляет состояние игрока на основе его выборов"""
         store.player_self_awareness = max(0, min(100, store.player_self_awareness + self_awareness_change))
         store.player_empathy = max(0, min(100, store.player_empathy + empathy_change))
         store.player_emotional_vocabulary = max(0, min(100, store.player_emotional_vocabulary + vocabulary_change))
         store.player_anxiety_level = max(0, min(100, store.player_anxiety_level + anxiety_change))
         store.player_trust_level = max(0, min(100, store.player_trust_level + trust_change))
         
-        # Сохраняем состояние в persistent для анализа
         if persistent.user_id:
             if not hasattr(persistent, 'player_states') or persistent.player_states is None:
                 persistent.player_states = {}
@@ -380,8 +378,6 @@ init python:
 
 init python:
     def first_choice_callback(choice_text):
-        store.first_choice = 0
-        
         if "Привет! Да, готова" in choice_text:
             store.first_choice = 1
             update_player_state(self_awareness_change=5, anxiety_change=-10, vocabulary_change=3)
@@ -394,12 +390,9 @@ init python:
             store.first_choice = 3
             update_player_state(empathy_change=5, trust_change=10, anxiety_change=-8)
             unlock_achievement("first_choice")
-
         renpy.jump("continue_chat_after_first")
 
     def second_choice_callback(choice_text):
-        store.second_choice = 0
-
         if "Звучит здорово! Я согласна" in choice_text:
             store.second_choice = 11
             update_player_state(trust_change=5, anxiety_change=-5, vocabulary_change=2)
@@ -418,12 +411,9 @@ init python:
         elif "Спасибо, Лина! Я очень ценю твою дружбу" in choice_text:
             store.second_choice = 32
             update_player_state(empathy_change=8, trust_change=15, vocabulary_change=3)
-
         renpy.jump("end_chat_scene")
 
     def morning_choice_callback(choice_text):
-        store.morning_choice = 0
-
         if "Спасибо, Лина! Я уже встаю" in choice_text:
             store.morning_choice = 1
             update_player_state(self_awareness_change=3, anxiety_change=-8, trust_change=3)
@@ -433,7 +423,6 @@ init python:
         elif "Увидимся у входа" in choice_text:
             store.morning_choice = 3
             update_player_state(trust_change=5, anxiety_change=-5)
-
         renpy.jump("continue_morning")
 
 ################################################################################
@@ -448,7 +437,6 @@ label start:
     $ player_anxiety_level = 50
     $ player_trust_level = 30
     
-    # Инициализируем persistent.player_states
     python:
         if not hasattr(persistent, 'player_states') or persistent.player_states is None:
             persistent.player_states = {}
@@ -492,12 +480,15 @@ label start:
     narrator "Комната, аккуратно обставленная, но лишенная ярких акцентов, отражала ее внутренний мир – упорядоченный, но безжизненный."
     narrator "На столе, заваленном учебниками и тетрадями, стоял старенький ноутбук, его экран тускло мерцал, словно отражая невысказанные мысли."
 
+    show screen thought_overlay
+    pause 0.2
     thought_user "Вечер... слишком долго спала... Впрочем, как и всегда."
     thought_user "Не понимаю, почему люди так радуются щебетанию птиц. Это просто… звук. Как и все остальное."
     thought_user "Чувства. Эмоции. Слова, которые я слышу постоянно, но для меня – лишь набор звуков, лишенных смысла."
     thought_user "Алекситимия. Это слово, которое мне сказала врач, когда я проходила повторную комиссию в больнице. Оно звучит так… официально. Как диагноз. Как приговор."
     thought_user "Родители, конечно, не поняли. Они и раньше не понимали. Я для них – просто ребенок, который должен учиться и вести себя хорошо."
     thought_user "А как вести себя хорошо, когда ты не понимаешь, что чувствуют другие? Когда их улыбки кажутся мне масками, а слезы – просто мокрыми пятнами на лице?"
+    hide screen thought_overlay
 
     show bg bg_room_pk_light with dissolve
     $ unlock_gallery_item("room_pk_light")
@@ -506,17 +497,21 @@ label start:
     narrator "[persistent.user_name] часто смотрела на него, пытаясь уловить хоть что-то, что могло бы помочь ей понять."
     narrator "Но даже в этом вымышленном мире, где все было преувеличено и гиперболизировано, она чувствовала себя чужой."
 
+    show screen thought_overlay
+    pause 0.2
     thought_user "Я помню, как в детстве пыталась плакать, когда мне было больно."
     thought_user "Но слезы не шли. Я просто чувствовала пустоту."
     thought_user "Родители говорили, что я просто капризничаю. Они не знали, что я не знаю, как это – чувствовать."
     thought_user "Я научилась имитировать. Улыбаться, когда нужно, кивать, когда говорят что-то важное. Но внутри – ничего. Только тишина."
     thought_user "И эта тишина пугает меня больше всего. Она как бездна, в которую я могу упасть в любой момент."
+    hide screen thought_overlay
 
     narrator "В углу комнаты стоял старый плюшевый медведь, его мех был истерт от бесчисленных объятий, которых он так и не получил."
     narrator "Он был единственным свидетелем ее детских игр, ее молчаливым слушателем."
 
+    show screen thought_overlay
+    pause 0.2
     thought_user "Единственный, кто меня понимает – это моя интернет-подруга, Лина."
-
     thought_user "Мы познакомились в игре. Она рассказывала мне о своих проблемах, о своих радостях. Я слушала, пыталась что-то ответить. Иногда мне казалось, что я понимаю ее."
     thought_user "Но потом я вспоминала, что это лишь слова. Я не могла почувствовать ее боль или ее счастье."
     thought_user "Я просто анализировала информацию."
@@ -524,6 +519,7 @@ label start:
     thought_user "Она говорит, что я – особенная. Но я не хочу быть особенной."
     thought_user "Я хочу быть нормальной."
     thought_user "Хочу понимать, что происходит вокруг меня."
+    hide screen thought_overlay
 
     narrator "На экране ноутбука появилось уведомление. Новое сообщение от Лины."
     narrator "[persistent.user_name] лениво начала подниматься со своей нагретой кровати и подошла ко столу, на котором находился ноутбук."
@@ -532,12 +528,15 @@ label start:
     show bg room_pk with dissolve
     $ unlock_gallery_item("room_pk")
 
+    show screen thought_overlay
+    pause 0.2
     thought_user "Новая школа. Новые люди. Родители думают, что это поможет. Может быть. Там учится Лина. Это хорошо. Хоть кто-то знакомый."
     thought_user "...Но… что, если я опять не смогу? Что, если я опять буду стоять в стороне, наблюдая, как другие смеются, общаются, живут? Я боюсь…"
     thought_user "Боюсь не справиться."
     thought_user "Боюсь снова почувствовать эту пустоту, когда все вокруг будут казаться мне чужими."
     thought_user "Но я должна."
     thought_user "Я должна попытаться. Я должна научиться понимать. И я должна встретиться со своими страхами. Даже если они кажутся мне такими же пустыми, как и я сама."
+    hide screen thought_overlay
 
     narrator "[persistent.user_name] открыла окно чата."
     narrator "На экране появилось приветствие от Лины, яркое и жизнерадостное, словно солнечный луч, пробившийся сквозь тучи."
@@ -549,8 +548,11 @@ label start:
     narrator "Слова Лины, написанные с такой непринужденной легкостью, казались [persistent.user_name] одновременно и утешительными, и пугающими."
     narrator "Радость Лины была искренней, это было видно даже по смайликам, которые она использовала."
 
+    show screen thought_overlay
+    pause 0.2
     thought_user "Я хочу ответить ей также жизнерадостно... Но у меня не получается. Мои пальцы замирают над клавишами."
     thought_user "Что я могу сказать?"
+    hide screen thought_overlay
 
     $ show_chat_choices([
         "Привет! Да, готова. Уже жду не дождусь! 😊",
@@ -558,9 +560,7 @@ label start:
         "Привет! Я очень рада, что мы будем учиться вместе. Я немного волнуюсь, потому что это новая школа, но я уверена, что с тобой мне будет легче. Ты – мой самый лучший друг. ❤️"
     ], first_choice_callback)
     
-    $ renpy.pause(None)
-    
-    # После callback игра продолжается с нужной метки
+    $ renpy.pause(None, hard=True)
     return
 
 label continue_chat_after_first:
@@ -569,38 +569,31 @@ label continue_chat_after_first:
         $ renpy.pause(0.3)
         $ e("Я уже придумала, что мы можем пойти в кафе после уроков, если захочешь! Или в парк! Что скажешь?")
         $ renpy.pause(0.3)
-        
         $ show_chat_choices([
             "Звучит здорово! Я согласна на все!",
             "Давай сначала посмотрим, как пройдет день. Я немного устала сегодня."
         ], second_choice_callback)
-        $ renpy.pause(None)
-    
+        $ renpy.pause(None, hard=True)
     elif first_choice == 2:
         $ e("Ой, я понимаю! Но не переживай! Мы же вместе!")
         $ renpy.pause(0.3)
         $ e("Я придумала, что мы можем ходить в библиотеку, там так тихо и уютно! Ты как?")
         $ renpy.pause(0.3)
-        
         $ show_chat_choices([
             "Звучит здорово! Библиотека – отличная идея!",
             "Спасибо, Лина! Я, наверное, пока буду просто наблюдать."
         ], second_choice_callback)
-        $ renpy.pause(None)
-    
+        $ renpy.pause(None, hard=True)
     elif first_choice == 3:
         $ e("Ой, [persistent.user_name]! 🥺 Я так тронута!")
         $ renpy.pause(0.3)
         $ e("Я тоже очень рада, что мы будем вместе! И ты не волнуйся, я буду рядом!")
         $ renpy.pause(0.3)
-       
         $ show_chat_choices([
             "Спасибо, Лина! Ты лучшая! Я уже чувствую себя спокойнее.",
             "Спасибо, Лина! Я очень ценю твою дружбу."
         ], second_choice_callback)
-        $ renpy.pause(None)
-    
-    # После выбора игра переходит к end_chat_scene через callback
+        $ renpy.pause(None, hard=True)
     return
 
 label end_chat_scene:
@@ -616,35 +609,54 @@ label night_scene:
     narrator "[persistent.user_name] лежала в постели, уставившись в потолок, где плясали тени от уличного фонаря."
     narrator "Сообщения Лины все еще крутились в голове, теплые и поддерживающие."
     
+    show screen thought_overlay
+    pause 0.2
     thought_user "Завтрашний день в новой школе… Это не просто новый этап — это будет прыжок в неизвестность, где моя тревога может либо раствориться в дружбе с Линой, либо накрыть с головой."
+    hide screen thought_overlay
     
+    show screen thought_overlay
+    pause 0.2
     thought_user "Хотя… может, стоит прямо сейчас чем-то заняться? Отвлечься от этих мыслей."
     thought_user "Психолог говорила, что важно анализировать свои состояния. Дала то самое задание — расширять эмоциональный словарь."
+    hide screen thought_overlay
     
     narrator "[persistent.user_name] села на кровати и посмотрела на стол, где лежала распечатанная таблица чувств."
     
+    show screen thought_overlay
+    pause 0.2
     thought_user "«Колесо эмоций» Роберта Плутчика. Нужно носить с собой и в моменты дискомфорта пытаться подобрать точное слово."
     thought_user "Может, попробовать прямо сейчас? Описать то, что я чувствую перед завтрашним днём..."
+    hide screen thought_overlay
     
     narrator "Она подошла к столу, включила настольную лампу и взяла в руки таблицу с разноцветным кругом, разделённым на множество сегментов."
     
+    show screen thought_overlay
+    pause 0.2
     thought_user "В центре — базовые эмоции: радость, доверие, страх, удивление, печаль, отвращение, гнев, предвкушение."
     thought_user "А дальше — оттенки. Например, страх может переходить в тревогу, беспокойство, робость…"
+    hide screen thought_overlay
     
     call screen emotion_selection_extended
     
     if _return:
         $ selected_emotions = _return
+        show screen thought_overlay
+        pause 0.2
         thought_user "Я записала все свои ощущения в дневник наблюдений."
         thought_user "Психолог говорила, что это поможет мне лучше понимать себя."
+        hide screen thought_overlay
         $ update_player_state(self_awareness_change=10, vocabulary_change=8)
     
+    show screen thought_overlay
+    pause 0.2
     thought_user "Засыпая, [persistent.user_name] думала только об одном…"
     thought_user "Завтрашний день в новой школе… Это не просто новый этап — это будет прыжок в неизвестность, где моя тревога может либо раствориться в дружбе с Линой, либо накрыть с головой."
+    hide screen thought_overlay
     
     stop sound fadeout 3.0
     scene black with fade
     pause 1.0
+    
     jump morning_scene
 
 label morning_scene:
@@ -663,7 +675,10 @@ label morning_scene:
     $ renpy.pause(0.5)
     $ e("Не забудь взять тетради и хорошее настроение 😘")
     
+    show screen thought_overlay
+    pause 0.2
     thought_user "Ее энтузиазм заразителен... Может, и мне удастся почувствовать то же самое? Я не хочу подвести ее."
+    hide screen thought_overlay
     
     $ show_chat_choices([
         "Спасибо, Лина! Я уже встаю. Увидимся у входа! ❤️",
@@ -671,7 +686,7 @@ label morning_scene:
         "Увидимся у входа в школу! Я постараюсь не опоздать 😊"
     ], morning_choice_callback)
     
-    $ renpy.pause(None)
+    $ renpy.pause(None, hard=True)
     return
 
 label continue_morning:
@@ -684,8 +699,11 @@ label continue_morning:
     narrator "Руки слегка дрожали, когда она выбирала одежду — простую голубую рубашку с короткими рукавами, синюю теннисную юбку и черные колготки, ничего вычурного, чтобы не привлекать лишнего внимания."
     narrator "В зеркале отразилось ее лицо: бледное, с легкими тенями под глазами от бессонной ночи. [persistent.user_name] прошептала себе, поправляя волосы."
 
+    show screen thought_overlay
+    pause 0.2
     thought_user "Ты справишься!"
     thought_user "По крайней мере я на это очень сильно надеюсь… Сомнений у меня как всегда очень много…"
+    hide screen thought_overlay
 
     scene bg kitchen with fade
     
@@ -694,7 +712,10 @@ label continue_morning:
 
     narrator "\"Дорогая, мы с папой уехали рано. Завтрак на столе. Удачи в новой школе! Мы в тебя верим!\""
 
+    show screen thought_overlay
+    pause 0.2
     thought_user "Как всегда, коротко и по делу. Но, наверное, это и есть их способ показать заботу…."
+    hide screen thought_overlay
 
     narrator "[persistent.user_name] взяла один бутерброд и откусила маленький кусочек. Аппетита не было совсем. Она допила чай, стараясь не думать о том, что ее ждет."
     
@@ -709,8 +730,11 @@ label continue_morning:
     narrator "Она шла, стараясь дышать ровно, но грудь сжималась от предвкушения."
     narrator "Школа виднелась вдалеке, большое, незнакомое здание, которое казалось одновременно манящим и пугающим."
 
+    show screen thought_overlay
+    pause 0.2
     thought_user "Вот оно. Сердце колотится как сумасшедшее."
     thought_user "Лина сказала, что будет ждать у входа. Надеюсь, я ее узнаю. Или она меня."
+    hide screen thought_overlay
 
     scene bg school_entrance with fade
     
@@ -720,7 +744,10 @@ label continue_morning:
     show lina smile at character_scale_fadein
     narrator "Лина, с яркой улыбкой и развевающимися на ветру волосами, махала ей рукой."
 
+    show screen thought_overlay
+    pause 0.2
     thought_user "Она здесь. И она меня видит. Это уже что-то."
+    hide screen thought_overlay
 
     narrator "[persistent.user_name] почувствовала, как напряжение немного отступает. Она ускорила шаг, направляясь к Лине."
 
@@ -731,8 +758,11 @@ label continue_morning:
     show lina smile at character_scale_center_soft_approach
     narrator "Лина обняла [persistent.user_name] крепко, словно старую подругу."
 
+    show screen thought_overlay
+    pause 0.2
     thought_user "Привет… я тебя тоже рада видеть..."
     thought_user "Она настоящая. И она меня приняла. Может, этот прыжок в неизвестность не так уж и страшен."
+    hide screen thought_overlay
 
     narrator "Они стояли так несколько мгновений, а затем Лина отстранилась, ее глаза сияли."
 
@@ -743,8 +773,12 @@ label continue_morning:
     hide lina
 
     narrator "[persistent.user_name] посмотрела на Лину и заторможенно кивнула."
+    
+    show screen thought_overlay
+    pause 0.2
     thought_user "Возможно, сегодняшний день действительно станет не прыжком в неизвестность, а шагом навстречу чему-то новому и хорошему."
     thought_user "Я справлюсь. Когда Лина рядом со мной…"
+    hide screen thought_overlay
 
     play sound "song/school_bell.mp3"
     pause 2.0

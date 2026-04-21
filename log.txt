@@ -1036,3 +1036,898 @@ Version: '4.6.0 - Build 31.0.101.2125'
 Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
 Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
 Maximum texture size: 4096x4096
+Ошибка в callback: continue_chat_after_first
+Cleaning stores took 1 ms
+Load screen analysis took 193 ms
+Analyze screens took 0 ms
+Running _start took 5 ms
+Ошибка в callback: continue_chat_after_first
+Cleaning stores took 1 ms
+Load screen analysis took 129 ms
+Analyze screens took 1 ms
+Running _start took 7 ms
+Resetting cache.
+Early init took 51 ms
+Loading error handling took 251 ms
+Loading script took 22827 ms
+Loading save slot metadata took 2837 ms
+Loading persistent took 1 ms
+
+File "game/script.rpy", line 1: expected statement.
+    ﻿
+    ^
+DPI scale factor: 1.250000
+Interface start took 13722 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 1123 ms
+Loading error handling took 2829 ms
+Loading script took 63554 ms
+Loading save slot metadata took 568 ms
+Loading persistent took 1 ms
+ - Init at game/gui.rpy:497 took 569 ms.
+ - Init at renpy/common/00library.rpy:456 took 650 ms.
+Running init code took 2453 ms
+Loading analysis data took 62 ms
+Analyze and compile ATL took 27 ms
+Reloading save slot metadata took 267 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 2280 ms
+Cleaning cache took 0 ms
+Making clean stores took 93 ms
+Initial gc took 7454 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 0 ms
+Load screen analysis took 167 ms
+Analyze screens took 5200 ms
+Save screen analysis took 7094 ms
+Save pyanalysis took 0 ms
+Save bytecode took 4721 ms
+Running _start took 57 ms
+Interface start took 17568 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 180 ms
+Loading error handling took 885 ms
+Loading script took 32114 ms
+Loading save slot metadata took 230 ms
+Loading persistent took 1 ms
+
+File "game/messenger.rpy", line 305: The if statement is not a valid child of the text statement.
+    text current_chat_partner[0] if current_chat_partner else "?":
+                                   ^
+
+File "game/messenger.rpy", line 455: The if statement is not a valid child of the text statement.
+    text current_chat_partner[0] if current_chat_partner else "?":
+                                   ^
+
+File "game/messenger.rpy", line 636: style property border_radius is not known.
+    border_radius 22
+                 ^
+
+File "game/messenger.rpy", line 663: style property border_radius is not known.
+    border_radius 18
+                 ^
+
+File "game/messenger.rpy", line 680: style property border_radius is not known.
+    border_radius 18
+                 ^
+
+File "game/messenger.rpy", line 685: style property border_radius is not known.
+    border_radius 17
+                 ^
+
+File "game/messenger.rpy", line 713: style property border_radius is not known.
+    border_radius 12
+                 ^
+DPI scale factor: 1.250000
+Interface start took 11300 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 207 ms
+Loading error handling took 591 ms
+Loading script took 32939 ms
+Loading save slot metadata took 133 ms
+Loading persistent took 0 ms
+
+File "game/messenger.rpy", line 305: The if statement is not a valid child of the text statement.
+    text current_chat_partner[0] if current_chat_partner else "?":
+                                   ^
+
+File "game/messenger.rpy", line 455: The if statement is not a valid child of the text statement.
+    text current_chat_partner[0] if current_chat_partner else "?":
+                                   ^
+
+File "game/messenger.rpy", line 636: style property border_radius is not known.
+    border_radius 22
+                 ^
+
+File "game/messenger.rpy", line 663: style property border_radius is not known.
+    border_radius 18
+                 ^
+
+File "game/messenger.rpy", line 680: style property border_radius is not known.
+    border_radius 18
+                 ^
+
+File "game/messenger.rpy", line 685: style property border_radius is not known.
+    border_radius 17
+                 ^
+
+File "game/messenger.rpy", line 713: style property border_radius is not known.
+    border_radius 12
+                 ^
+DPI scale factor: 1.250000
+Interface start took 4980 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 137 ms
+Loading error handling took 657 ms
+Loading script took 13183 ms
+Loading save slot metadata took 654 ms
+Loading persistent took 0 ms
+
+File "game/messenger.rpy", line 305: The if statement is not a valid child of the text statement.
+    text current_chat_partner[0] if current_chat_partner else "?":
+                                   ^
+
+File "game/messenger.rpy", line 455: The if statement is not a valid child of the text statement.
+    text current_chat_partner[0] if current_chat_partner else "?":
+                                   ^
+
+File "game/messenger.rpy", line 636: style property border_radius is not known.
+    border_radius 22
+                 ^
+
+File "game/messenger.rpy", line 663: style property border_radius is not known.
+    border_radius 18
+                 ^
+
+File "game/messenger.rpy", line 680: style property border_radius is not known.
+    border_radius 18
+                 ^
+
+File "game/messenger.rpy", line 685: style property border_radius is not known.
+    border_radius 17
+                 ^
+
+File "game/messenger.rpy", line 713: style property border_radius is not known.
+    border_radius 12
+                 ^
+DPI scale factor: 1.250000
+Interface start took 7051 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 171 ms
+Loading error handling took 530 ms
+Loading script took 12291 ms
+Loading save slot metadata took 73 ms
+Loading persistent took 0 ms
+
+File "game/messenger.rpy", line 305: The if statement is not a valid child of the text statement.
+    text current_chat_partner[0] if current_chat_partner else "?":
+                                   ^
+
+File "game/messenger.rpy", line 455: The if statement is not a valid child of the text statement.
+    text current_chat_partner[0] if current_chat_partner else "?":
+                                   ^
+
+File "game/messenger.rpy", line 636: style property border_radius is not known.
+    border_radius 22
+                 ^
+
+File "game/messenger.rpy", line 663: style property border_radius is not known.
+    border_radius 18
+                 ^
+
+File "game/messenger.rpy", line 680: style property border_radius is not known.
+    border_radius 18
+                 ^
+
+File "game/messenger.rpy", line 685: style property border_radius is not known.
+    border_radius 17
+                 ^
+
+File "game/messenger.rpy", line 713: style property border_radius is not known.
+    border_radius 12
+                 ^
+DPI scale factor: 1.250000
+Interface start took 687 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 49 ms
+Loading error handling took 246 ms
+Loading script took 4713 ms
+Loading save slot metadata took 62 ms
+Loading persistent took 1 ms
+
+File "game/messenger.rpy", line 305: The if statement is not a valid child of the text statement.
+    text current_chat_partner[0] if current_chat_partner else "?":
+                                   ^
+
+File "game/messenger.rpy", line 455: The if statement is not a valid child of the text statement.
+    text current_chat_partner[0] if current_chat_partner else "?":
+                                   ^
+
+File "game/messenger.rpy", line 636: style property border_radius is not known.
+    border_radius 22
+                 ^
+
+File "game/messenger.rpy", line 663: style property border_radius is not known.
+    border_radius 18
+                 ^
+
+File "game/messenger.rpy", line 680: style property border_radius is not known.
+    border_radius 18
+                 ^
+
+File "game/messenger.rpy", line 685: style property border_radius is not known.
+    border_radius 17
+                 ^
+
+File "game/messenger.rpy", line 713: style property border_radius is not known.
+    border_radius 12
+                 ^
+DPI scale factor: 1.250000
+Interface start took 431 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 50 ms
+Loading error handling took 249 ms
+Loading script took 5310 ms
+Loading save slot metadata took 63 ms
+Loading persistent took 3 ms
+Running init code took 375 ms
+Loading analysis data took 30 ms
+Analyze and compile ATL took 7 ms
+Reloading save slot metadata took 64 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 237 ms
+Cleaning cache took 0 ms
+Making clean stores took 2 ms
+Initial gc took 248 ms
+DPI scale factor: 1.250000
+Creating interface object took 5 ms
+Init translation took 1 ms
+Cleaning stores took 1 ms
+Load screen analysis took 1 ms
+Analyze screens took 106 ms
+Save screen analysis took 109 ms
+Save pyanalysis took 24 ms
+Save bytecode took 99 ms
+Running _start took 3 ms
+Interface start took 1728 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Ошибка в callback: continue_chat_after_first
+Resetting cache.
+Early init took 67 ms
+Loading error handling took 230 ms
+Loading script took 5424 ms
+Loading save slot metadata took 63 ms
+Loading persistent took 0 ms
+Running init code took 364 ms
+Loading analysis data took 20 ms
+Analyze and compile ATL took 12 ms
+Reloading save slot metadata took 51 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 257 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 311 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 1 ms
+Load screen analysis took 1 ms
+Analyze screens took 80 ms
+Save screen analysis took 86 ms
+Save pyanalysis took 23 ms
+Save bytecode took 103 ms
+Running _start took 3 ms
+Interface start took 1884 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Ошибка в callback: continue_chat_after_first
+Ошибка в callback: continue_chat_after_first
+Resetting cache.
+Early init took 38 ms
+Loading error handling took 183 ms
+Loading script took 4815 ms
+Loading save slot metadata took 60 ms
+Loading persistent took 0 ms
+Running init code took 348 ms
+Loading analysis data took 23 ms
+Analyze and compile ATL took 11 ms
+Reloading save slot metadata took 53 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 219 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 284 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 1 ms
+Load screen analysis took 4 ms
+Analyze screens took 83 ms
+Save screen analysis took 83 ms
+Save pyanalysis took 22 ms
+Save bytecode took 100 ms
+Running _start took 2 ms
+Interface start took 1483 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Ошибка в callback: continue_chat_after_first
+Ошибка в callback: continue_chat_after_first
+Resetting cache.
+Early init took 48 ms
+Loading error handling took 221 ms
+Loading script took 5195 ms
+Loading save slot metadata took 66 ms
+Loading persistent took 1 ms
+Running init code took 395 ms
+Loading analysis data took 21 ms
+Analyze and compile ATL took 11 ms
+Reloading save slot metadata took 71 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 226 ms
+Cleaning cache took 1 ms
+Making clean stores took 1 ms
+Initial gc took 324 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 1 ms
+Load screen analysis took 1 ms
+Analyze screens took 84 ms
+Save screen analysis took 83 ms
+Save pyanalysis took 30 ms
+Save bytecode took 98 ms
+Running _start took 3 ms
+Interface start took 1696 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Ошибка в callback: continue_chat_after_first
+Ошибка в callback: continue_chat_after_first
+Resetting cache.
+Early init took 1490 ms
+Loading error handling took 1792 ms
+Loading script took 41592 ms
+Loading save slot metadata took 1285 ms
+Loading persistent took 22 ms
+ - Init at game/gui.rpy:497 took 773 ms.
+ - Init at renpy/common/00library.rpy:456 took 1637 ms.
+Running init code took 4361 ms
+Loading analysis data took 211 ms
+Analyze and compile ATL took 222 ms
+Reloading save slot metadata took 5675 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 2222 ms
+Cleaning cache took 24 ms
+Making clean stores took 2 ms
+Initial gc took 7790 ms
+DPI scale factor: 1.250000
+Creating interface object took 0 ms
+Init translation took 28 ms
+Cleaning stores took 0 ms
+Load screen analysis took 14 ms
+Analyze screens took 1439 ms
+Save screen analysis took 767 ms
+Save pyanalysis took 317 ms
+Save bytecode took 1060 ms
+Running _start took 32 ms
+Interface start took 12270 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 367 ms
+Loading error handling took 632 ms
+Loading script took 7266 ms
+Loading save slot metadata took 70 ms
+Loading persistent took 0 ms
+
+File "game/script.rpy", line 1: expected statement.
+    ﻿
+    ^
+DPI scale factor: 1.250000
+Interface start took 794 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 98 ms
+Loading error handling took 1187 ms
+Loading script took 9710 ms
+Loading save slot metadata took 80 ms
+Loading persistent took 0 ms
+Running init code took 437 ms
+Loading analysis data took 29 ms
+Analyze and compile ATL took 17 ms
+Reloading save slot metadata took 68 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 287 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 311 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 0 ms
+Load screen analysis took 2 ms
+Analyze screens took 89 ms
+Save screen analysis took 95 ms
+Save pyanalysis took 36 ms
+Save bytecode took 116 ms
+Running _start took 3 ms
+Interface start took 1824 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 197 ms
+Loading error handling took 567 ms
+Loading script took 11147 ms
+Loading save slot metadata took 212 ms
+Loading persistent took 0 ms
+ - Init at renpy/common/00library.rpy:456 took 434 ms.
+Running init code took 948 ms
+Loading analysis data took 55 ms
+Analyze and compile ATL took 18 ms
+Reloading save slot metadata took 327 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 1668 ms
+Cleaning cache took 1 ms
+Making clean stores took 1 ms
+Initial gc took 1035 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 76 ms
+Cleaning stores took 0 ms
+Load screen analysis took 7 ms
+Analyze screens took 215 ms
+Save screen analysis took 217 ms
+Save pyanalysis took 33 ms
+Save bytecode took 223 ms
+Running _start took 9 ms
+Interface start took 17465 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 154 ms
+Loading error handling took 256 ms
+Loading script took 5423 ms
+Loading save slot metadata took 465 ms
+Loading persistent took 0 ms
+Running init code took 388 ms
+Loading analysis data took 29 ms
+Analyze and compile ATL took 7 ms
+Reloading save slot metadata took 58 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 242 ms
+Cleaning cache took 3 ms
+Making clean stores took 2 ms
+Initial gc took 338 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 0 ms
+Load screen analysis took 1 ms
+Analyze screens took 78 ms
+Save screen analysis took 84 ms
+Save pyanalysis took 0 ms
+Save bytecode took 91 ms
+Running _start took 5 ms
+Interface start took 1640 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 737 ms
+Loading error handling took 882 ms
+Loading script took 13430 ms
+Loading save slot metadata took 208 ms
+Loading persistent took 1 ms
+ - Init at renpy/common/00library.rpy:456 took 357 ms.
+Running init code took 775 ms
+Loading analysis data took 22 ms
+Analyze and compile ATL took 28 ms
+Reloading save slot metadata took 100 ms
+Dump and make backups took 768 ms
+Cleaning cache took 1 ms
+Making clean stores took 0 ms
+Initial gc took 1301 ms
+DPI scale factor: 1.250000
+Creating interface object took 0 ms
+Init translation took 1 ms
+Cleaning stores took 94 ms
+Load screen analysis took 388 ms
+Analyze screens took 5 ms
+Save screen analysis took 0 ms
+Save pyanalysis took 0 ms
+Save bytecode took 360 ms
+Running _start took 3 ms
+Interface start took 26160 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 45 ms
+Loading error handling took 202 ms
+Loading script took 5179 ms
+Loading save slot metadata took 69 ms
+Loading persistent took 1 ms
+Running init code took 389 ms
+Loading analysis data took 27 ms
+Analyze and compile ATL took 8 ms
+Reloading save slot metadata took 57 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 237 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 313 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 0 ms
+Load screen analysis took 3 ms
+Analyze screens took 82 ms
+Save screen analysis took 87 ms
+Save pyanalysis took 27 ms
+Save bytecode took 99 ms
+Running _start took 2 ms
+Interface start took 1584 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 183 ms
+Loading error handling took 521 ms
+Loading script took 5665 ms
+Loading save slot metadata took 83 ms
+Loading persistent took 1 ms
+Running init code took 367 ms
+Loading analysis data took 29 ms
+Analyze and compile ATL took 7 ms
+Reloading save slot metadata took 52 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 225 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 272 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 2 ms
+Load screen analysis took 2 ms
+Analyze screens took 62 ms
+Save screen analysis took 68 ms
+Save pyanalysis took 2 ms
+Save bytecode took 83 ms
+Running _start took 3 ms
+Interface start took 1642 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 82 ms
+Loading error handling took 433 ms
+Loading script took 11636 ms
+Loading save slot metadata took 70 ms
+Loading persistent took 1 ms
+Running init code took 403 ms
+Loading analysis data took 23 ms
+Analyze and compile ATL took 11 ms
+Reloading save slot metadata took 66 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 249 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 350 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 2 ms
+Cleaning stores took 0 ms
+Load screen analysis took 3 ms
+Analyze screens took 79 ms
+Save screen analysis took 82 ms
+Save pyanalysis took 1 ms
+Save bytecode took 107 ms
+Running _start took 6 ms
+Interface start took 1641 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 100 ms
+Loading error handling took 486 ms
+Loading script took 13843 ms
+Loading save slot metadata took 164 ms
+Loading persistent took 0 ms
+ - Init at renpy/common/00library.rpy:456 took 321 ms.
+Running init code took 712 ms
+Loading analysis data took 45 ms
+Analyze and compile ATL took 26 ms
+Reloading save slot metadata took 117 ms
+Dump and make backups took 423 ms
+Cleaning cache took 0 ms
+Making clean stores took 6 ms
+Initial gc took 722 ms
+DPI scale factor: 1.250000
+Creating interface object took 2 ms
+Init translation took 2 ms
+Cleaning stores took 1 ms
+Load screen analysis took 263 ms
+Analyze screens took 5 ms
+Save screen analysis took 4 ms
+Save pyanalysis took 0 ms
+Save bytecode took 466 ms
+Running _start took 9 ms
+Interface start took 7182 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 39 ms
+Loading error handling took 180 ms
+Loading script took 5062 ms
+Loading save slot metadata took 63 ms
+Loading persistent took 0 ms
+Running init code took 348 ms
+Loading analysis data took 20 ms
+Analyze and compile ATL took 9 ms
+Reloading save slot metadata took 56 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 231 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 312 ms
+DPI scale factor: 1.250000
+Creating interface object took 2 ms
+Init translation took 1 ms
+Cleaning stores took 0 ms
+Load screen analysis took 2 ms
+Analyze screens took 67 ms
+Save screen analysis took 89 ms
+Save pyanalysis took 0 ms
+Save bytecode took 92 ms
+Running _start took 3 ms
+Interface start took 1525 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
+Resetting cache.
+Early init took 40 ms
+Loading error handling took 214 ms
+Loading script took 5862 ms
+Loading save slot metadata took 66 ms
+Loading persistent took 0 ms
+Running init code took 382 ms
+Loading analysis data took 20 ms
+Analyze and compile ATL took 12 ms
+Reloading save slot metadata took 57 ms
+Backing up script files to 'C:\\Users\\alirk\\AppData\\Roaming/RenPy/backups\\За гранью чувств':
+Dump and make backups took 240 ms
+Cleaning cache took 0 ms
+Making clean stores took 1 ms
+Initial gc took 339 ms
+DPI scale factor: 1.250000
+Creating interface object took 1 ms
+Init translation took 1 ms
+Cleaning stores took 1 ms
+Load screen analysis took 1 ms
+Analyze screens took 109 ms
+Save screen analysis took 83 ms
+Save pyanalysis took 25 ms
+Save bytecode took 109 ms
+Running _start took 3 ms
+Interface start took 1719 ms
+
+Initializing gl2 renderer:
+primary display bounds: (0, 0, 1920, 1080)
+swap interval: 1 frames
+Windowed mode.
+Vendor: 'Intel'
+Renderer: 'Intel(R) UHD Graphics 600'
+Version: '4.6.0 - Build 31.0.101.2125'
+Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
+Screen sizes: virtual=(1920, 1080) physical=(1724, 970) drawable=(1724, 970)
+Maximum texture size: 4096x4096
