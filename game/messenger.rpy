@@ -31,7 +31,7 @@ init python:
     chat_processing_choice = False
     chat_in_callback = False
     message_animation_id = 0
-    chat_screen_shown = False  # Флаг для отслеживания состояния экрана чата
+    chat_screen_shown = False
     
     # Функция для проверки существования звукового файла
     def sound_exists(sound_file):
@@ -92,7 +92,7 @@ init python:
         
         if not chat_screen_shown:
             chat_screen_shown = True
-            renpy.show_screen("messenger_chat_with_choices", _layer="screens")
+            renpy.show_screen("messenger_chat", _layer="screens")
             renpy.restart_interaction()
     
     # Функция для выбора варианта
@@ -116,10 +116,6 @@ init python:
         callback = chat_choice_callback
         chat_choice_callback = None
         chat_in_callback = True
-        
-        renpy.hide_screen("messenger_chat_with_choices")
-        renpy.show_screen("messenger_chat", _layer="screens")
-        renpy.restart_interaction()
         
         chat_waiting_for_response = True
         
@@ -175,7 +171,6 @@ init python:
         chat_pending_messages = []
         chat_screen_shown = False
         renpy.hide_screen("messenger_chat")
-        renpy.hide_screen("messenger_chat_with_choices")
         renpy.restart_interaction()
     
     # Класс для персонажей в чате
@@ -278,18 +273,20 @@ transform message_appear_right:
 
 
 ################################################################################
-## ЭКРАН ЧАТА (ОСНОВНОЙ)
+## ЭКРАН ЧАТА
 ################################################################################
 
 screen messenger_chat():
-    zorder 150  # Высокий z-order, но ниже модальных окон (200)
+    zorder 150
     
-    # Окно чата (под текстовым окном, yalign 0.2)
+    # Вычисляем высоту области сообщений в зависимости от наличия вариантов
+    $ chat_viewport_height = 400 if chat_choices_shown else 450
+    
     frame:
         style "messenger_frame"
         xalign 0.5
         yalign 0.2
-        xsize 950
+        xsize 850
         ysize 720
         
         vbox:
@@ -302,11 +299,10 @@ screen messenger_chat():
                     xfill True
                     spacing 12
                     
-                    # Аватар
                     frame:
                         style "messenger_chat_avatar"
                         xysize (35, 35)
-                        background "#c66b2f"
+                        background "#2f6bc6"
                         
                         $ avatar_text = current_chat_partner[0] if current_chat_partner else "?"
                         text avatar_text:
@@ -329,13 +325,13 @@ screen messenger_chat():
                         if chat_status == "В сети":
                             text "онлайн":
                                 style "messenger_chat_status_online"
-                                size 11
+                                size 12
                                 color "#4caf50"
             
             # Область сообщений
             viewport:
                 id "chat_viewport"
-                ysize 500
+                ysize chat_viewport_height
                 scrollbars "vertical"
                 mousewheel True
                 draggable True
@@ -378,7 +374,7 @@ screen messenger_chat():
                                 frame:
                                     style "messenger_message_avatar"
                                     xysize (25, 25)
-                                    background "#c66b2f"
+                                    background "#2f6bc6"
                                     
                                     $ avatar_letter = msg.character[0] if msg.character else "?"
                                     text avatar_letter:
@@ -396,7 +392,7 @@ screen messenger_chat():
                                         text msg.character:
                                             style "messenger_message_name"
                                             size 11
-                                            color "#c66b2f"
+                                            color "#2f6bc6"
                                             bold True
                                         text msg.text:
                                             style "messenger_message_text_other"
@@ -418,170 +414,45 @@ screen messenger_chat():
                     
                     hbox:
                         spacing 5
-                        text "✎" size 12 color "#c66b2f"
+                        text "✎" size 12 color "#2f50c6"
                         text "печатает..." size 11 color "#888888"
-
-
-################################################################################
-## ЭКРАН ЧАТА С ВАРИАНТАМИ ОТВЕТА
-################################################################################
-
-screen messenger_chat_with_choices():
-    modal True
-    zorder 200  # Высокий z-order для модального окна
-    
-    # НЕТ ЗАТЕМНЕНИЯ - удалено полностью
-    
-    frame:
-        style "messenger_frame"
-        xalign 0.5
-        yalign 0.2
-        xsize 950
-        ysize 720
-        
-        vbox:
-            # Шапка
-            frame:
-                style "messenger_header"
-                xfill True
-                
-                hbox:
-                    xfill True
-                    spacing 12
-                    
-                    # Аватар
-                    frame:
-                        style "messenger_chat_avatar"
-                        xysize (35, 35)
-                        background "#c66b2f"
-                        
-                        $ avatar_text = current_chat_partner[0] if current_chat_partner else "?"
-                        text avatar_text:
-                            size 20
-                            color "#ffffff"
-                            xalign 0.5
-                            yalign 0.5
-                    
-                    vbox:
-                        xfill True
-                        spacing 2
-                        yalign 0.5
-                        
-                        text current_chat_partner:
-                            style "messenger_chat_name"
-                            size 14
-                            color "#ffffff"
-                            bold True
-                            xalign 0.0
-                        
-                        if chat_status == "В сети":
-                            text "онлайн":
-                                style "messenger_chat_status_online"
-                                size 11
-                                color "#4caf50"
             
-            # Область сообщений
-            viewport:
-                id "chat_viewport"
-                ysize 450
-                scrollbars "vertical"
-                mousewheel True
-                draggable True
-                yinitial 0.4
-                
-                vbox:
-                    spacing 8
-                    xfill True
-                    
-                    for msg in chat_history:
-                        if msg.is_user:
-                            hbox:
-                                xfill True
-                                xalign 1.0
-                                at message_appear_right
-                                
-                                frame:
-                                    style "messenger_user_bubble"
-                                    xmaximum 450
-                                    
-                                    vbox:
-                                        spacing 2
-                                        text msg.text:
-                                            style "messenger_message_text_user"
-                                            size 16
-                                            color "#ffffff"
-                                        text msg.time:
-                                            style "messenger_message_time_user"
-                                            size 9
-                                            color "#dddddd"
-                                            xalign 1.0
-                                
-                                null width 10
-                        else:
-                            hbox:
-                                xfill True
-                                spacing 8
-                                at message_appear_left
-                                
-                                frame:
-                                    style "messenger_message_avatar"
-                                    xysize (25, 25)
-                                    background "#c66b2f"
-                                    
-                                    $ avatar_letter = msg.character[0] if msg.character else "?"
-                                    text avatar_letter:
-                                        size 14
-                                        color "#ffffff"
-                                        xalign 0.5
-                                        yalign 0.5
-                                
-                                frame:
-                                    style "messenger_other_bubble"
-                                    xmaximum 450
-                                    
-                                    vbox:
-                                        spacing 2
-                                        text msg.character:
-                                            style "messenger_message_name"
-                                            size 11
-                                            color "#c66b2f"
-                                            bold True
-                                        text msg.text:
-                                            style "messenger_message_text_other"
-                                            size 16
-                                            color "#1a1a1a"
-                                        text msg.time:
-                                            style "messenger_message_time_other"
-                                            size 9
-                                            color "#999999"
-                                            xalign 1.0
-                                
-                                null width 8
-            
-            # Разделитель
-            frame:
-                xfill True
-                ysize 1
-                background "#e0e0e0"
-                ypadding 0
-            
-            # Область с вариантами ответа
-            if chat_choices:
+            # Разделитель (показываем только если есть варианты ответов)
+            if chat_choices_shown:
                 frame:
-                    style "messenger_choices_area"
                     xfill True
+                    ysize 4
+                    yalign 0.6
+                    background "#e0e0e0"
+                    ypadding 5
+            
+            # Нижний отсек с вариантами ответов
+            if chat_choices_shown and chat_choices:
+                frame:
+                    style "messenger_choices_container"
+                    xfill True
+                    yalign 0.5
                     
                     vbox:
-                        spacing 6
+                        spacing 8
                         xfill True
                         
-                        text "ВЫБЕРИТЕ ОТВЕТ:" size 11 color "#999999" xalign 0.5 bold True
+                        # Заголовок
+                        hbox:
+                            spacing 8
+                            xalign 0.5
+                            
+                            text "💬" size 14
+                            text "ВЫБЕРИТЕ ОТВЕТ:":
+                                size 11
+                                color "#2f5ac6"
+                                bold True
                         
+                        # Кнопки вариантов ответов
                         for choice_text in chat_choices:
                             button:
                                 style "messenger_choice_button"
-                                xfill True
-                                xalign 0.5
+                                xsize 450
                                 action Function(select_chat_choice, choice_text)
                                 
                                 text choice_text:
@@ -589,6 +460,7 @@ screen messenger_chat_with_choices():
                                     size 14
                                     color "#2b2b2b"
                                     xalign 0.5
+                                    yalign 0.5
 
 
 ################################################################################
@@ -604,20 +476,8 @@ style messenger_header:
     ysize 50
     padding (10, 6)
 
-style messenger_close_button:
-    background None
-    hover_background None
-    xsize 30
-    ysize 30
-
-style messenger_close_button_text:
-    color "#ffffff"
-    hover_color "#c66b2f"
-    size 20
-    yalign 0.5
-
 style messenger_chat_avatar:
-    background "#c66b2f"
+    background "#2f52c6"
     xysize (35, 35)
 
 style messenger_chat_name:
@@ -631,9 +491,8 @@ style messenger_typing_indicator:
     background None
     padding (6, 3)
 
-# Стили для сообщений пользователя
 style messenger_user_bubble:
-    background "#c66b2f"
+    background "#2f3ec6"
     padding (10, 7)
     margin (6, 3, 10, 3)
     xalign 1.0
@@ -648,19 +507,18 @@ style messenger_message_time_user:
     color "#dddddd"
     xalign 1.0
 
-# Стили для сообщений собеседника
 style messenger_other_bubble:
     background "#f0f0f0"
     padding (10, 7)
     margin (6, 3, 35, 3)
 
 style messenger_message_avatar:
-    background "#c66b2f"
+    background "#2f4bc6"
     xysize (25, 25)
 
 style messenger_message_name:
     font "FOT-YurukaStd-UB.otf"
-    color "#c66b2f"
+    color "#2f3ec6"
 
 style messenger_message_text_other:
     font "LeticeaBumsteadCyrillic.otf"
@@ -671,19 +529,18 @@ style messenger_message_time_other:
     color "#999999"
     xalign 1.0
 
-# Стили для области выбора ответов
-style messenger_choices_area:
-    background "#f8f8f8"
-    padding (12, 10)
+# Стили для контейнера вариантов ответов
+style messenger_choices_container:
+    background "#fff2f2"
+    padding (10, 15)
     xfill True
 
+# Стили для кнопок выбора ответа
 style messenger_choice_button:
-    background "gui/button/choice_var.png"
-    hover_background "gui/button/choice_var_hover.png"
+    background "#f0f0f0"
+    hover_background "#bdbdbd"
     padding (10, 8)
     xfill True
-    xmaximum 900
-    xalign 0.5
 
 style messenger_choice_text:
     hover_color "#ffffff"
