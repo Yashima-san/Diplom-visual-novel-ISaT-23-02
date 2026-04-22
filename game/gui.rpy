@@ -16,9 +16,20 @@ define config.check_conflicting_properties = True
 
 ## Курсоры #####################################################################
 
-## Временно отключаем пользовательские курсоры до создания файлов
-## Используем стандартные курсоры Ren'Py
-define config.mouse = None
+## Стандартный курсор
+define config.mouse = { }
+
+## Курсор для режима ожидания (по умолчанию)
+define config.mouse["default"] = [ ("gui/cursor/default.png", 0, 0) ]
+
+## Курсор для кнопок (при наведении)
+define config.mouse["button"] = [ ("gui/cursor/hover.png", 0, 0) ]
+
+## Курсор для текста (при наведении на текстовые поля)
+define config.mouse["text"] = [ ("gui/cursor/default.png", 0, 0) ]
+
+## Курсор для перетаскивания
+define config.mouse["drag"] = [ ("gui/cursor/click.png", 0, 0) ]
 
 
 ################################################################################

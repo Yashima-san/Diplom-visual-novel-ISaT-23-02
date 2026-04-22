@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/script.rpy", line 1: expected statement.
-    ﻿
-    ^
+File "game/messenger.rpy", line 455: the xsize keyword argument was not given a value.
+    xsize
+         ^
 
 Ren'Py Version: Ren'Py 8.6.0.26031705+nightly
-Wed Apr 22 00:09:29 2026
+Wed Apr 22 22:35:06 2026

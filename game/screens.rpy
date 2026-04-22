@@ -122,6 +122,30 @@ init python:
         return progress
 
 ################################################################################
+## ТРАНСФОРМАЦИИ ДЛЯ ЗАТЕМНЕНИЙ
+################################################################################
+
+transform bg_overlay_transform:
+    alpha 0.0
+    linear 0.3 alpha 0.2
+
+transform thought_overlay_transform:
+    alpha 0.0
+    linear 0.3 alpha 0.4
+
+################################################################################
+## ЭКРАНЫ ЗАТЕМНЕНИЙ
+################################################################################
+
+screen bg_overlay():
+    zorder 40
+    add "#000000" at bg_overlay_transform
+
+screen thought_overlay():
+    zorder 50
+    add "#000000" at thought_overlay_transform
+
+################################################################################
 ## СТИЛИ
 ################################################################################
 
@@ -379,7 +403,7 @@ screen select_user_screen():
     modal True
     zorder 200
     style_prefix "select_user"
-    add "gui/overlay/confirm.png"
+    add "#000000CC"
     
     frame:
         style "select_user_frame"
@@ -1172,7 +1196,7 @@ screen confirm(message, yes_action, no_action):
     modal True
     zorder 200
     style_prefix "confirm"
-    add "gui/overlay/confirm.png"
+    add "#000000CC"
     frame:
         vbox:
             xalign .5
@@ -1666,7 +1690,7 @@ screen confirm_user_switch(slot):
     modal True
     zorder 200
     style_prefix "confirm"
-    add "gui/overlay/confirm.png"
+    add "#000000CC"
     frame:
         style "confirm_frame"
         xalign 0.5
@@ -1863,21 +1887,13 @@ init python:
         renpy.run(FileAction(slot))
 
 ################################################################################
-## ЭКРАН ЗАТЕМНЕНИЯ ДЛЯ МЫСЛЕЙ (30%)
-################################################################################
-
-screen thought_overlay():
-    zorder 50
-    add "gui/overlay/confirm_hover.png" alpha 0.3
-
-################################################################################
 ## ЭКРАН ДЛЯ ГАЛЕРЕИ (ЕСЛИ ОТСУТСТВУЕТ)
 ################################################################################
 
 screen gallery_image_popup(image, title):
     modal True
     zorder 200
-    add "gui/overlay/confirm.png"
+    add "#000000CC"
     frame:
         background Frame("gui/confirm_frame.png", 25, 25)
         padding (35, 35)
