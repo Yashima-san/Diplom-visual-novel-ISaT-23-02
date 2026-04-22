@@ -276,34 +276,13 @@ transform message_appear_right:
     xoffset 50
     linear 0.2 alpha 1.0 xoffset 0
 
-transform chat_overlay:
-    alpha 0.0
-    linear 0.2 alpha 0.5
-
-transform chat_overlay_half:
-    alpha 0.0
-    linear 0.2 alpha 0.3
-
 
 ################################################################################
-## ЭКРАН ДЛЯ ЗАТЕМНЕНИЯ (30%)
-################################################################################
-
-screen thought_overlay():
-    zorder 50
-    add "gui/overlay/confirm_hover.png" at chat_overlay_half
-
-
-################################################################################
-## ЭКРАН ЧАТА (ОСНОВНОЙ) - ПОД ТЕКСТОВЫМ ОКНОМ
+## ЭКРАН ЧАТА (ОСНОВНОЙ)
 ################################################################################
 
 screen messenger_chat():
-    zorder 100
-    
-    # Затемнение фона (только один раз при появлении)
-    if not chat_screen_shown:
-        add "gui/overlay/confirm_hover.png" at chat_overlay
+    zorder 150  # Высокий z-order, но ниже модальных окон (200)
     
     # Окно чата (под текстовым окном, yalign 0.2)
     frame:
@@ -449,11 +428,9 @@ screen messenger_chat():
 
 screen messenger_chat_with_choices():
     modal True
-    zorder 200
+    zorder 200  # Высокий z-order для модального окна
     
-    # Затемнение фона (только один раз)
-    if not chat_screen_shown:
-        add "gui/overlay/confirm_hover.png" at chat_overlay
+    # НЕТ ЗАТЕМНЕНИЯ - удалено полностью
     
     frame:
         style "messenger_frame"
