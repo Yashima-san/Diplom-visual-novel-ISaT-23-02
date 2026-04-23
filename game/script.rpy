@@ -45,7 +45,7 @@ init python:
     from datetime import datetime, timedelta
     
     def update_player_state(self_awareness_change=0, empathy_change=0, 
-                           vocabulary_change=0, anxiety_change=0, trust_change=0):
+                        vocabulary_change=0, anxiety_change=0, trust_change=0):
         store.player_self_awareness = max(0, min(100, store.player_self_awareness + self_awareness_change))
         store.player_empathy = max(0, min(100, store.player_empathy + empathy_change))
         store.player_emotional_vocabulary = max(0, min(100, store.player_emotional_vocabulary + vocabulary_change))
@@ -552,7 +552,6 @@ label start:
     ], first_choice_callback)
     
     $ renpy.pause(None, hard=True)
-    return
 
 label continue_chat_after_first:
     if first_choice == 1:
@@ -623,7 +622,8 @@ label night_scene:
         thought_user "Психолог говорила, что это поможет мне лучше понимать себя."
         $ update_player_state(self_awareness_change=10, vocabulary_change=8)
     
-    thought_user "Засыпая, [persistent.user_name] думала только об одном…"
+    narrator "Засыпая, [persistent.user_name] думала только об одном…"
+    thought_user "Скорее бы наступило утро..."
     
     stop sound fadeout 3.0
     scene black with fade
