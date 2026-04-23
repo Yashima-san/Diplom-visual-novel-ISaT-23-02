@@ -4,8 +4,9 @@
 
 init python:
     import time as tm
+    import math
     
-    # Звуки для мессенджера (MP3 формат)
+    # Звуки для мессенджера
     MESSAGE_SEND_SOUND = "sounds/message_send.mp3"
     MESSAGE_RECEIVE_SOUND = "sounds/message_receive.mp3"
     
@@ -17,21 +18,26 @@ init python:
             self.is_user = is_user
             self.time = time or tm.strftime("%H:%M")
             self.animation_time = 0.0
+            self.read = False
     
-    # История переписки
+    # Глобальные переменные состояния чата
     chat_history = []
     chat_mode_active = False
     chat_choices = []
     chat_choice_callback = None
     chat_choices_shown = False
     current_chat_partner = "Лина"
-    chat_status = "В сети"
+    chat_status = "online"
+    chat_is_typing = False
+    chat_typing_timer = None
+    chat_auto_close_timer = None
     chat_waiting_for_response = False
     chat_pending_messages = []
     chat_processing_choice = False
     chat_in_callback = False
     message_animation_id = 0
     chat_screen_shown = False
+    chat_should_close = False
     
     # Функция для проверки существования звукового файла
     def sound_exists(sound_file):
@@ -55,17 +61,66 @@ init python:
                     renpy.play(alt_path, channel="sound")
                     return
     
+    # Функция для расчета времени печати на основе длины сообщения
+    def calculate_typing_time(text):
+        """Расчет времени печати: базовая задержка 1.5 сек + 0.07 сек на символ"""
+        base_time = 1.5
+        char_time = len(text) * 0.05
+        return min(base_time + char_time, 4.0)  # Максимум 4 секунды
+    
+    # Функция для показа индикатора печати
+    def show_typing_indicator(duration=2.0):
+        global chat_is_typing, chat_status
+        
+        old_status = chat_status
+        chat_status = "typing"
+        chat_is_typing = True
+        
+        # Обновляем экран
+        if chat_screen_shown:
+            renpy.restart_interaction()
+        
+        # Устанавливаем таймер для скрытия индикатора
+        def hide_typing():
+            global chat_is_typing, chat_status
+            chat_is_typing = False
+            chat_status = "online"
+            if chat_screen_shown:
+                renpy.restart_interaction()
+        
+        renpy.invoke_in_time(duration, hide_typing)
+    
+    # Функция для автоматического закрытия чата
+    def start_auto_close(delay=3.0):
+        global chat_auto_close_timer, chat_should_close
+        
+        def close_chat():
+            global chat_should_close, chat_mode_active, chat_screen_shown
+            if not chat_choices_shown and not chat_waiting_for_response:
+                chat_should_close = True
+                hide_chat()
+        
+        renpy.invoke_in_time(delay, close_chat)
+    
     # Функция для добавления сообщения в историю
     def add_chat_message(character, text, is_user=False, play_sound=True):
-        global message_animation_id
+        global message_animation_id, chat_waiting_for_response
+        
+        # Скрываем индикатор печати если он активен
+        if not is_user and chat_is_typing:
+            global chat_status
+            chat_is_typing = False
+            chat_status = "online"
         
         new_msg = ChatMessage(character, text, is_user=is_user)
         new_msg.animation_time = 0.0
         chat_history.append(new_msg)
         
+        # Ограничиваем историю
         if len(chat_history) > 50:
             chat_history.pop(0)
         
+        # Воспроизводим звук
         if play_sound:
             if is_user:
                 play_chat_sound(MESSAGE_SEND_SOUND)
@@ -73,6 +128,10 @@ init python:
                 play_chat_sound(MESSAGE_RECEIVE_SOUND)
         
         message_animation_id += 1
+        
+        # Автопрокрутка вниз
+        if chat_screen_shown:
+            renpy.restart_interaction()
     
     # Функция для очистки чата
     def clear_chat():
@@ -81,14 +140,18 @@ init python:
     
     MESSENGER_NAME = "Discordia"
     
-    # Функция для показа вариантов ответа
+    # Функция для показа вариантов ответа (теперь варианты по центру)
     def show_chat_choices(choices, callback):
-        global chat_choices, chat_choice_callback, chat_choices_shown, chat_mode_active, chat_screen_shown
+        global chat_choices, chat_choice_callback, chat_choices_shown, chat_mode_active
+        global chat_screen_shown, chat_auto_close_timer, chat_should_close
         
+        # Отменяем авто-закрытие если было
+        chat_should_close = False
         chat_choices = choices
         chat_choice_callback = callback
         chat_choices_shown = True
         chat_mode_active = True
+        chat_waiting_for_response = True
         
         if not chat_screen_shown:
             chat_screen_shown = True
@@ -99,25 +162,33 @@ init python:
     def select_chat_choice(choice_text):
         global chat_choices, chat_choice_callback, chat_choices_shown
         global chat_in_callback, chat_processing_choice, chat_waiting_for_response
+        global chat_auto_close_timer, chat_should_close
         
         if chat_processing_choice:
             return
         
         chat_processing_choice = True
         
+        # Отменяем авто-закрытие
+        chat_should_close = False
+        
+        # Получаем имя пользователя
         user_name = persistent.user_name if persistent.user_name else "Вы"
+        
+        # Добавляем сообщение пользователя
         add_chat_message(user_name, choice_text, is_user=True, play_sound=True)
         
+        # Скрываем варианты ответов
         chat_choices = []
         chat_choices_shown = False
+        chat_waiting_for_response = False
         
         renpy.restart_interaction()
         
+        # Вызываем callback
         callback = chat_choice_callback
         chat_choice_callback = None
         chat_in_callback = True
-        
-        chat_waiting_for_response = True
         
         if callback:
             try:
@@ -127,18 +198,34 @@ init python:
         
         chat_in_callback = False
         chat_processing_choice = False
+        
+        # Запускаем таймер авто-закрытия чата
+        start_auto_close(3.0)
     
     # Функция для показа сообщения в чате
     def show_chat_message(character, text, is_user=False, play_sound=True):
-        global chat_mode_active, chat_screen_shown
+        global chat_mode_active, chat_screen_shown, chat_auto_close_timer, chat_should_close
         
+        # Отменяем авто-закрытие при новом сообщении
+        chat_should_close = False
+        
+        # Определяем имя персонажа
         if hasattr(character, 'name'):
             char_name = character.name
         else:
             char_name = character
         
+        # Показываем индикатор печати перед сообщением (если сообщение не от пользователя)
+        if not is_user and not chat_is_typing:
+            typing_time = calculate_typing_time(text)
+            show_typing_indicator(typing_time)
+            # Ждем завершения печати
+            renpy.pause(typing_time)
+        
+        # Добавляем сообщение
         add_chat_message(char_name, text, is_user, play_sound)
         
+        # Активируем режим чата если нужно
         if not chat_mode_active and not chat_choices_shown:
             chat_mode_active = True
             if not chat_screen_shown:
@@ -163,13 +250,17 @@ init python:
     # Функция для скрытия чата
     def hide_chat():
         global chat_mode_active, chat_choices_shown, chat_waiting_for_response
-        global chat_pending_messages, chat_screen_shown
+        global chat_pending_messages, chat_screen_shown, chat_is_typing
+        global chat_status, chat_auto_close_timer, chat_should_close
         
         chat_mode_active = False
         chat_choices_shown = False
         chat_waiting_for_response = False
         chat_pending_messages = []
         chat_screen_shown = False
+        chat_is_typing = False
+        chat_status = "online"
+        chat_should_close = False
         renpy.hide_screen("messenger_chat")
         renpy.restart_interaction()
     
@@ -192,6 +283,7 @@ init python:
         def __call__(self, text, play_sound=True):
             show_chat_message(self, text, is_user=True, play_sound=play_sound)
     
+    # Сохраняем оригинальных персонажей
     original_e = None
     original_user_char = None
     original_a = None
@@ -201,7 +293,7 @@ init python:
     
     def enable_chat_mode():
         global original_e, original_user_char, original_a, original_t, original_k, original_lib
-        global e, user_char, a, t, k, lib, chat_screen_shown
+        global e, user_char, a, t, k, lib, chat_screen_shown, chat_status
         
         original_e = e
         original_user_char = user_char
@@ -219,6 +311,8 @@ init python:
         
         clear_chat()
         chat_screen_shown = False
+        chat_status = "online"
+        chat_is_typing = False
     
     def disable_chat_mode():
         global original_e, original_user_char, original_a, original_t, original_k, original_lib
@@ -271,6 +365,11 @@ transform message_appear_right:
     xoffset 50
     linear 0.2 alpha 1.0 xoffset 0
 
+transform choice_button_appear:
+    alpha 0.0
+    yoffset 20
+    linear 0.15 alpha 1.0 yoffset 0
+
 
 ################################################################################
 ## ЭКРАН ЧАТА
@@ -280,7 +379,11 @@ screen messenger_chat():
     zorder 150
     
     # Вычисляем высоту области сообщений в зависимости от наличия вариантов
-    $ chat_viewport_height = 400 if chat_choices_shown else 450
+    $ chat_viewport_height = 350 if chat_choices_shown else 450
+    
+    # Определяем статусную строку
+    $ status_text = "В сети" if chat_status == "online" else "печатает..."
+    $ status_color = "#4caf50" if chat_status == "online" else "#ff9800"
     
     frame:
         style "messenger_frame"
@@ -299,14 +402,15 @@ screen messenger_chat():
                     xfill True
                     spacing 12
                     
+                    # Аватар
                     frame:
                         style "messenger_chat_avatar"
-                        xysize (35, 35)
+                        xysize (40, 40)
                         background "#2f6bc6"
                         
                         $ avatar_text = current_chat_partner[0] if current_chat_partner else "?"
                         text avatar_text:
-                            size 20
+                            size 22
                             color "#ffffff"
                             xalign 0.5
                             yalign 0.5
@@ -318,15 +422,15 @@ screen messenger_chat():
                         
                         text current_chat_partner:
                             style "messenger_chat_name"
-                            size 14
+                            size 16
                             color "#ffffff"
                             bold True
                         
-                        if chat_status == "В сети":
-                            text "онлайн":
-                                style "messenger_chat_status_online"
-                                size 12
-                                color "#4caf50"
+                        # Статус (меняется между "В сети" и "печатает...")
+                        text status_text:
+                            style "messenger_chat_status"
+                            size 11
+                            color status_color
             
             # Область сообщений
             viewport:
@@ -335,14 +439,15 @@ screen messenger_chat():
                 scrollbars "vertical"
                 mousewheel True
                 draggable True
-                yinitial 0.4
+                yinitial 1.0  # Всегда показываем последние сообщения
                 
                 vbox:
-                    spacing 8
+                    spacing 10
                     xfill True
                     
                     for msg in chat_history:
                         if msg.is_user:
+                            # Сообщение пользователя (справа)
                             hbox:
                                 xfill True
                                 xalign 1.0
@@ -350,13 +455,13 @@ screen messenger_chat():
                                 
                                 frame:
                                     style "messenger_user_bubble"
-                                    xmaximum 450
+                                    xmaximum 480
                                     
                                     vbox:
-                                        spacing 2
+                                        spacing 3
                                         text msg.text:
                                             style "messenger_message_text_user"
-                                            size 16
+                                            size 15
                                             color "#ffffff"
                                         text msg.time:
                                             style "messenger_message_time_user"
@@ -366,6 +471,7 @@ screen messenger_chat():
                                 
                                 null width 10
                         else:
+                            # Сообщение другого пользователя (слева)
                             hbox:
                                 xfill True
                                 spacing 8
@@ -373,7 +479,7 @@ screen messenger_chat():
                                 
                                 frame:
                                     style "messenger_message_avatar"
-                                    xysize (25, 25)
+                                    xysize (28, 28)
                                     background "#2f6bc6"
                                     
                                     $ avatar_letter = msg.character[0] if msg.character else "?"
@@ -385,18 +491,18 @@ screen messenger_chat():
                                 
                                 frame:
                                     style "messenger_other_bubble"
-                                    xmaximum 450
+                                    xmaximum 480
                                     
                                     vbox:
-                                        spacing 2
+                                        spacing 3
                                         text msg.character:
                                             style "messenger_message_name"
-                                            size 11
+                                            size 10
                                             color "#2f6bc6"
                                             bold True
                                         text msg.text:
                                             style "messenger_message_text_other"
-                                            size 16
+                                            size 15
                                             color "#1a1a1a"
                                         text msg.time:
                                             style "messenger_message_time_other"
@@ -406,27 +512,15 @@ screen messenger_chat():
                                 
                                 null width 8
             
-            # Индикатор набора текста
-            if chat_waiting_for_response and not chat_choices_shown:
-                frame:
-                    style "messenger_typing_indicator"
-                    xalign 0.0
-                    
-                    hbox:
-                        spacing 5
-                        text "✎" size 12 color "#2f50c6"
-                        text "печатает..." size 11 color "#888888"
-            
             # Разделитель (показываем только если есть варианты ответов)
             if chat_choices_shown:
                 frame:
                     xfill True
-                    ysize 4
-                    yalign 0.6
+                    ysize 2
                     background "#e0e0e0"
-                    ypadding 5
+                    ypadding 3
             
-            # Нижний отсек с вариантами ответов
+            # Нижний отсек с вариантами ответов (по центру)
             if chat_choices_shown and chat_choices:
                 frame:
                     style "messenger_choices_container"
@@ -434,30 +528,34 @@ screen messenger_chat():
                     yalign 0.5
                     
                     vbox:
-                        spacing 8
+                        spacing 12
+                        xalign 0.5
                         xfill True
                         
-                        # Заголовок
+                        # Заголовок с иконкой
                         hbox:
-                            spacing 8
+                            spacing 10
                             xalign 0.5
                             
-                            text "💬" size 14
-                            text "ВЫБЕРИТЕ ОТВЕТ:":
-                                size 11
+                            text "💬":
+                                size 16
+                            text "ВЫБЕРИТЕ ОТВЕТ":
+                                size 12
                                 color "#2f5ac6"
                                 bold True
                         
-                        # Кнопки вариантов ответов
+                        # Кнопки вариантов ответов (по центру)
                         for choice_text in chat_choices:
                             button:
                                 style "messenger_choice_button"
-                                xsize 450
+                                xsize 500
+                                xalign 0.5
+                                at choice_button_appear
                                 action Function(select_chat_choice, choice_text)
                                 
                                 text choice_text:
                                     style "messenger_choice_text"
-                                    size 14
+                                    size 13
                                     color "#2b2b2b"
                                     xalign 0.5
                                     yalign 0.5
@@ -473,28 +571,24 @@ style messenger_frame:
 
 style messenger_header:
     background "#2b2b2b"
-    ysize 50
-    padding (10, 6)
+    ysize 55
+    padding (12, 8)
 
 style messenger_chat_avatar:
     background "#2f52c6"
-    xysize (35, 35)
+    xysize (40, 40)
 
 style messenger_chat_name:
     font "FOT-YurukaStd-UB.otf"
     outlines [(1, "#000000", 0, 0)]
 
-style messenger_chat_status_online:
+style messenger_chat_status:
     font "FOT-YurukaStd-UB.otf"
-
-style messenger_typing_indicator:
-    background None
-    padding (6, 3)
 
 style messenger_user_bubble:
     background "#2f3ec6"
-    padding (10, 7)
-    margin (6, 3, 10, 3)
+    padding (12, 8)
+    margin (6, 3, 12, 3)
     xalign 1.0
 
 style messenger_message_text_user:
@@ -509,12 +603,12 @@ style messenger_message_time_user:
 
 style messenger_other_bubble:
     background "#f0f0f0"
-    padding (10, 7)
+    padding (12, 8)
     margin (6, 3, 35, 3)
 
 style messenger_message_avatar:
     background "#2f4bc6"
-    xysize (25, 25)
+    xysize (28, 28)
 
 style messenger_message_name:
     font "FOT-YurukaStd-UB.otf"
@@ -529,23 +623,25 @@ style messenger_message_time_other:
     color "#999999"
     xalign 1.0
 
-# Стили для контейнера вариантов ответов
 style messenger_choices_container:
-    background "#fff2f2"
-    padding (10, 15)
+    background "#f5f7ff"
+    padding (20, 15)
+    ysize 230
     xfill True
 
-# Стили для кнопок выбора ответа
 style messenger_choice_button:
-    background "#f0f0f0"
-    hover_background "#bdbdbd"
-    padding (10, 8)
-    xfill True
+    background "#e8e8e8"
+    hover_background "#c0c0c0"
+    selected_background "#a0a0a0"
+    padding (14, 10)
+    xsize 500
+    xalign 0.5
 
 style messenger_choice_text:
     hover_color "#ffffff"
+    selected_color "#ffffff"
     xalign 0.5
     yalign 0.5
-    size 14
+    size 13
     color "#2b2b2b"
     text_align 0.5
