@@ -122,30 +122,6 @@ init python:
         return progress
 
 ################################################################################
-## ТРАНСФОРМАЦИИ ДЛЯ ЗАТЕМНЕНИЙ
-################################################################################
-
-transform bg_overlay_transform:
-    alpha 0.0
-    linear 0.3 alpha 0.2
-
-transform thought_overlay_transform:
-    alpha 0.0
-    linear 0.3 alpha 0.4
-
-################################################################################
-## ЭКРАНЫ ЗАТЕМНЕНИЙ
-################################################################################
-
-screen bg_overlay():
-    zorder 40
-    add "#000000" at bg_overlay_transform
-
-screen thought_overlay():
-    zorder 50
-    add "#000000" at thought_overlay_transform
-
-################################################################################
 ## СТИЛИ
 ################################################################################
 
@@ -402,7 +378,6 @@ style navigation_button_text:
 screen select_user_screen():
     modal True
     zorder 200
-    style_prefix "select_user"
     add "#000000CC"
     
     frame:
@@ -1195,7 +1170,6 @@ style help_label_text:
 screen confirm(message, yes_action, no_action):
     modal True
     zorder 200
-    style_prefix "confirm"
     add "#000000CC"
     frame:
         vbox:
@@ -1637,7 +1611,6 @@ init -1 python:
 screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
     modal True
     zorder 200
-    style_prefix "chapter_transition"
     add "#000000CC"
     frame:
         style "chapter_transition_frame"
@@ -1689,7 +1662,6 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
 screen confirm_user_switch(slot):
     modal True
     zorder 200
-    style_prefix "confirm"
     add "#000000CC"
     frame:
         style "confirm_frame"

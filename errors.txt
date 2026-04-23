@@ -2,9 +2,97 @@
 errors listed below, and try again.
 
 
-File "game/messenger.rpy", line 455: the xsize keyword argument was not given a value.
-    xsize
-         ^
+File "game/messenger.rpy", line 208: ATL statement contains two expressions in a row; is one of them a misspelled property? If not, separate them with pass.
+    alpha 0.0 xoffset -50 linear 0.2 alpha 1.0 xoffset 0
+                                     ^
+
+File "game/messenger.rpy", line 210: ATL statement contains two expressions in a row; is one of them a misspelled property? If not, separate them with pass.
+    alpha 0.0 xoffset 50 linear 0.2 alpha 1.0 xoffset 0
+                                    ^
+
+File "game/messenger.rpy", line 212: ATL statement contains two expressions in a row; is one of them a misspelled property? If not, separate them with pass.
+    alpha 0.0 yoffset 20 linear 0.15 alpha 1.0 yoffset 0
+                                     ^
+
+File "game/messenger.rpy", line 239: end of line expected.
+    text avatar_text: size 22 color "#ffffff" xalign 0.5 yalign 0.5
+                      ^
+
+File "game/messenger.rpy", line 292: style statement expects a non-empty block.
+    style messenger_frame: background Frame("gui/frame.png", 12, 12, 12, 12) padding (0, 0)
+                          ^
+
+File "game/messenger.rpy", line 293: style statement expects a non-empty block.
+    style messenger_header: background "#2b2b2b" ysize 55 padding (12, 8)
+                           ^
+
+File "game/messenger.rpy", line 294: style statement expects a non-empty block.
+    style messenger_chat_avatar: background "#2f52c6" xysize (40, 40)
+                                ^
+
+File "game/messenger.rpy", line 295: style statement expects a non-empty block.
+    style messenger_chat_name: font "FOT-YurukaStd-UB.otf" outlines [(1, "#000000", 0, 0)]
+                              ^
+
+File "game/messenger.rpy", line 296: style statement expects a non-empty block.
+    style messenger_chat_status: font "FOT-YurukaStd-UB.otf"
+                                ^
+
+File "game/messenger.rpy", line 297: style statement expects a non-empty block.
+    style messenger_user_bubble: background "#2f3ec6" padding (12, 8) margin (6, 3, 12, 3) xalign 1.0
+                                ^
+
+File "game/messenger.rpy", line 298: style statement expects a non-empty block.
+    style messenger_message_text_user: font "LeticeaBumsteadCyrillic.otf" color "#ffffff" xalign 0.0
+                                      ^
+
+File "game/messenger.rpy", line 299: style statement expects a non-empty block.
+    style messenger_message_time_user: font "FOT-YurukaStd-UB.otf" color "#dddddd" xalign 1.0
+                                      ^
+
+File "game/messenger.rpy", line 300: style statement expects a non-empty block.
+    style messenger_other_bubble: background "#f0f0f0" padding (12, 8) margin (6, 3, 35, 3)
+                                 ^
+
+File "game/messenger.rpy", line 301: style statement expects a non-empty block.
+    style messenger_message_avatar: background "#2f4bc6" xysize (28, 28)
+                                   ^
+
+File "game/messenger.rpy", line 302: style statement expects a non-empty block.
+    style messenger_message_name: font "FOT-YurukaStd-UB.otf" color "#2f3ec6"
+                                 ^
+
+File "game/messenger.rpy", line 303: style statement expects a non-empty block.
+    style messenger_message_text_other: font "LeticeaBumsteadCyrillic.otf" color "#1a1a1a"
+                                       ^
+
+File "game/messenger.rpy", line 304: style statement expects a non-empty block.
+    style messenger_message_time_other: font "FOT-YurukaStd-UB.otf" color "#999999" xalign 1.0
+                                       ^
+
+File "game/messenger.rpy", line 305: style statement expects a non-empty block.
+    style messenger_choices_container: background "#f5f7ff" padding (20, 15) ysize 220 xfill True
+                                      ^
+
+File "game/messenger.rpy", line 306: style statement expects a non-empty block.
+    style messenger_choice_button: background "#e8e8e8" hover_background "#c0c0c0" selected_background "#a0a0a0" padding (14, 10) xsize 500 xalign 0.5
+                                  ^
+
+File "game/messenger.rpy", line 307: style statement expects a non-empty block.
+    style messenger_choice_text: hover_color "#ffffff" selected_color "#ffffff" xalign 0.5 yalign 0.5 size 13 color "#2b2b2b" text_align 0.5
+                                ^
+
+File "game/messenger.rpy", line 308: style statement expects a non-empty block.
+    style messenger_date_separator: padding (10, 5) xfill True
+                                   ^
+
+File "game/messenger.rpy", line 309: style statement expects a non-empty block.
+    style messenger_date_text: font "FOT-YurukaStd-UB.otf" color "#888888" italic True
+                              ^
+
+File "game/messenger.rpy", line 192: invalid syntax
+    label _process_message_queue:
+              ^^^^^^^^^^^^^^^^^^^^^^
 
 Ren'Py Version: Ren'Py 8.6.0.26031705+nightly
-Wed Apr 22 22:35:06 2026
+Thu Apr 23 18:23:31 2026

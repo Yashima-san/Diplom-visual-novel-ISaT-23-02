@@ -1,39 +1,51 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
 While running game code:
-  File "game/script.rpy", line 559, in script
-    $ renpy.pause(None)
-  File "game/script.rpy", line 559, in <module>
-    $ renpy.pause(None)
-      ~~~~~~~~~~~^^^^^^
-  File "game/messenger.rpy", line 129, in select_chat_choice
-    callback(choice_text)
-    ~~~~~~~~^^^^^^^^^^^^^
-  File "game/script.rpy", line 392, in first_choice_callback
-    update_player_state(empathy_change=8, anxiety_change=-5, trust_change=5)
-    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/script.rpy", line 60, in update_player_state
-    if str_id not in persistent.player_states:
-       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+  File "game/script.rpy", line 617, in script
+    call screen emotion_selection_extended
+  File "game/emotion_screen.rpy", line 5, in execute
+    screen emotion_selection_extended():
+  File "game/emotion_screen.rpy", line 5, in execute
+    screen emotion_selection_extended():
+  File "game/emotion_screen.rpy", line 12, in execute
+    frame:
+  File "game/emotion_screen.rpy", line 19, in execute
+    vbox:
+  File "game/emotion_screen.rpy", line 29, in execute
+    viewport:
+  File "game/emotion_screen.rpy", line 35, in execute
+    grid 3 3:
+  File "game/emotion_screen.rpy", line 40, in execute
+    for emotion in ["Радость", "Доверие", "Страх", "Удивление", "Печаль", "Отвращение", "Гнев", "Предвкушение"]:
+  File "game/emotion_screen.rpy", line 41, in execute
+    button:
+  File "game/emotion_screen.rpy", line 46, in execute
+    if emotion in selected_emotions:
+  File "game/emotion_screen.rpy", line 46, in <module>
+    if emotion in selected_emotions:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
 TypeError: argument of type 'NoneType' is not iterable
 
 -- Full Traceback ------------------------------------------------------------
 
 Traceback (most recent call last):
-  File "game/script.rpy", line 559, in script
-    $ renpy.pause(None)
-  File "renpy/ast.py", line 1187, in execute
-    renpy.python.py_exec_bytecode(self.code.bytecode, self.hide, store=self.store)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/python.py", line 1332, in py_exec_bytecode
-    exec(bytecode, globals, locals)
-    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/script.rpy", line 559, in <module>
-    $ renpy.pause(None)
-      ~~~~~~~~~~~^^^^^^
-  File "renpy/exports/statementexports.py", line 198, in pause
-    rv = renpy.ui.interact(mouse="pause", type="pause", roll_forward=roll_forward, pause=delay, pause_modal=modal)
-         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "game/script.rpy", line 617, in script
+    call screen emotion_selection_extended
+  File "renpy/ast.py", line 2242, in execute
+    self.call("execute")
+    ~~~~~~~~~^^^^^^^^^^^
+  File "renpy/ast.py", line 2196, in call
+    return renpy.statements.call(method, parsed, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/statements.py", line 381, in call
+    return method(parsed, *args, **kwargs)
+           ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/common/000statements.rpy", line 695, in execute_call_screen
+    store._return = renpy.call_screen(name, *args, **kwargs)
+                    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/exports/statementexports.py", line 348, in call_screen
+    rv = renpy.ui.interact(mouse="screen", type="screen", roll_forward=roll_forward)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "renpy/ui.py", line 306, in interact
     rv = renpy.game.interface.interact(roll_forward=roll_forward, **kwargs)
          ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -47,75 +59,60 @@ Traceback (most recent call last):
         ^^^^^^^^^
     )
     ^
-  File "renpy/display/core.py", line 3250, in interact_core
-    rv = root_widget.event(ev, x, y, 0)
-         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/screen.py", line 805, in event
-    rv = self.child.event(ev, x, y, st)
-         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1510, in event
-    rv = super(Window, self).event(ev, x, y, st)
-         ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 273, in event
-    rv = d.event(ev, x - xo, y - yo, st)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1510, in event
-    rv = super(Window, self).event(ev, x, y, st)
-         ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 273, in event
-    rv = d.event(ev, x - xo, y - yo, st)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 273, in event
-    rv = d.event(ev, x - xo, y - yo, st)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/viewport.py", line 581, in event
-    rv = super(Viewport, self).event(ev, x, y, st)
-         ~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 273, in event
-    rv = d.event(ev, x - xo, y - yo, st)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/layout.py", line 1281, in event
-    rv = i.event(ev, x - xo, y - yo, cst)
-         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/display/behavior.py", line 1185, in event
-    return handle_click(self.clicked)
-           ~~~~~~~~~~~~^^^^^^^^^^^^^^
-  File "renpy/display/behavior.py", line 1107, in handle_click
-    rv = run(action)
-         ~~~^^^^^^^^
-  File "renpy/display/behavior.py", line 411, in run
-    return action(*args, **kwargs)
-           ~~~~~~^^^^^^^^^^^^^^^^^
-  File "renpy/common/00action_other.rpy", line 618, in __call__
-    rv = self.callable(*self.args, **self.kwargs)
-         ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/messenger.rpy", line 129, in select_chat_choice
-    callback(choice_text)
-    ~~~~~~~~^^^^^^^^^^^^^
-  File "game/script.rpy", line 392, in first_choice_callback
-    update_player_state(empathy_change=8, anxiety_change=-5, trust_change=5)
-    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/script.rpy", line 60, in update_player_state
-    if str_id not in persistent.player_states:
-       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
+  File "renpy/display/core.py", line 2702, in interact_core
+    root_widget.visit_all(lambda d: d.per_interact())
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/displayable.py", line 460, in visit_all
+    d.visit_all(callback, seen)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "renpy/display/displayable.py", line 460, in visit_all
+    d.visit_all(callback, seen)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "renpy/display/displayable.py", line 460, in visit_all
+    d.visit_all(callback, seen)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "renpy/display/screen.py", line 503, in visit_all
+    callback(self)
+    ~~~~~~~~^^^^^^
+  File "renpy/display/core.py", line 2702, in <lambda>
+    root_widget.visit_all(lambda d: d.per_interact())
+                                    ~~~~~~~~~~~~~~^^ 
+  File "renpy/display/screen.py", line 514, in per_interact
+    self.update()
+    ~~~~~~~~~~~^^
+  File "renpy/display/screen.py", line 715, in update
+    self.screen.function(**self.scope)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "game/emotion_screen.rpy", line 5, in execute
+    screen emotion_selection_extended():
+  File "game/emotion_screen.rpy", line 5, in execute
+    screen emotion_selection_extended():
+  File "game/emotion_screen.rpy", line 12, in execute
+    frame:
+  File "game/emotion_screen.rpy", line 19, in execute
+    vbox:
+  File "game/emotion_screen.rpy", line 29, in execute
+    viewport:
+  File "game/emotion_screen.rpy", line 35, in execute
+    grid 3 3:
+  File "game/emotion_screen.rpy", line 40, in execute
+    for emotion in ["Радость", "Доверие", "Страх", "Удивление", "Печаль", "Отвращение", "Гнев", "Предвкушение"]:
+  File "game/emotion_screen.rpy", line 41, in execute
+    button:
+  File "game/emotion_screen.rpy", line 46, in execute
+    if emotion in selected_emotions:
+  File "renpy/python.py", line 1364, in py_eval
+    return py_eval_bytecode(code, globals, locals)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/python.py", line 1357, in py_eval_bytecode
+    return eval(bytecode, globals, locals)
+           ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "game/emotion_screen.rpy", line 46, in <module>
+    if emotion in selected_emotions:
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
 TypeError: argument of type 'NoneType' is not iterable
 
 Windows-11-10.0.26200-SP0 AMD64
 Ren'Py 8.6.0.26031705+nightly
-За гранью чувств 0.1
-Tue Apr 21 18:57:02 2026
+За гранью чувств 1.0
+Thu Apr 23 18:37:45 2026
