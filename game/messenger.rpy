@@ -4,9 +4,8 @@
 
 init python:
     import time as tm
-    import math
     
-    # Звуки для мессенджера
+    # Звуки для мессенджера (MP3 формат)
     MESSAGE_SEND_SOUND = "sounds/message_send.mp3"
     MESSAGE_RECEIVE_SOUND = "sounds/message_receive.mp3"
     
@@ -18,26 +17,21 @@ init python:
             self.is_user = is_user
             self.time = time or tm.strftime("%H:%M")
             self.animation_time = 0.0
-            self.read = False
     
-    # Глобальные переменные состояния чата
+    # История переписки
     chat_history = []
     chat_mode_active = False
     chat_choices = []
     chat_choice_callback = None
     chat_choices_shown = False
     current_chat_partner = "Лина"
-    chat_status = "online"
-    chat_is_typing = False
-    chat_typing_timer = None
-    chat_auto_close_timer = None
+    chat_status = "В сети"
     chat_waiting_for_response = False
     chat_pending_messages = []
     chat_processing_choice = False
     chat_in_callback = False
     message_animation_id = 0
     chat_screen_shown = False
-    chat_should_close = False
     
     # Функция для проверки существования звукового файла
     def sound_exists(sound_file):
@@ -61,66 +55,17 @@ init python:
                     renpy.play(alt_path, channel="sound")
                     return
     
-    # Функция для расчета времени печати на основе длины сообщения
-    def calculate_typing_time(text):
-        """Расчет времени печати: базовая задержка 1.5 сек + 0.07 сек на символ"""
-        base_time = 1.5
-        char_time = len(text) * 0.05
-        return min(base_time + char_time, 4.0)  # Максимум 4 секунды
-    
-    # Функция для показа индикатора печати
-    def show_typing_indicator(duration=2.0):
-        global chat_is_typing, chat_status
-        
-        old_status = chat_status
-        chat_status = "typing"
-        chat_is_typing = True
-        
-        # Обновляем экран
-        if chat_screen_shown:
-            renpy.restart_interaction()
-        
-        # Устанавливаем таймер для скрытия индикатора
-        def hide_typing():
-            global chat_is_typing, chat_status
-            chat_is_typing = False
-            chat_status = "online"
-            if chat_screen_shown:
-                renpy.restart_interaction()
-        
-        renpy.invoke_in_time(duration, hide_typing)
-    
-    # Функция для автоматического закрытия чата
-    def start_auto_close(delay=3.0):
-        global chat_auto_close_timer, chat_should_close
-        
-        def close_chat():
-            global chat_should_close, chat_mode_active, chat_screen_shown
-            if not chat_choices_shown and not chat_waiting_for_response:
-                chat_should_close = True
-                hide_chat()
-        
-        renpy.invoke_in_time(delay, close_chat)
-    
     # Функция для добавления сообщения в историю
     def add_chat_message(character, text, is_user=False, play_sound=True):
-        global message_animation_id, chat_waiting_for_response
-        
-        # Скрываем индикатор печати если он активен
-        if not is_user and chat_is_typing:
-            global chat_status
-            chat_is_typing = False
-            chat_status = "online"
+        global message_animation_id
         
         new_msg = ChatMessage(character, text, is_user=is_user)
         new_msg.animation_time = 0.0
         chat_history.append(new_msg)
         
-        # Ограничиваем историю
         if len(chat_history) > 50:
             chat_history.pop(0)
         
-        # Воспроизводим звук
         if play_sound:
             if is_user:
                 play_chat_sound(MESSAGE_SEND_SOUND)
@@ -128,10 +73,6 @@ init python:
                 play_chat_sound(MESSAGE_RECEIVE_SOUND)
         
         message_animation_id += 1
-        
-        # Автопрокрутка вниз
-        if chat_screen_shown:
-            renpy.restart_interaction()
     
     # Функция для очистки чата
     def clear_chat():
@@ -140,18 +81,14 @@ init python:
     
     MESSENGER_NAME = "Discordia"
     
-    # Функция для показа вариантов ответа (теперь варианты по центру)
+    # Функция для показа вариантов ответа
     def show_chat_choices(choices, callback):
-        global chat_choices, chat_choice_callback, chat_choices_shown, chat_mode_active
-        global chat_screen_shown, chat_auto_close_timer, chat_should_close
+        global chat_choices, chat_choice_callback, chat_choices_shown, chat_mode_active, chat_screen_shown
         
-        # Отменяем авто-закрытие если было
-        chat_should_close = False
         chat_choices = choices
         chat_choice_callback = callback
         chat_choices_shown = True
         chat_mode_active = True
-        chat_waiting_for_response = True
         
         if not chat_screen_shown:
             chat_screen_shown = True
@@ -162,33 +99,25 @@ init python:
     def select_chat_choice(choice_text):
         global chat_choices, chat_choice_callback, chat_choices_shown
         global chat_in_callback, chat_processing_choice, chat_waiting_for_response
-        global chat_auto_close_timer, chat_should_close
         
         if chat_processing_choice:
             return
         
         chat_processing_choice = True
         
-        # Отменяем авто-закрытие
-        chat_should_close = False
-        
-        # Получаем имя пользователя
         user_name = persistent.user_name if persistent.user_name else "Вы"
-        
-        # Добавляем сообщение пользователя
         add_chat_message(user_name, choice_text, is_user=True, play_sound=True)
         
-        # Скрываем варианты ответов
         chat_choices = []
         chat_choices_shown = False
-        chat_waiting_for_response = False
         
         renpy.restart_interaction()
         
-        # Вызываем callback
         callback = chat_choice_callback
         chat_choice_callback = None
         chat_in_callback = True
+        
+        chat_waiting_for_response = True
         
         if callback:
             try:
@@ -198,34 +127,18 @@ init python:
         
         chat_in_callback = False
         chat_processing_choice = False
-        
-        # Запускаем таймер авто-закрытия чата
-        start_auto_close(3.0)
     
     # Функция для показа сообщения в чате
     def show_chat_message(character, text, is_user=False, play_sound=True):
-        global chat_mode_active, chat_screen_shown, chat_auto_close_timer, chat_should_close
+        global chat_mode_active, chat_screen_shown
         
-        # Отменяем авто-закрытие при новом сообщении
-        chat_should_close = False
-        
-        # Определяем имя персонажа
         if hasattr(character, 'name'):
             char_name = character.name
         else:
             char_name = character
         
-        # Показываем индикатор печати перед сообщением (если сообщение не от пользователя)
-        if not is_user and not chat_is_typing:
-            typing_time = calculate_typing_time(text)
-            show_typing_indicator(typing_time)
-            # Ждем завершения печати
-            renpy.pause(typing_time)
-        
-        # Добавляем сообщение
         add_chat_message(char_name, text, is_user, play_sound)
         
-        # Активируем режим чата если нужно
         if not chat_mode_active and not chat_choices_shown:
             chat_mode_active = True
             if not chat_screen_shown:
@@ -250,17 +163,13 @@ init python:
     # Функция для скрытия чата
     def hide_chat():
         global chat_mode_active, chat_choices_shown, chat_waiting_for_response
-        global chat_pending_messages, chat_screen_shown, chat_is_typing
-        global chat_status, chat_auto_close_timer, chat_should_close
+        global chat_pending_messages, chat_screen_shown
         
         chat_mode_active = False
         chat_choices_shown = False
         chat_waiting_for_response = False
         chat_pending_messages = []
         chat_screen_shown = False
-        chat_is_typing = False
-        chat_status = "online"
-        chat_should_close = False
         renpy.hide_screen("messenger_chat")
         renpy.restart_interaction()
     
@@ -283,7 +192,6 @@ init python:
         def __call__(self, text, play_sound=True):
             show_chat_message(self, text, is_user=True, play_sound=play_sound)
     
-    # Сохраняем оригинальных персонажей
     original_e = None
     original_user_char = None
     original_a = None
@@ -293,7 +201,7 @@ init python:
     
     def enable_chat_mode():
         global original_e, original_user_char, original_a, original_t, original_k, original_lib
-        global e, user_char, a, t, k, lib, chat_screen_shown, chat_status
+        global e, user_char, a, t, k, lib, chat_screen_shown
         
         original_e = e
         original_user_char = user_char
@@ -311,8 +219,6 @@ init python:
         
         clear_chat()
         chat_screen_shown = False
-        chat_status = "online"
-        chat_is_typing = False
     
     def disable_chat_mode():
         global original_e, original_user_char, original_a, original_t, original_k, original_lib
@@ -365,11 +271,6 @@ transform message_appear_right:
     xoffset 50
     linear 0.2 alpha 1.0 xoffset 0
 
-transform choice_button_appear:
-    alpha 0.0
-    yoffset 20
-    linear 0.15 alpha 1.0 yoffset 0
-
 
 ################################################################################
 ## ЭКРАН ЧАТА
@@ -378,12 +279,23 @@ transform choice_button_appear:
 screen messenger_chat():
     zorder 150
     
-    # Вычисляем высоту области сообщений в зависимости от наличия вариантов
-    $ chat_viewport_height = 350 if chat_choices_shown else 450
+    # Вычисляем высоту области сообщений
+    $ chat_viewport_height = 380 if chat_choices_shown else 480
     
     # Определяем статусную строку
     $ status_text = "В сети" if chat_status == "online" else "печатает..."
     $ status_color = "#4caf50" if chat_status == "online" else "#ff9800"
+    
+    # Таймер для автоматического скрытия индикатора печати
+    if chat_is_typing:
+        timer 2.0 action [SetVariable('chat_is_typing', False), SetVariable('chat_status', 'online'), Function(renpy.restart_interaction)] repeat False
+    
+    # Таймер для автоматического закрытия чата
+    if chat_should_auto_close and not chat_choices_shown and not chat_waiting_for_response and chat_mode_active:
+        timer 3.0 action Function(hide_chat) repeat False
+    
+    # Таймер для выполнения отложенного перехода
+    timer 0.5 action Function(execute_pending_jump) repeat True
     
     frame:
         style "messenger_frame"
@@ -426,7 +338,7 @@ screen messenger_chat():
                             color "#ffffff"
                             bold True
                         
-                        # Статус (меняется между "В сети" и "печатает...")
+                        # Статус
                         text status_text:
                             style "messenger_chat_status"
                             size 11
@@ -439,7 +351,7 @@ screen messenger_chat():
                 scrollbars "vertical"
                 mousewheel True
                 draggable True
-                yinitial 1.0  # Всегда показываем последние сообщения
+                yinitial 1.0
                 
                 vbox:
                     spacing 10
@@ -512,27 +424,25 @@ screen messenger_chat():
                                 
                                 null width 8
             
-            # Разделитель (показываем только если есть варианты ответов)
+            # Разделитель
             if chat_choices_shown:
                 frame:
                     xfill True
                     ysize 2
                     background "#e0e0e0"
-                    ypadding 3
             
-            # Нижний отсек с вариантами ответов (по центру)
+            # Нижний отсек с вариантами ответов
             if chat_choices_shown and chat_choices:
                 frame:
                     style "messenger_choices_container"
                     xfill True
-                    yalign 0.5
                     
                     vbox:
                         spacing 12
                         xalign 0.5
                         xfill True
                         
-                        # Заголовок с иконкой
+                        # Заголовок
                         hbox:
                             spacing 10
                             xalign 0.5
@@ -544,7 +454,7 @@ screen messenger_chat():
                                 color "#2f5ac6"
                                 bold True
                         
-                        # Кнопки вариантов ответов (по центру)
+                        # Кнопки вариантов ответов
                         for choice_text in chat_choices:
                             button:
                                 style "messenger_choice_button"
@@ -559,7 +469,6 @@ screen messenger_chat():
                                     color "#2b2b2b"
                                     xalign 0.5
                                     yalign 0.5
-
 
 ################################################################################
 ## СТИЛИ ДЛЯ МЕССЕНДЖЕРА
@@ -626,7 +535,7 @@ style messenger_message_time_other:
 style messenger_choices_container:
     background "#f5f7ff"
     padding (20, 15)
-    ysize 230
+    ysize 220
     xfill True
 
 style messenger_choice_button:
