@@ -2,17 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/messenger.rpy", line 593: style property border_radius is not known.
-    border_radius 12
-                 ^
-
-File "game/messenger.rpy", line 609: style property border_radius is not known.
-    border_radius 12
-                 ^
-
-File "game/messenger.rpy", line 641: style property border_radius is not known.
-    border_radius 8
-                 ^
+File "game/script.rpy", line 1: expected statement.
+    ﻿
+    ^
 
 Ren'Py Version: Ren'Py 8.6.0.26031705+nightly
-Thu Apr 23 14:51:10 2026
+Thu Apr 23 15:15:43 2026

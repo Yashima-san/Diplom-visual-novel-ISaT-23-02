@@ -1612,6 +1612,7 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
     modal True
     zorder 200
     add "#000000CC"
+    
     frame:
         style "chapter_transition_frame"
         xalign 0.5
@@ -1654,6 +1655,22 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
         false=Return(("exit", old_chapter)))
     key "K_ESCAPE" action Return(("exit", old_chapter))
     key "game_menu" action Return(("exit", old_chapter))
+
+style chapter_transition_frame:
+    background Frame("gui/frame.png", 25, 25, 25, 25)
+    padding (40, 40)
+
+style chapter_transition_button:
+    background Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    padding (20, 10)
+    xsize 250
+
+style chapter_transition_button_text:
+    color "#ffffff"
+    hover_color "#ff9999"
+    size 20
+    text_align 0.5
 
 ################################################################################
 ## ЭКРАН ПОДТВЕРЖДЕНИЯ ПЕРЕКЛЮЧЕНИЯ ПОЛЬЗОВАТЕЛЯ
@@ -1815,26 +1832,6 @@ style stats_close_button_text:
     color "#ffffff"
     hover_color "#ff9999"
     size 24
-    text_align 0.5
-
-################################################################################
-## СТИЛИ ДЛЯ ПЕРЕХОДОВ МЕЖДУ ГЛАВАМИ
-################################################################################
-
-style chapter_transition_frame:
-    background Frame("gui/frame.png", 25, 25, 25, 25)
-    padding (40, 40)
-
-style chapter_transition_button:
-    background Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
-    padding (20, 10)
-    xsize 250
-
-style chapter_transition_button_text:
-    color "#ffffff"
-    hover_color "#ff9999"
-    size 20
     text_align 0.5
 
 ################################################################################

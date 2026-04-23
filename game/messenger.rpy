@@ -4,6 +4,7 @@
 
 init python:
     import time as tm
+    from datetime import datetime, timedelta
     
     # Звуки для мессенджера (MP3 формат)
     MESSAGE_SEND_SOUND = "sounds/message_send.mp3"
@@ -11,12 +12,14 @@ init python:
     
     # Класс для сообщений в чате
     class ChatMessage:
-        def __init__(self, character, text, time=None, is_user=False):
+        def __init__(self, character, text, time=None, is_user=False, date=None):
             self.character = character
             self.text = text
             self.is_user = is_user
-            self.time = time or tm.strftime("%H:%M")
+            self.time = time or "20:32"
+            self.date = date
             self.animation_time = 0.0
+            self.is_date_separator = False
     
     # История переписки
     chat_history = []
@@ -25,13 +28,48 @@ init python:
     chat_choice_callback = None
     chat_choices_shown = False
     current_chat_partner = "Лина"
-    chat_status = "В сети"
+    chat_status = "online"
     chat_waiting_for_response = False
     chat_pending_messages = []
     chat_processing_choice = False
     chat_in_callback = False
     message_animation_id = 0
     chat_screen_shown = False
+    
+    # Переменные для дат в чате
+    chat_is_typing = False
+    chat_should_auto_close = False
+    chat_current_date = None
+    pending_jump = None
+    
+    # Дата начала чата - 2 сентября 20:32
+    CHAT_START_DATE = datetime(2024, 9, 2, 20, 32)
+    chat_current_dt = CHAT_START_DATE
+    
+    # Функция для получения текущего времени чата
+    def get_chat_time():
+        return chat_current_dt.strftime("%H:%M")
+    
+    def get_chat_date():
+        return chat_current_dt.strftime("%d.%m.%Y")
+    
+    def add_time_offset(minutes=0):
+        global chat_current_dt
+        chat_current_dt += timedelta(minutes=minutes)
+    
+    # Функция для добавления разделителя даты
+    def add_date_separator_if_needed(new_date):
+        if not chat_history:
+            return True
+        last_msg = chat_history[-1]
+        if hasattr(last_msg, 'date') and last_msg.date != new_date:
+            return True
+        return False
+    
+    def add_date_separator(date_str):
+        separator = ChatMessage("", f"--- {date_str} ---", is_user=False, date=date_str)
+        separator.is_date_separator = True
+        chat_history.append(separator)
     
     # Функция для проверки существования звукового файла
     def sound_exists(sound_file):
@@ -57,9 +95,16 @@ init python:
     
     # Функция для добавления сообщения в историю
     def add_chat_message(character, text, is_user=False, play_sound=True):
-        global message_animation_id
+        global message_animation_id, chat_current_dt
         
-        new_msg = ChatMessage(character, text, is_user=is_user)
+        current_date_str = chat_current_dt.strftime("%d.%m.%Y")
+        current_time_str = chat_current_dt.strftime("%H:%M")
+        
+        # Добавляем разделитель даты если нужно
+        if add_date_separator_if_needed(current_date_str):
+            add_date_separator(current_date_str)
+        
+        new_msg = ChatMessage(character, text, time=current_time_str, is_user=is_user, date=current_date_str)
         new_msg.animation_time = 0.0
         chat_history.append(new_msg)
         
@@ -76,8 +121,9 @@ init python:
     
     # Функция для очистки чата
     def clear_chat():
-        global chat_history
+        global chat_history, chat_current_dt
         chat_history = []
+        chat_current_dt = CHAT_START_DATE
     
     MESSENGER_NAME = "Discordia"
     
@@ -130,12 +176,15 @@ init python:
     
     # Функция для показа сообщения в чате
     def show_chat_message(character, text, is_user=False, play_sound=True):
-        global chat_mode_active, chat_screen_shown
+        global chat_mode_active, chat_screen_shown, chat_current_dt
         
         if hasattr(character, 'name'):
             char_name = character.name
         else:
             char_name = character
+        
+        # Добавляем задержку между сообщениями
+        add_time_offset(1)
         
         add_chat_message(char_name, text, is_user, play_sound)
         
@@ -163,13 +212,14 @@ init python:
     # Функция для скрытия чата
     def hide_chat():
         global chat_mode_active, chat_choices_shown, chat_waiting_for_response
-        global chat_pending_messages, chat_screen_shown
+        global chat_pending_messages, chat_screen_shown, chat_is_typing
         
         chat_mode_active = False
         chat_choices_shown = False
         chat_waiting_for_response = False
         chat_pending_messages = []
         chat_screen_shown = False
+        chat_is_typing = False
         renpy.hide_screen("messenger_chat")
         renpy.restart_interaction()
     
@@ -201,7 +251,7 @@ init python:
     
     def enable_chat_mode():
         global original_e, original_user_char, original_a, original_t, original_k, original_lib
-        global e, user_char, a, t, k, lib, chat_screen_shown
+        global e, user_char, a, t, k, lib, chat_screen_shown, chat_current_dt
         
         original_e = e
         original_user_char = user_char
@@ -219,6 +269,8 @@ init python:
         
         clear_chat()
         chat_screen_shown = False
+        # Сброс даты к 2 сентября 20:32
+        chat_current_dt = CHAT_START_DATE
     
     def disable_chat_mode():
         global original_e, original_user_char, original_a, original_t, original_k, original_lib
@@ -240,6 +292,14 @@ init python:
             lib = original_lib
         
         clear_chat()
+    
+    def execute_pending_jump():
+        global pending_jump
+        if pending_jump:
+            jump_target = pending_jump
+            pending_jump = None
+            renpy.jump(jump_target)
+        return False
 
 
 label _process_message_queue:
@@ -270,6 +330,11 @@ transform message_appear_right:
     alpha 0.0
     xoffset 50
     linear 0.2 alpha 1.0 xoffset 0
+
+transform choice_button_appear:
+    alpha 0.0
+    yoffset 20
+    linear 0.15 alpha 1.0 yoffset 0
 
 
 ################################################################################
@@ -358,7 +423,21 @@ screen messenger_chat():
                     xfill True
                     
                     for msg in chat_history:
-                        if msg.is_user:
+                        if hasattr(msg, 'is_date_separator') and msg.is_date_separator:
+                            # Разделитель даты
+                            hbox:
+                                xfill True
+                                xalign 0.5
+                                frame:
+                                    style "messenger_date_separator"
+                                    xfill True
+                                    background None
+                                    text msg.text:
+                                        style "messenger_date_text"
+                                        size 11
+                                        color "#888888"
+                                        xalign 0.5
+                        elif msg.is_user:
                             # Сообщение пользователя (справа)
                             hbox:
                                 xfill True
@@ -554,3 +633,12 @@ style messenger_choice_text:
     size 13
     color "#2b2b2b"
     text_align 0.5
+
+style messenger_date_separator:
+    padding (10, 5)
+    xfill True
+
+style messenger_date_text:
+    font "FOT-YurukaStd-UB.otf"
+    color "#888888"
+    italic True

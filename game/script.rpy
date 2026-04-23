@@ -42,6 +42,7 @@ default emotion_game_completed = False
 init python:
     import time
     import json
+    from datetime import datetime, timedelta
     
     def update_player_state(self_awareness_change=0, empathy_change=0, 
                            vocabulary_change=0, anxiety_change=0, trust_change=0):
@@ -423,6 +424,9 @@ init python:
         elif "Увидимся у входа" in choice_text:
             store.morning_choice = 3
             update_player_state(trust_change=5, anxiety_change=-5)
+        
+        # Отключаем режим чата и переходим к сцене утра
+        disable_chat_mode()
         renpy.jump("continue_morning")
 
 ################################################################################
@@ -438,6 +442,8 @@ label start:
     $ player_trust_level = 30
     
     python:
+        from datetime import datetime
+        
         if not hasattr(persistent, 'player_states') or persistent.player_states is None:
             persistent.player_states = {}
     
@@ -618,11 +624,15 @@ label night_scene:
         $ update_player_state(self_awareness_change=10, vocabulary_change=8)
     
     thought_user "Засыпая, [persistent.user_name] думала только об одном…"
-    thought_user "Завтрашний день в новой школе… Это не просто новый этап — это будет прыжок в неизвестность, где моя тревога может либо раствориться в дружбе с Линой, либо накрыть с головой."
     
     stop sound fadeout 3.0
     scene black with fade
     pause 1.0
+    
+    # Переход к утру 3 сентября
+    python:
+        from datetime import datetime, timedelta
+        chat_current_dt = datetime(2024, 9, 3, 7, 0)
     
     jump morning_scene
 
@@ -631,7 +641,7 @@ label morning_scene:
     scene cg room_evening with fade
     play music "song/Audio_soft_1.mp3" fadein 3.0
     
-    narrator "Утро пришло слишком быстро. Солнце пробивалось сквозь шторы, окрашивая комнату в золотистый свет."
+    narrator "Утро 3 сентября. Солнце пробивалось сквозь шторы, окрашивая комнату в золотистый свет."
     narrator "[persistent.user_name] проснулась с тяжелым сердцем, но с решимостью. Она села на кровати, потянулась и бросила взгляд на телефон."
 
     $ enable_chat_mode()
@@ -654,8 +664,6 @@ label morning_scene:
     return
 
 label continue_morning:
-    $ disable_chat_mode()
-    
     narrator "[persistent.user_name] улыбнулась, чувствуя себя немного увереннее."
     narrator "[persistent.user_name] улыбнулась уголком губ и начала собираться."
     narrator "Комната, обычно такая уютная, теперь казалась полем битвы: рюкзак валялся на полу, полный случайных вещей."

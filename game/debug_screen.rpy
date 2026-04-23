@@ -120,6 +120,55 @@ screen debug_database():
 
 
 ################################################################################
+## Экран подтверждения очистки базы данных
+################################################################################
+
+screen confirm_clear_db():
+    modal True
+    zorder 200
+    add "#000000CC"
+    
+    frame:
+        style "debug_confirm_frame"
+        xalign 0.5
+        yalign 0.5
+        xsize 600
+        ysize 400
+        padding (30, 30)
+        
+        vbox:
+            spacing 25
+            xalign 0.5
+            yalign 0.5
+            
+            text "⚠️ ВНИМАНИЕ! ⚠️" size 40 color "#ff4444" xalign 0.5
+            null height 10
+            text "Вы уверены, что хотите очистить базу данных?" size 24 xalign 0.5 text_align 0.5
+            text "Это действие:" size 22 xalign 0.5
+            text "• Удалит всех пользователей" size 20 xalign 0.5 color "#ff8888"
+            text "• Удалит все достижения" size 20 xalign 0.5 color "#ff8888"
+            text "• Удалит все файлы сохранений" size 20 xalign 0.5 color "#ff8888"
+            text "Это действие НЕОБРАТИМО!" size 22 xalign 0.5 color "#ff4444" bold True
+            
+            null height 20
+            
+            hbox:
+                spacing 30
+                xalign 0.5
+                
+                textbutton "✅ ДА, ОЧИСТИТЬ":
+                    style "debug_confirm_button_danger"
+                    action [Function(clear_database), Hide("confirm_clear_db"), Show("debug_database")]
+                
+                textbutton "❌ ОТМЕНА":
+                    style "debug_confirm_button_cancel"
+                    action Hide("confirm_clear_db")
+    
+    key "K_ESCAPE" action Hide("confirm_clear_db")
+    key "game_menu" action Hide("confirm_clear_db")
+
+
+################################################################################
 ## Экран детальной информации о пользователе
 ################################################################################
 
@@ -380,6 +429,7 @@ init python:
             pass
         
         renpy.notify("🗑️ База данных и все сохранения полностью очищены")
+        return True
 
 ################################################################################
 ## Стили для отладки
