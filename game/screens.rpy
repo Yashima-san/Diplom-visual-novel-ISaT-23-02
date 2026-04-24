@@ -1,9 +1,7 @@
 ################################################################################
 ## ИНИЦИАЛИЗАЦИЯ
 ################################################################################
-
 init offset = -1
-
 init python:
     import time
     import json
@@ -120,87 +118,67 @@ init python:
             print(f"Ошибка в get_user_progress: {e}")
         
         return progress
-
 ################################################################################
 ## СТИЛИ
 ################################################################################
-
 style default:
     properties gui.text_properties()
     language gui.language
-
 style input:
     properties gui.text_properties("input", accent=True)
     adjust_spacing False
-
 style hyperlink_text:
     properties gui.text_properties("hyperlink", accent=True)
     hover_underline True
-
 style gui_text:
     properties gui.text_properties("interface")
-
 style button:
     properties gui.button_properties("button")
-
 style button_text is gui_text:
     properties gui.text_properties("button")
     yalign 0.5
 
 style label_text is gui_text:
     properties gui.text_properties("label", accent=True)
-
 style prompt_text is gui_text:
     properties gui.text_properties("prompt")
-
 style bar:
     ysize gui.bar_size
     left_bar Frame("gui/bar/left.png", gui.bar_borders, tile=gui.bar_tile)
     right_bar Frame("gui/bar/right.png", gui.bar_borders, tile=gui.bar_tile)
-
 style vbar:
     xsize gui.bar_size
     top_bar Frame("gui/bar/top.png", gui.vbar_borders, tile=gui.bar_tile)
     bottom_bar Frame("gui/bar/bottom.png", gui.vbar_borders, tile=gui.bar_tile)
-
 style scrollbar:
     ysize gui.scrollbar_size
     base_bar Frame("gui/scrollbar/horizontal_[prefix_]bar.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
     thumb Frame("gui/scrollbar/horizontal_[prefix_]thumb.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
-
 style vscrollbar:
     xsize gui.scrollbar_size
     base_bar Frame("gui/scrollbar/vertical_[prefix_]bar.png", gui.vscrollbar_borders, tile=gui.scrollbar_tile)
     thumb Frame("gui/scrollbar/vertical_[prefix_]thumb.png", gui.vscrollbar_borders, tile=gui.scrollbar_tile)
-
 style slider:
     ysize gui.slider_size
     base_bar Frame("gui/slider/horizontal_[prefix_]bar.png", gui.slider_borders, tile=gui.slider_tile)
     thumb "gui/slider/horizontal_[prefix_]thumb.png"
-
 style vslider:
     xsize gui.slider_size
     base_bar Frame("gui/slider/vertical_[prefix_]bar.png", gui.vslider_borders, tile=gui.slider_tile)
     thumb "gui/slider/vertical_[prefix_]thumb.png"
-
 style frame:
     padding gui.frame_borders.padding
     background Frame("gui/frame.png", gui.frame_borders, tile=gui.frame_tile)
-
 style navigation_button:
     size_group "navigation"
     properties gui.button_properties("navigation_button")
-
 style quick_button:
     properties gui.button_properties("quick_button")
-
 style choice_button:
     properties gui.button_properties("choice_button")
-
 ################################################################################
 ## ВНУТРИИГРОВЫЕ ЭКРАНЫ
 ################################################################################
-
 screen say(who, what):
     zorder 1
     window:
@@ -225,17 +203,14 @@ style window is default
 style say_label is default
 style say_dialogue is default
 style say_thought is say_dialogue
-
 style namebox is default
 style namebox_label is say_label
-
 style window:
     xalign 0.5
     xfill True
     yalign gui.textbox_yalign
     ysize gui.textbox_height
     background Image("gui/textbox.png", xalign=0.5, yalign=1.0)
-
 style namebox:
     xpos gui.name_xpos
     xanchor gui.name_xalign
@@ -244,12 +219,10 @@ style namebox:
     ysize gui.namebox_height
     background Frame("gui/namebox.png", gui.namebox_borders, tile=gui.namebox_tile, xalign=gui.name_xalign)
     padding gui.namebox_borders.padding
-
 style say_label:
     properties gui.text_properties("name", accent=True)
     xalign gui.name_xalign
     yalign 0.5
-
 style say_dialogue:
     properties gui.text_properties("dialogue")
     xpos gui.dialogue_xpos
@@ -269,11 +242,9 @@ screen input(prompt):
             input id "input"
 
 style input_prompt is default
-
 style input_prompt:
     xalign gui.dialogue_text_xalign
     properties gui.text_properties("input_prompt")
-
 style input:
     xalign gui.dialogue_text_xalign
     xmaximum gui.dialogue_width
@@ -287,16 +258,13 @@ screen choice(items):
 style choice_vbox is vbox
 style choice_button is button
 style choice_button_text is button_text
-
 style choice_vbox:
     xalign 0.5
     ypos 405
     yanchor 0.5
     spacing gui.choice_spacing
-
 style choice_button is default:
     properties gui.button_properties("choice_button")
-
 style choice_button_text is default:
     properties gui.text_properties("choice_button")
 
@@ -321,21 +289,16 @@ init python:
 style quick_menu is hbox
 style quick_button is default
 style quick_button_text is button_text
-
 style quick_menu:
     xalign 0.5
     yalign 0.97
-
 style quick_button:
     properties gui.button_properties("quick_button")
-
 style quick_button_text:
     properties gui.text_properties("quick_button")
-
 ################################################################################
 ## ЭКРАНЫ ГЛАВНОГО И ИГРОВОГО МЕНЮ
 ################################################################################
-
 screen navigation():
     vbox:
         style_prefix "navigation"
@@ -367,11 +330,9 @@ screen navigation():
 
 style navigation_button is gui_button
 style navigation_button_text is gui_button_text
-
 style navigation_button:
     size_group "navigation"
     properties gui.button_properties("navigation_button")
-
 style navigation_button_text:
     properties gui.text_properties("navigation_button")
 
@@ -462,26 +423,21 @@ screen select_user_screen():
 style select_user_frame:
     background Frame("gui/confirm_frame.png", 25, 25, 25, 25)
     padding (30, 30)
-
 style select_user_header:
     background "#c66b2f"
     xfill True
-
 style select_user_header_text:
     color "#ffffff"
     size 22
-
 style select_user_row:
     background "#d9874d"
     hover_background "#97321b"
     xfill True
     padding (10, 8)
     margin (0, 2)
-
 style select_user_button:
     padding (5, 5)
     xsize 350
-
 style select_user_button_text:
     color "#ffffff"
     hover_color "#fb906d"
@@ -559,6 +515,15 @@ screen main_menu():
     tag menu
     add "gui/main_menu.png"
     
+    # Проверяем наличие сохранений для отображения кнопки "Продолжить"
+    python:
+        has_saves = False
+        slots_to_check = [str(i) for i in range(1, 10)] + [f"auto-{i}" for i in range(1, 10)] + ["quick-save"]
+        for slot in slots_to_check:
+            if renpy.can_load(slot):
+                has_saves = True
+                break
+    
     if gui.show_name:
         text "[config.name!t]":
             style "main_menu_title"
@@ -580,9 +545,13 @@ screen main_menu():
             xalign 0.5
             yalign 0.5
             spacing 1
-            textbutton _("Продолжить"):
-                style "main_menu_button"
-                action Function(continue_game)
+            
+            # Кнопка "Продолжить" появляется только если есть сохранения
+            if has_saves:
+                textbutton _("Продолжить"):
+                    style "main_menu_button"
+                    action Function(load_latest_save)
+                    
             textbutton _("Начать игру"):
                 style "main_menu_button"
                 action Start()
@@ -615,7 +584,6 @@ style main_menu_title:
     textalign 0.5
     layout "subtitle"
     outlines [(5, "#a43c13", 0, 0)]
-
 style main_menu_version:
     color "#ffffff"
     size gui.interface_text_size
@@ -624,14 +592,12 @@ style main_menu_version:
     yalign 0.98
     textalign 0.0
     outlines [(2, "#000000", 0, 0)]
-
 style main_menu_frame:
     xalign 0.5
     yalign 0.5
     xsize 500
     ysize 650
     background None
-
 style main_menu_button:
     xalign 0.5
     padding (20, 15)
@@ -640,7 +606,6 @@ style main_menu_button:
     margin (0, 5)
     background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
     hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
-
 style main_menu_button_text:
     color "#ffffff"
     hover_color "#fb906d"
@@ -650,7 +615,6 @@ style main_menu_button_text:
     outlines [(2, "#b64520", 0, 0)]
     text_align 0.5
     xalign 0.5
-
 style players_button:
     xpos 0.22
     ypos 0.55
@@ -717,39 +681,30 @@ style game_menu_label is gui_label
 style game_menu_label_text is gui_label_text
 style return_button is navigation_button
 style return_button_text is navigation_button_text
-
 style game_menu_outer_frame:
     bottom_padding 45
     top_padding 180
     background "gui/overlay/game_menu.png"
-
 style game_menu_navigation_frame:
     xsize 420
     yfill True
-
 style game_menu_content_frame:
     left_margin 100
     right_margin 40
     top_margin 15
-
 style game_menu_viewport:
     xsize 1340
-
 style game_menu_vscrollbar:
     unscrollable gui.unscrollable
-
 style game_menu_side:
     spacing 15
-
 style game_menu_label:
     xpos 65
     ysize 180
-
 style game_menu_label_text:
     size gui.title_text_size
     color gui.accent_color
     yalign 0.5
-
 style return_button:
     xpos gui.navigation_xpos
     yalign 1.0
@@ -771,11 +726,9 @@ style about_label_text is gui_label_text
 style about_text is gui_text
 style about_label_text:
     size gui.label_text_size
-
 ################################################################################
 ## ЭКРАНЫ ЗАГРУЗКИ И СОХРАНЕНИЯ
 ################################################################################
-
 screen save():
     tag menu
     use file_slots_with_user(_("Сохранить"), is_save=True)
@@ -1016,21 +969,17 @@ style history_name_text is gui_label_text
 style history_text is gui_text
 style history_label is gui_label
 style history_label_text is gui_label_text
-
 style history_window:
     xfill True
     ysize gui.history_height
-
 style history_name:
     xpos gui.history_name_xpos
     xanchor gui.history_name_xalign
     ypos gui.history_name_ypos
     xsize gui.history_name_width
-
 style history_name_text:
     min_width gui.history_name_width
     textalign gui.history_name_xalign
-
 style history_text:
     xpos gui.history_text_xpos
     ypos gui.history_text_ypos
@@ -1039,10 +988,8 @@ style history_text:
     min_width gui.history_text_width
     textalign gui.history_text_xalign
     layout ("subtitle" if gui.history_text_xalign else "tex")
-
 style history_label:
     xfill True
-
 style history_label_text:
     xalign 0.5
 
@@ -1146,27 +1093,21 @@ style help_button_text is gui_button_text
 style help_label is gui_label
 style help_label_text is gui_label_text
 style help_text is gui_text
-
 style help_button:
     properties gui.button_properties("help_button")
     xmargin 12
-
 style help_button_text:
     properties gui.text_properties("help_button")
-
 style help_label:
     xsize 375
     right_padding 30
-
 style help_label_text:
     size gui.text_size
     xalign 1.0
     textalign 1.0
-
 ################################################################################
 ## ДОПОЛНИТЕЛЬНЫЕ ЭКРАНЫ
 ################################################################################
-
 screen confirm(message, yes_action, no_action):
     modal True
     zorder 200
@@ -1194,20 +1135,16 @@ style confirm_prompt is gui_prompt
 style confirm_prompt_text is gui_prompt_text
 style confirm_button is gui_medium_button
 style confirm_button_text is gui_medium_button_text
-
 style confirm_frame:
     background Frame([ "gui/confirm_frame.png", "gui/frame.png"], gui.confirm_frame_borders, tile=gui.frame_tile)
     padding gui.confirm_frame_borders.padding
     xalign .5
     yalign .5
-
 style confirm_prompt_text:
     textalign 0.5
     layout "subtitle"
-
 style confirm_button:
     properties gui.button_properties("confirm_button")
-
 style confirm_button_text:
     properties gui.text_properties("confirm_button")
 
@@ -1235,15 +1172,12 @@ transform delayed_blink(delay, cycle):
 style skip_frame is empty
 style skip_text is gui_text
 style skip_triangle is skip_text
-
 style skip_frame:
     ypos gui.skip_ypos
     background Frame("gui/skip.png", gui.skip_frame_borders, tile=gui.frame_tile)
     padding gui.skip_frame_borders.padding
-
 style skip_text:
     size gui.notify_text_size
-
 style skip_triangle:
     font "DejaVuSans.ttf"
 
@@ -1263,12 +1197,10 @@ transform notify_appear:
 
 style notify_frame is empty
 style notify_text is gui_text
-
 style notify_frame:
     ypos gui.notify_ypos
     background Frame("gui/notify.png", gui.notify_frame_borders, tile=gui.frame_tile)
     padding gui.notify_frame_borders.padding
-
 style notify_text:
     properties gui.text_properties("notify")
 
@@ -1310,17 +1242,14 @@ style nvl_label is say_label
 style nvl_dialogue is say_dialogue
 style nvl_button is button
 style nvl_button_text is button_text
-
 style nvl_window:
     xfill True
     yfill True
     background "gui/nvl.png"
     padding gui.nvl_borders.padding
-
 style nvl_entry:
     xfill True
     ysize gui.nvl_height
-
 style nvl_label:
     xpos gui.nvl_name_xpos
     xanchor gui.nvl_name_xalign
@@ -1329,7 +1258,6 @@ style nvl_label:
     xsize gui.nvl_name_width
     min_width gui.nvl_name_width
     textalign gui.nvl_name_xalign
-
 style nvl_dialogue:
     xpos gui.nvl_text_xpos
     xanchor gui.nvl_text_xalign
@@ -1338,7 +1266,6 @@ style nvl_dialogue:
     min_width gui.nvl_text_width
     textalign gui.nvl_text_xalign
     layout ("subtitle" if gui.nvl_text_xalign else "tex")
-
 style nvl_thought:
     xpos gui.nvl_thought_xpos
     xanchor gui.nvl_thought_xalign
@@ -1347,7 +1274,6 @@ style nvl_thought:
     min_width gui.nvl_thought_width
     textalign gui.nvl_thought_xalign
     layout ("subtitle" if gui.nvl_text_xalign else "tex")
-
 style nvl_button:
     properties gui.button_properties("nvl_button")
     xpos gui.nvl_button_xpos
@@ -1376,20 +1302,16 @@ style bubble_window is empty
 style bubble_namebox is empty
 style bubble_who is default
 style bubble_what is default
-
 style bubble_window:
     xpadding 30
     top_padding 5
     bottom_padding 5
-
 style bubble_namebox:
     xalign 0.5
-
 style bubble_who:
     xalign 0.5
     textalign 0.5
     color "#000"
-
 style bubble_what:
     align (0.5, 0.5)
     text_align 0.5
@@ -1428,11 +1350,9 @@ define bubble.expand_area = {
     "top_right" : (0, 22, 0, 0),
     "thought" : (0, 0, 0, 0),
 }
-
 ################################################################################
 ## МОБИЛЬНЫЕ ВАРИАНТЫ
 ################################################################################
-
 style pref_vbox:
     variant "medium"
     xsize 675
@@ -1452,91 +1372,72 @@ screen quick_menu():
 style window:
     variant "small"
     background "gui/phone/textbox.png"
-
 style radio_button:
     variant "small"
     foreground "gui/phone/button/radio_[prefix_]foreground.png"
-
 style check_button:
     variant "small"
     foreground "gui/phone/button/check_[prefix_]foreground.png"
-
 style nvl_window:
     variant "small"
     background "gui/phone/nvl.png"
-
 style main_menu_frame:
     variant "small"
     background "gui/phone/overlay/main_menu.png"
-
 style game_menu_outer_frame:
     variant "small"
     background "gui/phone/overlay/game_menu.png"
-
 style game_menu_navigation_frame:
     variant "small"
     xsize 510
-
 style game_menu_content_frame:
     variant "small"
     top_margin 0
-
 style game_menu_viewport:
     variant "small"
     xsize 1305
-
 style pref_vbox:
     variant "small"
     xsize 600
-
 style bar:
     variant "small"
     ysize gui.bar_size
     left_bar Frame("gui/phone/bar/left.png", gui.bar_borders, tile=gui.bar_tile)
     right_bar Frame("gui/phone/bar/right.png", gui.bar_borders, tile=gui.bar_tile)
-
 style vbar:
     variant "small"
     xsize gui.bar_size
     top_bar Frame("gui/phone/bar/top.png", gui.vbar_borders, tile=gui.bar_tile)
     bottom_bar Frame("gui/phone/bar/bottom.png", gui.vbar_borders, tile=gui.bar_tile)
-
 style scrollbar:
     variant "small"
     ysize gui.scrollbar_size
     base_bar Frame("gui/phone/scrollbar/horizontal_[prefix_]bar.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
     thumb Frame("gui/phone/scrollbar/horizontal_[prefix_]thumb.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
-
 style vscrollbar:
     variant "small"
     xsize gui.scrollbar_size
     base_bar Frame("gui/phone/scrollbar/vertical_[prefix_]bar.png", gui.vscrollbar_borders, tile=gui.scrollbar_tile)
     thumb Frame("gui/phone/scrollbar/vertical_[prefix_]thumb.png", gui.vscrollbar_borders, tile=gui.scrollbar_tile)
-
 style slider:
     variant "small"
     ysize gui.slider_size
     base_bar Frame("gui/phone/slider/horizontal_[prefix_]bar.png", gui.slider_borders, tile=gui.slider_tile)
     thumb "gui/phone/slider/horizontal_[prefix_]thumb.png"
-
 style vslider:
     variant "small"
     xsize gui.slider_size
     base_bar Frame("gui/phone/slider/vertical_[prefix_]bar.png", gui.vslider_borders, tile=gui.slider_tile)
     thumb "gui/phone/slider/vertical_[prefix_]thumb.png"
-
 style slider_vbox:
     variant "small"
     xsize None
-
 style slider_slider:
     variant "small"
     xsize 900
-
 ################################################################################
 ## ЭКРАН ДЛЯ ВВОДА ИМЕНИ
 ################################################################################
-
 screen input_name_screen():
     modal True
     add "#00000080"
@@ -1603,11 +1504,9 @@ init -1 python:
     style.input_confirm_button_text.outlines = [(2, "#ff832b", 0, 0)]
     style.input_confirm_button_text.text_align = 0.5
     style.input_confirm_button_text.xalign = 0.5
-
 ################################################################################
 ## ЭКРАН ПЕРЕХОДА МЕЖДУ ГЛАВАМИ
 ################################################################################
-
 screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
     modal True
     zorder 200
@@ -1654,11 +1553,9 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
         false=Return(("exit", old_chapter)))
     key "K_ESCAPE" action Return(("exit", old_chapter))
     key "game_menu" action Return(("exit", old_chapter))
-
 ################################################################################
 ## ЭКРАН ПОДТВЕРЖДЕНИЯ ПЕРЕКЛЮЧЕНИЯ ПОЛЬЗОВАТЕЛЯ
 ################################################################################
-
 screen confirm_user_switch(slot):
     modal True
     zorder 200
@@ -1684,11 +1581,9 @@ screen confirm_user_switch(slot):
                 textbutton "Отмена" action Hide("confirm_user_switch")
     key "K_ESCAPE" action Hide("confirm_user_switch")
     key "game_menu" action Hide("confirm_user_switch")
-
 ################################################################################
 ## ЭКРАН ДЛЯ ОТОБРАЖЕНИЯ СТАТИСТИКИ ИГРОКА
 ################################################################################
-
 screen player_stats_screen():
     tag menu
     use game_menu(_("Статистика игрока"), scroll="viewport"):
@@ -1804,43 +1699,35 @@ screen player_stats_screen():
 style stats_frame:
     background Frame("gui/frame.png", 15, 15, 15, 15)
     padding (25, 20)
-
 style stats_close_button:
     background Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
     hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
     padding (25, 12)
     xsize 300
-
 style stats_close_button_text:
     color "#ffffff"
     hover_color "#ff9999"
     size 24
     text_align 0.5
-
 ################################################################################
 ## СТИЛИ ДЛЯ ПЕРЕХОДОВ МЕЖДУ ГЛАВАМИ
 ################################################################################
-
 style chapter_transition_frame:
     background Frame("gui/frame.png", 25, 25, 25, 25)
     padding (40, 40)
-
 style chapter_transition_button:
     background Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
     hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
     padding (20, 10)
     xsize 250
-
 style chapter_transition_button_text:
     color "#ffffff"
     hover_color "#ff9999"
     size 20
     text_align 0.5
-
 ################################################################################
 ## ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЗАГРУЗКИ
 ################################################################################
-
 init python:
     def load_other_user_save(slot):
         try:
@@ -1857,11 +1744,9 @@ init python:
         except:
             pass
         renpy.run(FileAction(slot))
-
 ################################################################################
 ## ЭКРАН ДЛЯ ГАЛЕРЕИ (ЕСЛИ ОТСУТСТВУЕТ)
 ################################################################################
-
 screen gallery_image_popup(image, title):
     modal True
     zorder 200

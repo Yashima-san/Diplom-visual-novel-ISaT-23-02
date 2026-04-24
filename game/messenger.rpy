@@ -1,8 +1,8 @@
 ################################################################################
-## СИСТЕМА МЕССЕНДЖЕРА (ИСПРАВЛЕННАЯ ВЕРСИЯ)
+## СИСТЕМА МЕССЕНДЖЕРА
 ################################################################################
 init -1 python:
-    import time as tm
+    import time
     from datetime import datetime, timedelta
     
     MESSAGE_SEND_SOUND = "sounds/message_send.mp3"
@@ -39,6 +39,9 @@ init -1 python:
     
     CHAT_START_DATE = datetime(2024, 9, 2, 20, 32)
     chat_current_dt = CHAT_START_DATE
+    
+    chat_last_speaker = None
+    chat_last_speak_timestamp = 0
     
     def get_chat_time(): return chat_current_dt.strftime("%H:%M")
     def get_chat_date(): return chat_current_dt.strftime("%d.%m.%Y")
@@ -82,9 +85,11 @@ init -1 python:
         message_animation_id += 1
     
     def clear_chat():
-        global chat_history, chat_current_dt
+        global chat_history, chat_current_dt, chat_last_speaker, chat_last_speak_timestamp
         chat_history = []
         chat_current_dt = CHAT_START_DATE
+        chat_last_speaker = None
+        chat_last_speak_timestamp = 0
     MESSENGER_NAME = "Discordia"
     
     def show_chat_choices(choices, callback):
@@ -120,14 +125,22 @@ init -1 python:
         global chat_interaction_done
         chat_interaction_done = False
         while not chat_interaction_done:
-            renpy.pause(0.05)
-    store.wait_for_chat = wait_for_chat  # Явная регистрация в глобальном пространстве
+            renpy.pause(0.05, hard=False)
+    store.wait_for_chat = wait_for_chat
     
     def show_chat_message(character, text, is_user=False, play_sound=True):
-        global chat_mode_active, chat_screen_shown, chat_current_dt
+        global chat_mode_active, chat_screen_shown, chat_current_dt, chat_last_speaker, chat_last_speak_timestamp
         char_name = character.name if hasattr(character, 'name') else character
+        
+        # Автоматическая задержка 15 сек, если тот же персонаж пишет подряд
+        if char_name == chat_last_speaker and not is_user:
+            renpy.pause(15.0)
+            
         add_time_offset(1)
         add_chat_message(char_name, text, is_user, play_sound)
+        chat_last_speaker = char_name
+        chat_last_speak_timestamp = time.time()
+        
         if not chat_mode_active and not chat_choices_shown:
             chat_mode_active = True
             if not chat_screen_shown:
@@ -222,13 +235,12 @@ transform choice_button_appear:
     alpha 0.0
     yoffset 20
     linear 0.15 alpha 1.0 yoffset 0
-
 ################################################################################
 ## ЭКРАН ЧАТА
 ################################################################################
 screen messenger_chat():
     zorder 150
-    $ chat_viewport_height = 380 if chat_choices_shown else 480
+    
     $ status_text = "В сети" if chat_status == "online" else "печатает..."
     $ status_color = "#4caf50" if chat_status == "online" else "#ff9800"
   
@@ -239,79 +251,219 @@ screen messenger_chat():
         
     frame:
         style "messenger_frame"
-        xalign 0.5 yalign 0.2 xsize 850 ysize 720
+        xalign 0.5
+        yalign 0.15
+        xsize 780
+        ysize 580
+        
+        #Используем vbox для вертикального распределения
         vbox:
+            #Шапка чата (фиксированная высота)
             frame:
-                style "messenger_header" xfill True
+                style "messenger_header"
+                xfill True
                 hbox:
-                    xfill True spacing 12
+                    xfill True
+                    spacing 12
                     frame:
-                        style "messenger_chat_avatar" xysize (40, 40) background "#2f6bc6"
+                        style "messenger_chat_avatar"
+                        xysize (40, 40)
+                        background "#2f6bc6"
                         $ avatar_text = current_chat_partner[0] if current_chat_partner else "?"
-                        text avatar_text size 22 color "#ffffff" xalign 0.5 yalign 0.5
+                        text avatar_text:
+                            size 22
+                            color "#ffffff"
+                            xalign 0.5
+                            yalign 0.5
                     vbox:
-                        xfill True spacing 2 yalign 0.5
-                        text current_chat_partner style "messenger_chat_name" size 16 color "#ffffff" bold True
-                        text status_text style "messenger_chat_status" size 11 color status_color
+                        xfill True
+                        spacing 2
+                        yalign 0.5
+                        text current_chat_partner:
+                            style "messenger_chat_name"
+                            size 16
+                            color "#ffffff"
+                            bold True
+                        text status_text:
+                            style "messenger_chat_status"
+                            size 11
+                            color status_color
+            
+            #Область сообщений
             viewport:
                 id "chat_viewport"
-                ysize chat_viewport_height
-                scrollbars "vertical" mousewheel True draggable True yinitial 1.0
+                yfill True  # Растягивается на всю доступную высоту
+                scrollbars "vertical"
+                mousewheel True
+                draggable True
+                yinitial 1.0
                 vbox:
-                    spacing 10 xfill True
+                    spacing 10
+                    xfill True
                     for msg in chat_history:
                         if hasattr(msg, 'is_date_separator') and msg.is_date_separator:
-                            frame style "messenger_date_separator" xfill True xalign 0.5 background None
-                                text msg.text style "messenger_date_text" size 11 color "#888888" xalign 0.5
+                            frame:
+                                style "messenger_date_separator"
+                                xfill True
+                                xalign 0.5
+                                background None
+                                text msg.text:
+                                    style "messenger_date_text"
+                                    size 11
+                                    color "#888888"
+                                    xalign 0.5
                         elif msg.is_user:
-                            hbox xfill True xalign 1.0 at message_appear_right
-                                frame style "messenger_user_bubble" xmaximum 480
-                                    vbox spacing 3
-                                        text msg.text style "messenger_message_text_user" size 15 color "#ffffff"
-                                        text msg.time style "messenger_message_time_user" size 9 color "#dddddd" xalign 1.0
+                            hbox:
+                                xfill True
+                                xalign 1.0
+                                at message_appear_right
+                                frame:
+                                    style "messenger_user_bubble"
+                                    xmaximum 480
+                                    vbox:
+                                        spacing 3
+                                        text msg.text:
+                                            style "messenger_message_text_user"
+                                            size 15
+                                            color "#ffffff"
+                                        text msg.time:
+                                            style "messenger_message_time_user"
+                                            size 9
+                                            color "#dddddd"
+                                            xalign 1.0
                                 null width 10
                         else:
-                            hbox xfill True spacing 8 at message_appear_left
-                                frame style "messenger_message_avatar" xysize (28, 28) background "#2f6bc6"
+                            hbox:
+                                xfill True
+                                spacing 8
+                                at message_appear_left
+                                frame:
+                                    style "messenger_message_avatar"
+                                    xysize (28, 28)
+                                    background "#2f6bc6"
                                     $ avatar_letter = msg.character[0] if msg.character else "?"
-                                    text avatar_letter size 14 color "#ffffff" xalign 0.5 yalign 0.5
-                                frame style "messenger_other_bubble" xmaximum 480
-                                    vbox spacing 3
-                                        text msg.character style "messenger_message_name" size 10 color "#2f6bc6" bold True
-                                        text msg.text style "messenger_message_text_other" size 15 color "#1a1a1a"
-                                        text msg.time style "messenger_message_time_other" size 9 color "#999999" xalign 1.0
+                                    text avatar_letter:
+                                        size 14
+                                        color "#ffffff"
+                                        xalign 0.5
+                                        yalign 0.5
+                                frame:
+                                    style "messenger_other_bubble"
+                                    xmaximum 480
+                                    vbox:
+                                        spacing 3
+                                        text msg.character:
+                                            style "messenger_message_name"
+                                            size 10
+                                            color "#2f6bc6"
+                                            bold True
+                                        text msg.text:
+                                            style "messenger_message_text_other"
+                                            size 15
+                                            color "#1a1a1a"
+                                        text msg.time:
+                                            style "messenger_message_time_other"
+                                            size 9
+                                            color "#999999"
+                                            xalign 1.0
                                 null width 8
-            if chat_choices_shown:
-                frame xfill True ysize 2 background "#e0e0e0"
+
+            # 3. Контейнер выбора (всегда внизу, так как viewport выше занял всё место)
             if chat_choices_shown and chat_choices:
-                frame style "messenger_choices_container" xfill True
-                    vbox spacing 12 xalign 0.5 xfill True
-                        hbox spacing 10 xalign 0.5
-                            text "💬" size 16
-                            text "ВЫБЕРИТЕ ОТВЕТ" size 12 color "#2f5ac6" bold True
+                frame:
+                    style "messenger_choices_container"
+                    xfill True
+                    # Ограничиваем максимальную высоту, чтобы не перекрыть весь экран, если вариантов много
+                    ymaximum 350 
+                    vbox:
+                        spacing 12
+                        xalign 0.5
+                        xfill True
                         for choice_text in chat_choices:
-                            button style "messenger_choice_button" xsize 500 xalign 0.5 at choice_button_appear
+                            button:
+                                style "messenger_choice_button"
+                                xsize 600
+                                xalign 0.5
+                                at choice_button_appear
                                 action Function(select_chat_choice, choice_text)
-                                text choice_text style "messenger_choice_text" size 13 color "#2b2b2b" xalign 0.5 yalign 0.5
+                                text choice_text:
+                                    style "messenger_choice_text"
+                                    size 16
+                                    color "#2b2b2b"
+                                    xalign 0.5
+                                    yalign 0.5
 
 ################################################################################
-## СТИЛИ
+## СТИЛИ (СТРОГИЙ БЛОЧНЫЙ СИНТАКСИС)
 ################################################################################
-style messenger_frame: background Frame("gui/frame.png", 12, 12, 12, 12) padding (0, 0)
-style messenger_header: background "#2b2b2b" ysize 55 padding (12, 8)
-style messenger_chat_avatar: background "#2f52c6" xysize (40, 40)
-style messenger_chat_name: font "FOT-YurukaStd-UB.otf" outlines [(1, "#000000", 0, 0)]
-style messenger_chat_status: font "FOT-YurukaStd-UB.otf"
-style messenger_user_bubble: background "#2f3ec6" padding (12, 8) margin (6, 3, 12, 3) xalign 1.0
-style messenger_message_text_user: font "LeticeaBumsteadCyrillic.otf" color "#ffffff" xalign 0.0
-style messenger_message_time_user: font "FOT-YurukaStd-UB.otf" color "#dddddd" xalign 1.0
-style messenger_other_bubble: background "#f0f0f0" padding (12, 8) margin (6, 3, 35, 3)
-style messenger_message_avatar: background "#2f4bc6" xysize (28, 28)
-style messenger_message_name: font "FOT-YurukaStd-UB.otf" color "#2f3ec6"
-style messenger_message_text_other: font "LeticeaBumsteadCyrillic.otf" color "#1a1a1a"
-style messenger_message_time_other: font "FOT-YurukaStd-UB.otf" color "#999999" xalign 1.0
-style messenger_choices_container: background "#f5f7ff" padding (20, 15) ysize 220 xfill True
-style messenger_choice_button: background "#e8e8e8" hover_background "#c0c0c0" selected_background "#a0a0a0" padding (14, 10) xsize 500 xalign 0.5
-style messenger_choice_text: hover_color "#ffffff" selected_color "#ffffff" xalign 0.5 yalign 0.5 size 13 color "#2b2b2b" text_align 0.5
-style messenger_date_separator: padding (10, 5) xfill True
-style messenger_date_text: font "FOT-YurukaStd-UB.otf" color "#888888" italic True
+style messenger_frame:
+    background Frame("gui/frame.png", 12, 12, 12, 12)
+    padding (0, 0)
+style messenger_header:
+    background "#2b2b2b"
+    ysize 55
+    padding (12, 8)
+style messenger_chat_avatar:
+    background "#2f52c6"
+    xysize (40, 40)
+style messenger_chat_name:
+    font "FOT-YurukaStd-UB.otf"
+    outlines [(1, "#000000", 0, 0)]
+style messenger_chat_status:
+    font "FOT-YurukaStd-UB.otf"
+style messenger_user_bubble:
+    background "#2f3ec6"
+    padding (12, 8)
+    margin (6, 3, 12, 3)
+    xalign 1.0
+style messenger_message_text_user:
+    font "LeticeaBumsteadCyrillic.otf"
+    color "#ffffff"
+    xalign 0.0
+style messenger_message_time_user:
+    font "FOT-YurukaStd-UB.otf"
+    color "#dddddd"
+    xalign 1.0
+style messenger_other_bubble:
+    background "#f0f0f0"
+    padding (12, 8)
+    margin (6, 3, 35, 3)
+style messenger_message_avatar:
+    background "#2f4bc6"
+    xysize (28, 28)
+style messenger_message_name:
+    font "FOT-YurukaStd-UB.otf"
+    color "#2f3ec6"
+style messenger_message_text_other:
+    font "LeticeaBumsteadCyrillic.otf"
+    color "#1a1a1a"
+style messenger_message_time_other:
+    font "FOT-YurukaStd-UB.otf"
+    color "#999999"
+    xalign 1.0
+style messenger_choices_container:
+    padding (20, 15)
+    yminimum 285
+    xfill True
+style messenger_choice_button:
+    background "#e8e8e8"
+    hover_background "#c0c0c0"
+    selected_background "#a0a0a0"
+    padding (14, 10)
+    xsize 600
+    xalign 0.5
+style messenger_choice_text:
+    hover_color "#ffffff"
+    selected_color "#ffffff"
+    xalign 0.5
+    yalign 0.5
+    size 13
+    color "#2b2b2b"
+    text_align 0.5
+style messenger_date_separator:
+    padding (10, 5)
+    xfill True
+style messenger_date_text:
+    font "FOT-YurukaStd-UB.otf"
+    color "#888888"
+    italic True
