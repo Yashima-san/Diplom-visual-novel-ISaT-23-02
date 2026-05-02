@@ -2,122 +2,124 @@
 ## ИНИЦИАЛИЗАЦИЯ
 ################################################################################
 init offset = -1
+
 init python:
     import time
     import json
+    import os
+
+    # ========================================================================
+    # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ (ТОЛЬКО PYTHON, НИКАКИХ TRY В ЭКРАНАХ)
+    # ========================================================================
     
-    def get_last_save_info(user_id):
-        """Получение информации о последнем сохранении пользователя"""
-        result = {
-            'time': "Нет сохранений",
-            'chapter': "Нет данных"
-        }
-        last_time = 0
-        last_chapter = "Нет данных"
-        
+    def safe_get_emotion_stats(user_id):
+        """Безопасно получает статистику эмоций. Возвращает (attempts, correct, chosen_dict)."""
         try:
-            chapter_display = {
-                "Глава Первая: Связь": "Глава 1",
-                "Глава Вторая: Новые знакомства": "Глава 2",
-                "Глава Третья: Испытание дружбой": "Глава 3",
+            if 'get_emotion_stats' in globals() and callable(get_emotion_stats):
+                res = get_emotion_stats(user_id)
+                if isinstance(res, dict):
+                    return (
+                        res.get('total_attempts', 0),
+                        res.get('correct_matches', 0),
+                        res.get('emotions_chosen', {})
+                    )
+        except:
+            pass
+        return (0, 0, {})
+
+    def get_current_chapter_safe():
+        try:
+            if hasattr(store, 'current_chapter') and store.current_chapter:
+                return store.current_chapter
+        except:
+            pass
+        return "Глава Первая: Связь"
+    
+    def update_player_state(self_awareness_change=0, empathy_change=0, 
+                        vocabulary_change=0, anxiety_change=0, trust_change=0):
+        if not hasattr(store, 'player_self_awareness'):
+            return
+        store.player_self_awareness = max(0, min(100, store.player_self_awareness + self_awareness_change))
+        store.player_empathy = max(0, min(100, store.player_empathy + empathy_change))
+        store.player_emotional_vocabulary = max(0, min(100, store.player_emotional_vocabulary + vocabulary_change))
+        store.player_anxiety_level = max(0, min(100, store.player_anxiety_level + anxiety_change))
+        store.player_trust_level = max(0, min(100, store.player_trust_level + trust_change))
+
+    # ========================================================================
+    # СИСТЕМА СОХРАНЕНИЙ (СТАНДАРТНАЯ + КАЛЛБЭК)
+    # ========================================================================
+    
+    def add_save_metadata(json_data):
+        """Автоматически добавляет метаданные в JSON сохранения при вызове renpy.save()"""
+        try:
+            json_data["user_id"] = persistent.user_id if hasattr(persistent, 'user_id') else None
+            json_data["user_name"] = persistent.user_name if hasattr(persistent, 'user_name') else ""
+            json_data["chapter"] = get_current_chapter_safe()
+            json_data["_timestamp"] = time.time()
+            json_data["player_state"] = {
+                "self_awareness": store.player_self_awareness if hasattr(store, 'player_self_awareness') else 0,
+                "empathy": store.player_empathy if hasattr(store, 'player_empathy') else 0,
+                "vocabulary": store.player_emotional_vocabulary if hasattr(store, 'player_emotional_vocabulary') else 0,
+                "anxiety": store.player_anxiety_level if hasattr(store, 'player_anxiety_level') else 50,
+                "trust": store.player_trust_level if hasattr(store, 'player_trust_level') else 30
             }
-            
-            all_slots = []
-            for i in range(1, 10):
-                all_slots.append(str(i))
-            for i in range(1, 10):
-                all_slots.append(f"auto-{i}")
-            all_slots.append("quick-save")
-            
-            for slot_name in all_slots:
-                if renpy.can_load(slot_name):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                        if save_json and save_json.get("user_id") == user_id:
-                            timestamp = save_json.get("_timestamp", 0)
-                            if timestamp > last_time:
-                                last_time = timestamp
-                                if timestamp:
-                                    try:
-                                        time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
-                                        result['time'] = time_str
-                                    except:
-                                        result['time'] = "Недавно"
-                                
-                                save_chapter = save_json.get("chapter", "")
-                                if save_chapter:
-                                    if save_chapter in chapter_display:
-                                        last_chapter = chapter_display[save_chapter]
-                                    else:
-                                        if "Первая" in save_chapter or "Связь" in save_chapter:
-                                            last_chapter = "Глава 1"
-                                        elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
-                                            last_chapter = "Глава 2"
-                                        elif "Третья" in save_chapter:
-                                            last_chapter = "Глава 3"
-                                        else:
-                                            last_chapter = save_chapter[:20] + "..." if len(save_chapter) > 20 else save_chapter
-                    except:
-                        continue
-            
-            result['chapter'] = last_chapter
-            
-            if result['chapter'] == "Нет данных" and last_time > 0:
-                if hasattr(db, 'get_user_progress'):
-                    progress = db.get_user_progress(user_id)
-                    if progress:
-                        result['chapter'] = progress[-1] if progress else "Нет данных"
-        except Exception as e:
-            print(f"Ошибка в get_last_save_info: {e}")
-        
-        return result
-    
-    def get_user_progress(user_id):
-        """Получение прогресса игрока по главам"""
-        progress = []
-        
-        chapter_formats = {
-            "Глава Первая: Связь": "Глава 1",
-            "Глава Вторая: Новые знакомства": "Глава 2",
-            "Глава Третья: Испытание дружбой": "Глава 3",
-        }
-        
+        except:
+            pass
+        return json_data
+
+    # Регистрируем каллбэк один раз
+    if not hasattr(config, 'save_json_callbacks'):
+        config.save_json_callbacks = []
+    if add_save_metadata not in config.save_json_callbacks:
+        config.save_json_callbacks.append(add_save_metadata)
+
+    def custom_save_action(slot):
+        """Безопасное сохранение через стандартный движок Ren'Py"""
         try:
-            all_slots = []
-            for i in range(1, 10):
-                all_slots.append(str(i))
-            for i in range(1, 10):
-                all_slots.append(f"auto-{i}")
-            all_slots.append("quick-save")
-            
-            chapters_found = set()
-            
-            for slot_name in all_slots:
-                if renpy.can_load(slot_name):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                        if save_json and save_json.get("user_id") == user_id:
-                            chapter = save_json.get("chapter", "")
-                            if chapter:
-                                if chapter in chapter_formats:
-                                    chapters_found.add(chapter_formats[chapter])
-                                else:
-                                    if "Первая" in chapter or "Связь" in chapter:
-                                        chapters_found.add("Глава 1")
-                                    elif "Вторая" in chapter or "Новые знакомства" in chapter:
-                                        chapters_found.add("Глава 2")
-                                    elif "Третья" in chapter:
-                                        chapters_found.add("Глава 3")
-                    except:
-                        continue
-            
-            chapter_order = {"Глава 1": 1, "Глава 2": 2, "Глава 3": 3}
-            progress = sorted(list(chapters_found), key=lambda x: chapter_order.get(x, 0))
-            
+            renpy.run(FileSave(slot))
+            renpy.notify(f"Игра сохранена в слот {slot}")
         except Exception as e:
-            print(f"Ошибка в get_user_progress: {e}")
+            renpy.notify(f"Ошибка сохранения: {str(e)}")
+
+    def custom_load_action(slot):
+        """Проверка user_id перед загрузкой, затем стандартная загрузка"""
+        slot_str = str(slot)
+        try:
+            save_json = renpy.json_load(renpy.slot_json_filename(slot_str))
+            current_user_id = persistent.user_id if hasattr(persistent, 'user_id') else None
+            if save_json:
+                save_user_id = save_json.get("user_id")
+                if save_user_id is not None and save_user_id != current_user_id:
+                    renpy.show_screen("confirm_user_switch", slot=slot)
+                    return
+        except:
+            pass
+        # Если проверка прошла или user_id совпадает -> загружаем
+        renpy.run(FileAction(slot_str))
+
+    def load_latest_save():
+        """Загружает самое свежее сохранение любого слота"""
+        latest_slot = None
+        latest_time = 0
+        slots_to_check = [str(i) for i in range(1, 10)] + [f"auto-{i}" for i in range(1, 10)] + ["quick-save"]
         
-        return progress
+        for slot in slots_to_check:
+            if renpy.can_load(slot):
+                try:
+                    save_json = renpy.json_load(renpy.slot_json_filename(slot))
+                    if save_json:
+                        timestamp = save_json.get("_timestamp", 0)
+                        if timestamp > latest_time:
+                            latest_time = timestamp
+                            latest_slot = slot
+                except:
+                    pass
+                    
+        if latest_slot:
+            renpy.load(latest_slot)
+        else:
+            renpy.notify("Нет сохранённой игры")
+
 ################################################################################
 ## СТИЛИ
 ################################################################################
@@ -137,7 +139,6 @@ style button:
 style button_text is gui_text:
     properties gui.text_properties("button")
     yalign 0.5
-
 style label_text is gui_text:
     properties gui.text_properties("label", accent=True)
 style prompt_text is gui_text:
@@ -176,6 +177,7 @@ style quick_button:
     properties gui.button_properties("quick_button")
 style choice_button:
     properties gui.button_properties("choice_button")
+    
 ################################################################################
 ## ВНУТРИИГРОВЫЕ ЭКРАНЫ
 ################################################################################
@@ -183,16 +185,12 @@ screen say(who, what):
     zorder 1
     window:
         id "window"
-
         if who is not None:
-
             window:
                 id "namebox"
                 style "namebox"
                 text who id "who"
-
         text what id "what"
-
     if not renpy.variant("small"):
         add SideImage() xalign 0.0 yalign 1.0
 
@@ -296,6 +294,7 @@ style quick_button:
     properties gui.button_properties("quick_button")
 style quick_button_text:
     properties gui.text_properties("quick_button")
+    
 ################################################################################
 ## ЭКРАНЫ ГЛАВНОГО И ИГРОВОГО МЕНЮ
 ################################################################################
@@ -305,26 +304,21 @@ screen navigation():
         xpos gui.navigation_xpos
         yalign 0.8
         spacing gui.navigation_spacing
-
         if main_menu:
             textbutton _("Начать") action Start() 
         else:
             textbutton _("История") action ShowMenu("history")
             textbutton _("Сохранить") action ShowMenu("save")
-
         textbutton _("Загрузить") action ShowMenu("load")
         textbutton _("Настройки") action ShowMenu("preferences")
-
+        textbutton _("Статистика") action ShowMenu("player_stats_screen")
         if _in_replay:
             textbutton _("Завершить повтор") action EndReplay(confirm=True)
         elif not main_menu:
             textbutton _("Главное меню") action MainMenu()
-
         textbutton _("Об игре") action ShowMenu("about")
-
         if renpy.variant("pc") or (renpy.variant("web") and not renpy.variant("mobile")):
             textbutton _("Помощь") action ShowMenu("help")
-
         if renpy.variant("pc"):
             textbutton _("Выход") action Quit(confirm=not main_menu)
 
@@ -340,7 +334,6 @@ screen select_user_screen():
     modal True
     zorder 200
     add "#000000CC"
-    
     frame:
         style "select_user_frame"
         xalign 0.5
@@ -348,15 +341,12 @@ screen select_user_screen():
         xsize 1200
         ysize 900
         padding (70, 70)
-        
         vbox:
             spacing 20
             xfill True
             text "Выберите пользователя для продолжения:" size 32 color "#ffffff" font gui.interface_text_font xalign 0.5 yalign 0.5
             null height 10
-            
-            $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
-            
+            $ users = db.get_all_users() if 'db' in globals() and hasattr(db, 'get_all_users') else []
             if users:
                 frame:
                     style "select_user_header"
@@ -369,7 +359,6 @@ screen select_user_screen():
                         text "Сохранение" size 22 color "#ffffff" xsize 400 text_align 0.5
                         text "Прогресс" size 22 color "#ffffff" xsize 250 text_align 0.5
                         text "Достижений" size 22 color "#ffffff" xsize 150 text_align 0.5
-                
                 viewport:
                     ysize 350
                     scrollbars "vertical"
@@ -386,9 +375,8 @@ screen select_user_screen():
                             $ last_save_chapter = last_save_info['chapter']
                             $ user_progress = get_user_progress(user_id)
                             $ progress_text = ", ".join(user_progress) if user_progress else "Нет данных"
-                            $ user_achievements = db.get_user_achievements(user_id) if hasattr(db, 'get_user_achievements') else []
+                            $ user_achievements = db.get_user_achievements(user_id) if 'db' in globals() and hasattr(db, 'get_user_achievements') else []
                             $ ach_count = len(user_achievements)
-                            
                             button:
                                 style "select_user_row"
                                 xfill True
@@ -408,7 +396,6 @@ screen select_user_screen():
                     text "Нет сохраненных игроков" size 28 xalign 0.5 color "#656565"
                     text "Начните новую игру, чтобы создать сохранение" size 22 xalign 0.5 color "#737373"
                     null height 20
-            
             null height 20
             hbox:
                 spacing 5
@@ -416,12 +403,11 @@ screen select_user_screen():
                 yalign 0.1
                 textbutton "Начать новую игру" style "select_user_button" action [Start(), Hide("select_user_screen")]
                 textbutton "Отмена" style "select_user_button" action Hide("select_user_screen")
-    
     key "game_menu" action Hide("select_user_screen")
     key "K_ESCAPE" action Hide("select_user_screen")
 
 style select_user_frame:
-    background Frame("gui/confirm_frame.png", 25, 25, 25, 25)
+    background Frame("gui/confirm_frame.png", 25, 25)
     padding (30, 30)
 style select_user_header:
     background "#c66b2f"
@@ -441,81 +427,14 @@ style select_user_button:
 style select_user_button_text:
     color "#ffffff"
     hover_color "#fb906d"
-    outlines[(2, "#671a1a", 0, 0)]
+    outlines [(2, "#671a1a", 0, 0)]
     size 22
     font gui.interface_text_font
     text_align 0.5
 
-init python:
-    def get_user_last_chapter(user_id):
-        last_chapter = None
-        last_time = 0
-        try:
-            for i in range(1, 10):
-                if renpy.can_load(str(i)):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
-                        if save_json and save_json.get("user_id") == user_id:
-                            timestamp = save_json.get("_timestamp", 0)
-                            if timestamp > last_time:
-                                last_time = timestamp
-                                last_chapter = save_json.get("chapter", "Глава 1")
-                    except:
-                        continue
-            if not last_chapter and hasattr(db, 'sqlite_available') and db.sqlite_available:
-                try:
-                    db.connect()
-                    db.cursor.execute('''SELECT chapter FROM save_progress_users WHERE user_ID = ? ORDER BY save_point DESC LIMIT 1''', (user_id,))
-                    row = db.cursor.fetchone()
-                    if row:
-                        last_chapter = row['chapter']
-                except:
-                    pass
-                finally:
-                    db.disconnect()
-        except:
-            pass
-        return last_chapter if last_chapter else "Нет сохранений"
-    
-    def load_last_save_for_user(user_id):
-        saves = []
-        try:
-            all_slots = []
-            for i in range(1, 10):
-                all_slots.append(str(i))
-            for i in range(1, 10):
-                all_slots.append(f"auto-{i}")
-            all_slots.append("quick-save")
-            for slot_name in all_slots:
-                if renpy.can_load(slot_name):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                        if save_json and save_json.get("user_id") == user_id:
-                            timestamp = save_json.get("_timestamp", 0)
-                            saves.append((slot_name, timestamp))
-                    except:
-                        continue
-        except Exception as e:
-            print(f"Ошибка при поиске сохранений: {e}")
-        saves.sort(key=lambda x: x[1], reverse=True)
-        if saves:
-            try:
-                renpy.load(saves[0][0])
-                return True
-            except:
-                return False
-        return False
-
-    def set_current_user(user_id, user_name):
-        persistent.user_id = user_id
-        persistent.user_name = user_name
-        renpy.notify(f"Выбран игрок: {user_name}")
-
 screen main_menu():
     tag menu
     add "gui/main_menu.png"
-    
-    # Проверяем наличие сохранений для отображения кнопки "Продолжить"
     python:
         has_saves = False
         slots_to_check = [str(i) for i in range(1, 10)] + [f"auto-{i}" for i in range(1, 10)] + ["quick-save"]
@@ -523,35 +442,28 @@ screen main_menu():
             if renpy.can_load(slot):
                 has_saves = True
                 break
-    
     if gui.show_name:
         text "[config.name!t]":
             style "main_menu_title"
-    
     text "Версия [config.version]":
         style "main_menu_version"
         at transform:
             alpha 0.5
-    
     frame:
         style "main_menu_frame"
         xalign 0.5
         yalign 0.5
         xsize 500
         ysize 650
-        background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
-        
+        background Frame("gui/choice_idle_background.png", 25, 25)
         vbox:
             xalign 0.5
             yalign 0.5
             spacing 1
-            
-            # Кнопка "Продолжить" появляется только если есть сохранения
             if has_saves:
                 textbutton _("Продолжить"):
                     style "main_menu_button"
                     action Function(load_latest_save)
-                    
             textbutton _("Начать игру"):
                 style "main_menu_button"
                 action Start()
@@ -570,7 +482,6 @@ screen main_menu():
             textbutton _("Выход"):
                 style "main_menu_button"
                 action Quit(confirm=True)
-    
     button:
         style "players_button"
         action ShowMenu("debug_database")
@@ -604,8 +515,8 @@ style main_menu_button:
     xsize 400
     ysize None
     margin (0, 5)
-    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    background Frame("gui/button/choice_idle_background.png", 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
 style main_menu_button_text:
     color "#ffffff"
     hover_color "#fb906d"
@@ -620,8 +531,8 @@ style players_button:
     ypos 0.55
     xsize 295
     ysize 139
-    background Frame("gui/button/choice_idle_background_3.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background_2.png", 15, 15, 15, 15)
+    background Frame("gui/button/choice_idle_background_3.png", 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_2.png", 15, 15)
     padding (20, 20)
 
 screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
@@ -726,8 +637,9 @@ style about_label_text is gui_label_text
 style about_text is gui_text
 style about_label_text:
     size gui.label_text_size
+    
 ################################################################################
-## ЭКРАНЫ ЗАГРУЗКИ И СОХРАНЕНИЯ
+## ЭКРАНЫ ЗАГРУЗКИ И СОХРАНЕНИЯ (ИСПРАВЛЕННЫЕ)
 ################################################################################
 screen save():
     tag menu
@@ -753,7 +665,7 @@ screen file_slots_with_user(title, is_save=True):
             text "[persistent.user_name]" size 24 color "#ff832b" bold True
             if persistent.user_id:
                 text "(ID: [persistent.user_id])" size 18 color "#cccccc"
-    
+                
     use game_menu(title):
         fixed:
             yoffset 80
@@ -773,16 +685,12 @@ screen file_slots_with_user(title, is_save=True):
                 for i in range(gui.file_slot_cols * gui.file_slot_rows):
                     $ slot = i + 1
                     button:
-                        if renpy.can_load(str(slot)):
-                            if is_save:
-                                action Function(custom_save_action, slot)
-                            else:
-                                action Function(custom_file_action, slot)
+                        if is_save:
+                            action Function(custom_save_action, slot)
+                        elif renpy.can_load(str(slot)):
+                            action Function(custom_load_action, slot)
                         else:
-                            if is_save:
-                                action Function(custom_save_action, slot)
-                            else:
-                                action NullAction()
+                            action NullAction()
                         has vbox
                         $ thumbnail = FileScreenshot(slot)
                         if thumbnail:
@@ -799,11 +707,11 @@ screen file_slots_with_user(title, is_save=True):
                         if file_name:
                             text file_name:
                                 style "slot_name_text"
-                        $ save_user = FileJson(slot, "user_name", empty="")
+                        $ save_user = FileJson(slot, "user_name", default="")
                         if save_user:
                             text "Игрок: [save_user]":
                                 style "slot_user_text"
-                        $ save_chapter = FileJson(slot, "chapter", empty="")
+                        $ save_chapter = FileJson(slot, "chapter", default="")
                         if save_chapter:
                             if "Первая" in save_chapter or "Связь" in save_chapter:
                                 $ display_chapter = "Глава 1"
@@ -815,7 +723,7 @@ screen file_slots_with_user(title, is_save=True):
                                 $ display_chapter = save_chapter[:20] + "..." if len(save_chapter) > 20 else save_chapter
                             text "Глава: [display_chapter]":
                                 style "slot_chapter_text"
-                        if renpy.can_load(str(slot)):
+                        if renpy.can_load(str(slot)) and not is_save:
                             key "save_delete" action FileDelete(slot)
             vbox:
                 style_prefix "page"
@@ -835,6 +743,9 @@ screen file_slots_with_user(title, is_save=True):
                     textbutton _(">") action FilePageNext()
                     key "save_page_next" action FilePageNext()
 
+################################################################################
+## НАСТРОЙКИ, ИСТОРИЯ, ПОМОЩЬ
+################################################################################
 screen preferences():
     tag menu
     use game_menu(_("Настройки"), scroll="viewport"):
@@ -1105,6 +1016,7 @@ style help_label_text:
     size gui.text_size
     xalign 1.0
     textalign 1.0
+    
 ################################################################################
 ## ДОПОЛНИТЕЛЬНЫЕ ЭКРАНЫ
 ################################################################################
@@ -1350,6 +1262,7 @@ define bubble.expand_area = {
     "top_right" : (0, 22, 0, 0),
     "thought" : (0, 0, 0, 0),
 }
+    
 ################################################################################
 ## МОБИЛЬНЫЕ ВАРИАНТЫ
 ################################################################################
@@ -1435,6 +1348,7 @@ style slider_vbox:
 style slider_slider:
     variant "small"
     xsize 900
+    
 ################################################################################
 ## ЭКРАН ДЛЯ ВВОДА ИМЕНИ
 ################################################################################
@@ -1486,15 +1400,15 @@ screen input_name_screen():
 
 init -1 python:
     style.create("input_frame", "default")
-    style.input_frame.background = Frame("gui/frame.png", 25, 25, 25, 25)
+    style.input_frame.background = Frame("gui/frame.png", 25, 25)
     style.input_frame.xalign = 0.5
     style.input_frame.yalign = 0.5
     style.create("input_field_frame", "default")
-    style.input_field_frame.background = Frame("gui/button/choice_idle_background_1.png", 15, 15, 15, 15)
+    style.input_field_frame.background = Frame("gui/button/choice_idle_background_1.png", 15, 15)
     style.input_field_frame.xysize = (500, 60)
     style.create("input_confirm_button", "button")
-    style.input_confirm_button.background = Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
-    style.input_confirm_button.hover_background = Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    style.input_confirm_button.background = Frame("gui/button/choice_idle_background_0.png", 15, 15)
+    style.input_confirm_button.hover_background = Frame("gui/button/choice_hover_background_1.png", 15, 15)
     style.input_confirm_button.xsize = 450
     style.input_confirm_button.padding = (20, 10)
     style.create("input_confirm_button_text", "button_text")
@@ -1504,6 +1418,7 @@ init -1 python:
     style.input_confirm_button_text.outlines = [(2, "#ff832b", 0, 0)]
     style.input_confirm_button_text.text_align = 0.5
     style.input_confirm_button_text.xalign = 0.5
+
 ################################################################################
 ## ЭКРАН ПЕРЕХОДА МЕЖДУ ГЛАВАМИ
 ################################################################################
@@ -1553,6 +1468,7 @@ screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
         false=Return(("exit", old_chapter)))
     key "K_ESCAPE" action Return(("exit", old_chapter))
     key "game_menu" action Return(("exit", old_chapter))
+
 ################################################################################
 ## ЭКРАН ПОДТВЕРЖДЕНИЯ ПЕРЕКЛЮЧЕНИЯ ПОЛЬЗОВАТЕЛЯ
 ################################################################################
@@ -1581,8 +1497,9 @@ screen confirm_user_switch(slot):
                 textbutton "Отмена" action Hide("confirm_user_switch")
     key "K_ESCAPE" action Hide("confirm_user_switch")
     key "game_menu" action Hide("confirm_user_switch")
+
 ################################################################################
-## ЭКРАН ДЛЯ ОТОБРАЖЕНИЯ СТАТИСТИКИ ИГРОКА
+## ЭКРАН СТАТИСТИКИ ИГРОКА (ИСПРАВЛЕННЫЙ)
 ################################################################################
 screen player_stats_screen():
     tag menu
@@ -1644,24 +1561,7 @@ screen player_stats_screen():
                     text f"{player_trust_level}%" size 20 color "#cccccc" xalign 1.0
             null height 20
             if persistent.user_id:
-                $ stats_total_attempts = 0
-                $ stats_correct_matches = 0
-                $ stats_emotions_chosen = {}
-                python:
-                    try:
-                        if 'get_emotion_stats' in globals():
-                            temp_stats = get_emotion_stats(persistent.user_id)
-                            stats_total_attempts = temp_stats.get('total_attempts', 0)
-                            stats_correct_matches = temp_stats.get('correct_matches', 0)
-                            stats_emotions_chosen = temp_stats.get('emotions_chosen', {})
-                        else:
-                            stats_total_attempts = 0
-                            stats_correct_matches = 0
-                            stats_emotions_chosen = {}
-                    except Exception:
-                        stats_total_attempts = 0
-                        stats_correct_matches = 0
-                        stats_emotions_chosen = {}
+                $ stats_total_attempts, stats_correct_matches, stats_emotions_chosen = safe_get_emotion_stats(persistent.user_id)
                 frame:
                     style "stats_frame"
                     xfill True
@@ -1697,11 +1597,11 @@ screen player_stats_screen():
                 action Hide("player_stats_screen")
 
 style stats_frame:
-    background Frame("gui/frame.png", 15, 15, 15, 15)
+    background Frame("gui/frame.png", 15, 15)
     padding (25, 20)
 style stats_close_button:
-    background Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    background Frame("gui/button/choice_idle_background_0.png", 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
     padding (25, 12)
     xsize 300
 style stats_close_button_text:
@@ -1709,83 +1609,20 @@ style stats_close_button_text:
     hover_color "#ff9999"
     size 24
     text_align 0.5
+
 ################################################################################
 ## СТИЛИ ДЛЯ ПЕРЕХОДОВ МЕЖДУ ГЛАВАМИ
 ################################################################################
 style chapter_transition_frame:
-    background Frame("gui/frame.png", 25, 25, 25, 25)
+    background Frame("gui/frame.png", 25, 25)
     padding (40, 40)
 style chapter_transition_button:
-    background Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    background Frame("gui/button/choice_idle_background_0.png", 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
     padding (20, 10)
     xsize 250
 style chapter_transition_button_text:
     color "#ffffff"
     hover_color "#ff9999"
     size 20
-    text_align 0.5
-################################################################################
-## ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЗАГРУЗКИ
-################################################################################
-init python:
-    def load_other_user_save(slot):
-        try:
-            save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
-            if save_json:
-                persistent.user_id = save_json.get("user_id")
-                persistent.user_name = save_json.get("user_name", "")
-                if "player_state" in save_json:
-                    store.player_self_awareness = save_json["player_state"].get("self_awareness", 0)
-                    store.player_empathy = save_json["player_state"].get("empathy", 0)
-                    store.player_emotional_vocabulary = save_json["player_state"].get("vocabulary", 0)
-                    store.player_anxiety_level = save_json["player_state"].get("anxiety", 50)
-                    store.player_trust_level = save_json["player_state"].get("trust", 30)
-        except:
-            pass
-        renpy.run(FileAction(slot))
-################################################################################
-## ЭКРАН ДЛЯ ГАЛЕРЕИ (ЕСЛИ ОТСУТСТВУЕТ)
-################################################################################
-screen gallery_image_popup(image, title):
-    modal True
-    zorder 200
-    add "#000000CC"
-    frame:
-        background Frame("gui/confirm_frame.png", 25, 25)
-        padding (35, 35)
-        xysize (1600, 920)
-        xalign 0.5
-        yalign 0.5
-        vbox:
-            xalign 0.5
-            yalign 0.5
-            text title:
-                color "#ffffff"
-                size 32
-                font gui.interface_text_font
-                outlines [(2, "#671a1a", 0, 0)]
-                xalign 0.5
-            $ image_exists = renpy.loadable(image) if image else False
-            if image_exists:
-                add Transform(image, zoom=0.8, xalign=0.5, yalign=0.5) xsize 1170 ysize 620
-            else:
-                text "Изображение не найдено:\n[image]" size 30 xalign 0.5 yalign 0.5
-            textbutton _("Закрыть"):
-                xalign 0.5
-                ypos 50
-                background Frame("gui/button/choice_idle_background.png", 10, 10, 10, 10)
-                hover_background Frame("gui/button/choice_hover_background_1.png", 10, 10, 10, 10)
-                padding (30, 10)
-                xsize 250
-                action Hide("gallery_image_popup")
-                text_style "gallery_close_button_text"
-    key "game_menu" action Hide("gallery_image_popup")
-    key "K_ESCAPE" action Hide("gallery_image_popup")
-
-style gallery_close_button_text:
-    color "#ffffff"
-    hover_color "#FF7B4E"
-    size 24
-    outlines [(2, "#671a1a", 0, 0)]
     text_align 0.5

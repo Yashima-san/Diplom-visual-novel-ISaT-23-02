@@ -8,9 +8,10 @@ define t = Character('Анна Сергеевна', color="#9370db")
 define k = Character('Катя', color="#fe7d90")
 define lib = Character('Библиотекарь', color="#a0522d")
 
-define persistent.user_name = ""
-define persistent.user_id = None
-define persistent.user_data = None
+# Persistent переменные
+default persistent.user_name = ""
+default persistent.user_id = None
+default persistent.user_data = None
 
 default player_self_awareness = 0
 default player_empathy = 0
@@ -146,15 +147,12 @@ image bg library = ConditionSwitch("renpy.loadable('images/library.png')", "imag
 image cg room_evening = ConditionSwitch("renpy.loadable('images/cg/room_evening.png')", "images/cg/room_evening.png", "True", "#2b2b2b")
 
 ################################################################################
-## ЭКРАНЫ МИНИ-ИГР (ИСПРАВЛЕННЫЕ)
+## ЭКРАНЫ МИНИ-ИГР
 ################################################################################
-
-# Игра 1: Эмоциональный компас
 screen emotion_selection_extended():
     modal True
     zorder 100
     
-    # Исправлено: используем frame с background вместо add с xfill
     frame:
         background Solid("#1a1a2eee")
         xfill True
@@ -189,15 +187,12 @@ screen emotion_selection_extended():
                         
             textbutton "Пропустить" action Return(None) xalign 0.5
 
-# Игра 2: Ритм Дружбы
 screen rhythm_game_screen():
     modal True
     zorder 100
     
-    # Фон
     add "bg music_room"
     
-    # Интерфейс счета
     frame:
         background None
         pos (0.5, 0.1)
@@ -207,27 +202,23 @@ screen rhythm_game_screen():
             text "Ритм Дружбы" size 40 color "#fff"
             text "Счет: [rhythm_game_score]" size 30 color "#ff9e5e"
 
-    # Зона цели (Target) - исправлено использование border
     frame:
         pos (0.5, 0.8)
         anchor (0.5, 0.5)
         xsize 100
         ysize 100
         background Solid("#ffffff33")
-        padding (2, 2, 2, 2) # Замена border
+        padding (2, 2, 2, 2)
         
-    # Инструкция и кнопка
     vbox:
         pos (0.5, 0.8)
         anchor (0.5, 0.5)
         spacing 20
         text "Нажми ПРОБЕЛ или кликни, когда круг совпадет с целью!" color "#fff" size 20 xalign 0.5
-        
         textbutton "УДАР! (Пробел)" action Function(play_rhythm_hit) xalign 0.5 xminimum 200
 
-
 ################################################################################
-## ЛОГИКА МИНИ-ИГР PYTHON
+## ЛОГИКА МИНИ-ИГР
 ################################################################################
 init python:
     rhythm_active = False
@@ -473,7 +464,7 @@ label continue_chat_after_first:
         $ show_chat_choices(["Спасибо, Лина! Ты лучшая!", "Спасибо, Лина! Я очень ценю твою дружбу."], second_choice_callback)
         $ store.wait_for_chat()
     
-    $ renpy.pause(7.0)
+    pause 2.0
     $ disable_chat_mode()
     jump night_scene
 
@@ -506,8 +497,9 @@ label night_scene:
     pause 1.0
     jump morning_scene
 
+# 🔥 ИСПРАВЛЕННЫЙ БЛОК: Добавлен $ store.wait_for_chat()
 label morning_scene:
-    stop music
+    stop music fadeout 1.0
     scene cg room_evening with fade
     play music "song/Audio_soft_1.mp3" fadein 3.0
     narrator "Утро 3 сентября."
@@ -515,12 +507,12 @@ label morning_scene:
     $ e("Доброе утро, [persistent.user_name]! 🌅 Не забудь взять тетради и хорошее настроение 😘")
     
     $ show_chat_choices(["Спасибо, Лина! Я уже встаю. Увидимся у входа! ❤️", "Я тоже волнуюсь... Но спасибо, что ты рядом!", "Увидимся у входа в школу!"], morning_choice_callback)
+    
+    # 🔑 ИСПРАВЛЕНИЕ: Ждём клика игрока в интерфейсе чата, иначе контекст сбивается
     $ store.wait_for_chat()
-    $ renpy.pause(7.0)
     $ disable_chat_mode()
-    return
-
-label continue_morning:
+    
+    # Продолжение сценария единым потоком
     narrator "[persistent.user_name] начала собираться."
     scene bg kitchen with fade
     narrator "На кухне была записка от родителей: \"Удачи в новой школе! Мы в тебя верим!\""
@@ -550,9 +542,9 @@ label continue_morning:
     hide text with dissolve
     pause 0.5
     $ auto_save_chapter_complete("Глава Первая: Связь")
+    
     # Переход ко второй главе
     jump chapter_two
-    return
 
 ################################################################################
 ## ГЛАВА ВТОРАЯ: НОВЫЕ ЗНАКОМСТВА
@@ -713,6 +705,6 @@ label chapter_two_end:
     pause 0.5
     $ auto_save_chapter_complete("Глава Вторая: Новые знакомства")
     
-    # Заглушка для перехода к 3 главе
+    # Заглушка для перехода к 3 главе или в главное меню
     "Глава Третья: В разработке..."
     return

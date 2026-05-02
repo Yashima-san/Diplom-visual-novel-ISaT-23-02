@@ -1,5 +1,5 @@
 ################################################################################
-## МИНИ-ИГРА: КОЛЕСО ЭМОЦИЙ (УПРОЩЁННАЯ ВЕРСИЯ ДЛЯ ДНЕВНИКА)
+## МИНИ-ИГРА: КОЛЕСО ЭМОЦИЙ (ДЛЯ ДНЕВНИКА)
 ################################################################################
 
 screen emotion_selection_extended():
@@ -45,12 +45,24 @@ screen emotion_selection_extended():
                                 frame:
                                     style "emotion_button_selected"
                                     xfill True
-                                    text emotion size 24 xalign 0.5 yalign 0.5
+                                    yfill True
+                                    text emotion:
+                                        size 24
+                                        xalign 0.5
+                                        yalign 0.5
+                                        min_width 300
+                                        text_align 0.5
                             else:
                                 frame:
                                     style "emotion_button_idle"
                                     xfill True
-                                    text emotion size 24 xalign 0.5 yalign 0.5
+                                    yfill True
+                                    text emotion:
+                                        size 24
+                                        xalign 0.5
+                                        yalign 0.5
+                                        min_width 300
+                                        text_align 0.5
             
             null height 20
             

@@ -93,8 +93,7 @@ screen body_sensations_picker(sensations_dict, on_toggle):
     
     frame:
         background Solid("#0f0f1ecc")
-        xfill True
-        yfill True
+        xfill True yfill True
         
     frame:
         style "empty_frame"
@@ -118,7 +117,6 @@ screen body_sensations_picker(sensations_dict, on_toggle):
                 vbox:
                     spacing 6
                     for sid, stext in sensations_dict.items():
-                        # Исправлено: используем переменную для символа
                         $ symbol = "☑" if sid in selected_sensations else "☐"
                         hbox:
                             spacing 10
@@ -126,7 +124,8 @@ screen body_sensations_picker(sensations_dict, on_toggle):
                                 action on_toggle(sid)
                                 style "checkbox_btn"
                                 text_color "#a0a0ff"
-                                hover_text_color "#ffffff"
+                                text_hover_color "#ffffff"
+                                text_size 28
                             text "[stext]" style "sensation_text" yalign 0.5
             
             hbox:
@@ -143,8 +142,7 @@ screen reaction_selector(reactions_dict, on_select):
     
     frame:
         background Solid("#0f0f1ecc")
-        xfill True
-        yfill True
+        xfill True yfill True
         
     frame:
         style "empty_frame"
@@ -164,7 +162,6 @@ screen reaction_selector(reactions_dict, on_select):
             viewport:
                 mousewheel True
                 scrollbars "vertical"
-                # Исправлено: цикл for должен быть внутри vbox
                 vbox:
                     spacing 12
                     for rid, rdata in reactions_dict.items():
@@ -173,6 +170,8 @@ screen reaction_selector(reactions_dict, on_select):
                             style "reaction_button"
                             hovered SetScreenVariable("hovered_reaction", rid)
                             text_color "#f0f0ff"
+                            text_size 17
+                            text_xalign 0.0
             
             if hovered_reaction:
                 $ rinfo = reactions_dict[hovered_reaction]
@@ -247,9 +246,10 @@ label emotion_diary_minigame(scenario_id="meeting_lina"):
         $ diary_streak = 0
     else:
         $ reaction_data = scenario.reactions[selected_reaction]
-        # Исправлено: цикл for внутри label должен иметь отступ
-        for stat, value in reaction_data.effects.items():
-            $ globals()[stat] = globals().get(stat, 0) + value
+        # Исправлено: цикл Python внутри label требует блока python:
+        python:
+            for stat, value in reaction_data.effects.items():
+                globals()[stat] = globals().get(stat, 0) + value
         
         scene expression scenario.bg with dissolve
         narrator "[reaction_data.narration]"
@@ -302,40 +302,31 @@ label show_diary_entry(scenario_id):
     return
 
 # --- СТИЛИ ---
-style checkbox_btn is button
-style checkbox_btn:
+style checkbox_btn is button:
     xsize 40 ysize 40
     background None
-    text_size 28
 
-style sensation_text is text
-style sensation_text:
+style sensation_text is text:
     size 18
     color "#e0e0ff"
     yalign 0.5
 
-style reaction_button is button
-style reaction_button:
+style reaction_button is button:
     xsize 700 ysize 80
     background Frame("gui/reaction_btn.png", tile=False)
     hover_background Frame("gui/reaction_btn_hover.png", tile=False)
     padding (25, 15, 25, 15)
-    text_size 17
-    text_xalign 0.0
 
-style outcome_preview is frame
-style outcome_preview:
+style outcome_preview is frame:
     background Frame("gui/preview_box.png", tile=False)
     xsize 400
     padding (15, 12, 15, 12)
     yoffset 10
 
-style preview_label is text
-style preview_label:
+style preview_label is text:
     size 16
     bold True
     color "#aaa"
 
-style preview_stat is text
-style preview_stat:
+style preview_stat is text:
     size 15

@@ -23,11 +23,9 @@ screen emotion_wheel_selector(correct_answer, on_confirm):
     modal True
     tag menu
     
-    # Фон
     frame:
         background Solid("#1a1a2e")
-        xfill True
-        yfill True
+        xfill True yfill True
         
     frame:
         style "empty_frame"
@@ -37,8 +35,7 @@ screen emotion_wheel_selector(correct_answer, on_confirm):
         
         vbox:
             spacing 15
-            xalign 0.5
-            yalign 0.5
+            xalign 0.5 yalign 0.5
             
             text "Какую эмоцию ты замечаешь?" style "game_title"
             text "Нажми на карточку, которая кажется наиболее точной" style "subtitle" color "#aaa"
@@ -49,13 +46,14 @@ screen emotion_wheel_selector(correct_answer, on_confirm):
                 xalign 0.5
                 spacing 10
                 for key, data in emotion_database.items():
-                    # Используем text_color как аргумент кнопки, так как в стиле button его нет
                     textbutton "[data.icon] [data.name]":
                         action on_confirm(key)
                         style "emotion_button"
                         hovered SetScreenVariable("hovered_emotion", key)
                         text_color data.color
                         text_hover_color "#ffffff"
+                        text_size 16
+                        text_bold True
             
             if hovered_emotion:
                 $ hint_data = emotion_database[hovered_emotion]
@@ -81,8 +79,7 @@ screen body_clues_selector(available_clues, on_select):
     
     frame:
         background Solid("#1a1a2ecc")
-        xfill True
-        yfill True
+        xfill True yfill True
         
     frame:
         style "empty_frame"
@@ -106,7 +103,9 @@ screen body_clues_selector(available_clues, on_select):
                         textbutton "□ [clue_text]":
                             action on_select(clue_id)
                             style "clue_button"
-                            text_color "#e0e0ff" # Перенесено сюда
+                            text_color "#e0e0ff"
+                            text_size 18
+                            text_xalign 0.0
             
             textbutton "✓ Готово":
                 action Return()
@@ -204,45 +203,34 @@ label emotion_detective_minigame:
     return
 
 # --- СТИЛИ ---
-style emotion_button is button
-style emotion_button:
+style emotion_button is button:
     xsize 180 ysize 70
     background Frame("gui/button_bg.png", tile=False)
     hover_background Frame("gui/button_hover.png", tile=False)
     padding (10, 5, 10, 5)
-    # Размер и жирность текста задаются через стиль текста кнопки
-    text_size 16
-    text_bold True
 
-style clue_button is button
-style clue_button:
+style clue_button is button:
     xsize 600
     background None
     hover_background Solid("#2a2a4a")
     padding (15, 10, 15, 10)
-    text_size 18
-    text_xalign 0.0
 
-style hint_frame is frame
-style hint_frame:
+style hint_frame is frame:
     background Frame("gui/hint_box.png", tile=False)
     xsize 500
     padding (20, 15, 20, 15)
 
-style hint_title is text
-style hint_title:
+style hint_title is text:
     size 22
     bold True
     outlines [(2, "#00000080", 0, 0)]
 
-style hint_label is text
-style hint_label:
+style hint_label is text:
     size 16
     color "#aaa"
     yoffset 5
 
-style hint_text is text
-style hint_text:
+style hint_text is text:
     size 15
     color "#d0d0ff"
     yoffset 2
