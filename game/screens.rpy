@@ -35,6 +35,34 @@ init python:
             pass
         return "Глава Первая: Связь"
     
+    def get_save_user_name(slot):
+        """Безопасное получение имени пользователя из сохранения"""
+        try:
+            save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
+            if save_json:
+                return save_json.get("user_name", "")
+        except:
+            pass
+        return ""
+    
+    def get_save_chapter(slot):
+        """Безопасное получение главы из сохранения"""
+        try:
+            save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
+            if save_json:
+                chapter = save_json.get("chapter", "")
+                if "Первая" in chapter or "Связь" in chapter:
+                    return "Глава 1"
+                elif "Вторая" in chapter or "Новые знакомства" in chapter:
+                    return "Глава 2"
+                elif "Третья" in chapter:
+                    return "Глава 3"
+                elif chapter:
+                    return chapter[:20] + "..." if len(chapter) > 20 else chapter
+        except:
+            pass
+        return ""
+    
     def update_player_state(self_awareness_change=0, empathy_change=0, 
                         vocabulary_change=0, anxiety_change=0, trust_change=0):
         if not hasattr(store, 'player_self_awareness'):
@@ -94,7 +122,6 @@ init python:
                     return
         except:
             pass
-        # Если проверка прошла или user_id совпадает -> загружаем
         renpy.run(FileAction(slot_str))
 
     def load_latest_save():
@@ -330,108 +357,6 @@ style navigation_button:
 style navigation_button_text:
     properties gui.text_properties("navigation_button")
 
-screen select_user_screen():
-    modal True
-    zorder 200
-    add "#000000CC"
-    frame:
-        style "select_user_frame"
-        xalign 0.5
-        yalign 0.5
-        xsize 1200
-        ysize 900
-        padding (70, 70)
-        vbox:
-            spacing 20
-            xfill True
-            text "Выберите пользователя для продолжения:" size 32 color "#ffffff" font gui.interface_text_font xalign 0.5 yalign 0.5
-            null height 10
-            $ users = db.get_all_users() if 'db' in globals() and hasattr(db, 'get_all_users') else []
-            if users:
-                frame:
-                    style "select_user_header"
-                    xfill True
-                    padding (10, 12)
-                    hbox:
-                        spacing 20
-                        xfill True
-                        text "Имя" size 22 color "#ffffff" xsize 200 text_align 0.5
-                        text "Сохранение" size 22 color "#ffffff" xsize 400 text_align 0.5
-                        text "Прогресс" size 22 color "#ffffff" xsize 250 text_align 0.5
-                        text "Достижений" size 22 color "#ffffff" xsize 150 text_align 0.5
-                viewport:
-                    ysize 350
-                    scrollbars "vertical"
-                    mousewheel True
-                    draggable True
-                    vbox:
-                        spacing 5
-                        xfill True
-                        for user in users:
-                            $ user_id = user['user_ID']
-                            $ user_name = user['name']
-                            $ last_save_info = get_last_save_info(user_id)
-                            $ last_save_time = last_save_info['time']
-                            $ last_save_chapter = last_save_info['chapter']
-                            $ user_progress = get_user_progress(user_id)
-                            $ progress_text = ", ".join(user_progress) if user_progress else "Нет данных"
-                            $ user_achievements = db.get_user_achievements(user_id) if 'db' in globals() and hasattr(db, 'get_user_achievements') else []
-                            $ ach_count = len(user_achievements)
-                            button:
-                                style "select_user_row"
-                                xfill True
-                                action [Function(set_current_user, user_id, user_name), Function(load_last_save_for_user, user_id), Hide("select_user_screen")]
-                                hbox:
-                                    spacing 20
-                                    xfill True
-                                    text "[user_name]" size 22 color "#ffffff" xsize 200 text_align 0.5
-                                    text "[last_save_time]" size 22 color "#ffffff" xsize 400 text_align 0.5
-                                    text "[progress_text]" size 22 color "#ffffff" xsize 250 text_align 0.5
-                                    text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
-            else:
-                vbox:
-                    spacing 30
-                    xalign 0.5
-                    yalign 0.5
-                    text "Нет сохраненных игроков" size 28 xalign 0.5 color "#656565"
-                    text "Начните новую игру, чтобы создать сохранение" size 22 xalign 0.5 color "#737373"
-                    null height 20
-            null height 20
-            hbox:
-                spacing 5
-                xalign 0.5
-                yalign 0.1
-                textbutton "Начать новую игру" style "select_user_button" action [Start(), Hide("select_user_screen")]
-                textbutton "Отмена" style "select_user_button" action Hide("select_user_screen")
-    key "game_menu" action Hide("select_user_screen")
-    key "K_ESCAPE" action Hide("select_user_screen")
-
-style select_user_frame:
-    background Frame("gui/confirm_frame.png", 25, 25)
-    padding (30, 30)
-style select_user_header:
-    background "#c66b2f"
-    xfill True
-style select_user_header_text:
-    color "#ffffff"
-    size 22
-style select_user_row:
-    background "#d9874d"
-    hover_background "#97321b"
-    xfill True
-    padding (10, 8)
-    margin (0, 2)
-style select_user_button:
-    padding (5, 5)
-    xsize 350
-style select_user_button_text:
-    color "#ffffff"
-    hover_color "#fb906d"
-    outlines [(2, "#671a1a", 0, 0)]
-    size 22
-    font gui.interface_text_font
-    text_align 0.5
-
 screen main_menu():
     tag menu
     add "gui/main_menu.png"
@@ -639,7 +564,7 @@ style about_label_text:
     size gui.label_text_size
     
 ################################################################################
-## ЭКРАНЫ ЗАГРУЗКИ И СОХРАНЕНИЯ (ИСПРАВЛЕННЫЕ)
+## ЭКРАНЫ ЗАГРУЗКИ И СОХРАНЕНИЯ
 ################################################################################
 screen save():
     tag menu
@@ -652,20 +577,6 @@ screen load():
 screen file_slots_with_user(title, is_save=True):
     default page_name_value = FilePageNameInputValue(pattern=_("{} страница"), auto=_("Автосохранения"), quick=_("Быстрые сохранения"))
     
-    frame:
-        style "user_info_frame"
-        xalign 0.5
-        yalign 0.05
-        xsize 600
-        padding (15, 10)
-        hbox:
-            spacing 10
-            xalign 0.5
-            text "Игрок:" size 24 color "#ffffff"
-            text "[persistent.user_name]" size 24 color "#ff832b" bold True
-            if persistent.user_id:
-                text "(ID: [persistent.user_id])" size 18 color "#cccccc"
-                
     use game_menu(title):
         fixed:
             yoffset 80
@@ -707,21 +618,13 @@ screen file_slots_with_user(title, is_save=True):
                         if file_name:
                             text file_name:
                                 style "slot_name_text"
-                        $ save_user = FileJson(slot, "user_name", default="")
+                        $ save_user = get_save_user_name(slot)
                         if save_user:
                             text "Игрок: [save_user]":
                                 style "slot_user_text"
-                        $ save_chapter = FileJson(slot, "chapter", default="")
+                        $ save_chapter = get_save_chapter(slot)
                         if save_chapter:
-                            if "Первая" in save_chapter or "Связь" in save_chapter:
-                                $ display_chapter = "Глава 1"
-                            elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
-                                $ display_chapter = "Глава 2"
-                            elif "Третья" in save_chapter:
-                                $ display_chapter = "Глава 3"
-                            else:
-                                $ display_chapter = save_chapter[:20] + "..." if len(save_chapter) > 20 else save_chapter
-                            text "Глава: [display_chapter]":
+                            text "Глава: [save_chapter]":
                                 style "slot_chapter_text"
                         if renpy.can_load(str(slot)) and not is_save:
                             key "save_delete" action FileDelete(slot)
@@ -880,17 +783,21 @@ style history_name_text is gui_label_text
 style history_text is gui_text
 style history_label is gui_label
 style history_label_text is gui_label_text
+
 style history_window:
     xfill True
     ysize gui.history_height
+
 style history_name:
     xpos gui.history_name_xpos
     xanchor gui.history_name_xalign
     ypos gui.history_name_ypos
     xsize gui.history_name_width
+
 style history_name_text:
     min_width gui.history_name_width
     textalign gui.history_name_xalign
+
 style history_text:
     xpos gui.history_text_xpos
     ypos gui.history_text_ypos
@@ -899,8 +806,10 @@ style history_text:
     min_width gui.history_text_width
     textalign gui.history_text_xalign
     layout ("subtitle" if gui.history_text_xalign else "tex")
+
 style history_label:
     xfill True
+
 style history_label_text:
     xalign 0.5
 
@@ -1499,7 +1408,7 @@ screen confirm_user_switch(slot):
     key "game_menu" action Hide("confirm_user_switch")
 
 ################################################################################
-## ЭКРАН СТАТИСТИКИ ИГРОКА (ИСПРАВЛЕННЫЙ)
+## ЭКРАН СТАТИСТИКИ ИГРОКА
 ################################################################################
 screen player_stats_screen():
     tag menu

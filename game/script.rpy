@@ -7,6 +7,7 @@ define a = Character('Алекс', color="#6b8e23")
 define t = Character('Анна Сергеевна', color="#9370db")
 define k = Character('Катя', color="#fe7d90")
 define lib = Character('Библиотекарь', color="#a0522d")
+define katya = Character('Катя', color="#fe7d90")
 
 # Persistent переменные
 default persistent.user_name = ""
@@ -87,6 +88,16 @@ init python:
             renpy.load(latest_slot)
         else:
             renpy.notify("Нет сохранённой игры")
+    
+    def safe_get_emotion_stats(user_id):
+        try:
+            if 'get_emotion_stats' in globals() and callable(get_emotion_stats):
+                res = get_emotion_stats(user_id)
+                if isinstance(res, dict):
+                    return (res.get('total_attempts', 0), res.get('correct_matches', 0), res.get('emotions_chosen', {}))
+        except:
+            pass
+        return (0, 0, {})
 
 ################################################################################
 ## ТРАНСФОРМАЦИИ
@@ -131,6 +142,8 @@ image alex neutral = ConditionSwitch("renpy.loadable('images/characters/alex_neu
 image alex smile = ConditionSwitch("renpy.loadable('images/characters/alex_smile.png')", "images/characters/alex_smile.png", "True", "images/characters/alex_neutral.png")
 image katia neutral = ConditionSwitch("renpy.loadable('images/characters/katia_neutral.png')", "images/characters/katia_neutral.png", "True", "images/characters/katia_neutral.png")
 image katia smile = ConditionSwitch("renpy.loadable('images/characters/katia_smile.png')", "images/characters/katia_smile.png", "True", "images/characters/katia_neutral.png")
+image katia nervous = ConditionSwitch("renpy.loadable('images/characters/katia_nervous.png')", "images/characters/katia_nervous.png", "True", "images/characters/katia_neutral.png")
+image katia thoughtful = ConditionSwitch("renpy.loadable('images/characters/katia_thoughtful.png')", "images/characters/katia_thoughtful.png", "True", "images/characters/katia_neutral.png")
 image teacher neutral = ConditionSwitch("renpy.loadable('images/characters/teacher_neutral.png')", "images/characters/teacher_neutral.png", "True", "images/characters/teacher_neutral.png")
 image teacher kind = ConditionSwitch("renpy.loadable('images/characters/teacher_kind.png')", "images/characters/teacher_kind.png", "True", "images/characters/teacher_neutral.png")
 image librarian neutral = ConditionSwitch("renpy.loadable('images/characters/librarian_neutral.png')", "images/characters/librarian_neutral.png", "True", "images/characters/librarian_neutral.png")
@@ -147,84 +160,58 @@ image bg library = ConditionSwitch("renpy.loadable('images/library.png')", "imag
 image cg room_evening = ConditionSwitch("renpy.loadable('images/cg/room_evening.png')", "images/cg/room_evening.png", "True", "#2b2b2b")
 
 ################################################################################
-## ЭКРАНЫ МИНИ-ИГР
+## ЭКРАН МИНИ-ИГРЫ "РИТМ ДРУЖБЫ"
 ################################################################################
-screen emotion_selection_extended():
-    modal True
-    zorder 100
-    
-    frame:
-        background Solid("#1a1a2eee")
-        xfill True
-        yfill True
-        
-        vbox:
-            xalign 0.5
-            yalign 0.5
-            spacing 20
-            xmaximum 600
-            
-            text "Мини-игра: Эмоциональный Компас" size 30 color "#ffffff" xalign 0.5
-            text "Опиши свое текущее состояние. Выбери основную эмоцию:" size 20 color "#cccccc" xalign 0.5
-            
-            grid 2 4:
-                spacing 10
-                xalign 0.5
-                
-                $ emotions_list = [
-                    ("Радость", "joy"), ("Доверие", "trust"),
-                    ("Страх", "fear"), ("Удивление", "surprise"),
-                    ("Печаль", "sadness"), ("Отвращение", "disgust"),
-                    ("Гнев", "anger"), ("Предвкушение", "anticipation")
-                ]
-                
-                for emo_name, emo_id in emotions_list:
-                    textbutton emo_name:
-                        action Return(emo_id)
-                        xminimum 150
-                        background "#444444"
-                        hover_background "#666666"
-                        
-            textbutton "Пропустить" action Return(None) xalign 0.5
 
 screen rhythm_game_screen():
     modal True
     zorder 100
     
-    add "bg music_room"
+    add "#00000099"
     
     frame:
-        background None
-        pos (0.5, 0.1)
-        anchor (0.5, 0.0)
-        hbox:
-            spacing 20
-            text "Ритм Дружбы" size 40 color "#fff"
-            text "Счет: [rhythm_game_score]" size 30 color "#ff9e5e"
-
-    frame:
-        pos (0.5, 0.8)
-        anchor (0.5, 0.5)
-        xsize 100
-        ysize 100
-        background Solid("#ffffff33")
-        padding (2, 2, 2, 2)
+        background Frame("gui/confirm_frame.png", 25, 25)
+        padding (50, 50)
+        xysize (800, 600)
+        xalign 0.5
+        yalign 0.5
         
-    vbox:
-        pos (0.5, 0.8)
-        anchor (0.5, 0.5)
-        spacing 20
-        text "Нажми ПРОБЕЛ или кликни, когда круг совпадет с целью!" color "#fff" size 20 xalign 0.5
-        textbutton "УДАР! (Пробел)" action Function(play_rhythm_hit) xalign 0.5 xminimum 200
+        vbox:
+            spacing 30
+            xalign 0.5
+            yalign 0.5
+            
+            text "🎵 РИТМ ДРУЖБЫ 🎵" size 40 color "#FFD700" xalign 0.5 bold True
+            text "Счет: [rhythm_game_score]" size 32 color "#ff9e5e" xalign 0.5
+            
+            null height 50
+            
+            frame:
+                xsize 400
+                ysize 200
+                background Solid("#ffffff33")
+                xalign 0.5
+                
+                vbox:
+                    xalign 0.5
+                    yalign 0.5
+                    text "🎯" size 80 xalign 0.5
+                    text "НАЖМИ ПРОБЕЛ!" size 24 color "#ffffff" xalign 0.5
+            
+            null height 30
+            
+            text "Нажми ПРОБЕЛ или кликни, когда круг совпадет с целью!" color "#cccccc" size 20 xalign 0.5
+            textbutton "УДАР! (Пробел)" action Function(play_rhythm_hit) xalign 0.5 xsize 300
 
 ################################################################################
-## ЛОГИКА МИНИ-ИГР
+## ЛОГИКА МИНИ-ИГРЫ "РИТМ ДРУЖБЫ"
 ################################################################################
 init python:
     rhythm_active = False
     rhythm_timer = None
     rhythm_target_time = 0
     rhythm_interval = 2.0
+    rhythm_animation = 0.0
 
     def start_rhythm_game():
         store.rhythm_game_score = 0
@@ -477,19 +464,10 @@ label night_scene:
     thought_user "Психолог говорила, что важно анализировать свои состояния."
     narrator "[persistent.user_name] взяла в руки таблицу «Колесо эмоций»."
     
-    # ЗАПУСК МИНИ-ИГРЫ 1
-    call screen emotion_selection_extended
+    # ЗАПУСК МИНИ-ИГРЫ 1 - КОЛЕСО ЭМОЦИЙ ПЛУТЧИКА (утро в школе)
+    call emotion_wheel_game("morning_school")
     
-    if _return:
-        $ selected_emotion = _return
-        if selected_emotion:
-            thought_user "Я выбрала: [selected_emotion]. Это помогает структурировать хаос."
-            $ update_player_state(self_awareness_change=10, vocabulary_change=8, anxiety_change=-5)
-            $ emotion_game_completed = True
-        else:
-            thought_user "Я не смогла выбрать."
-            $ update_player_state(anxiety_change=5)
-    
+    $ emotion_game_completed = True
     narrator "Засыпая, [persistent.user_name] думала только об одном…"
     thought_user "Скорее бы наступило утро..."
     stop sound fadeout 3.0
@@ -497,7 +475,6 @@ label night_scene:
     pause 1.0
     jump morning_scene
 
-# 🔥 ИСПРАВЛЕННЫЙ БЛОК: Добавлен $ store.wait_for_chat()
 label morning_scene:
     stop music fadeout 1.0
     scene cg room_evening with fade
@@ -508,11 +485,9 @@ label morning_scene:
     
     $ show_chat_choices(["Спасибо, Лина! Я уже встаю. Увидимся у входа! ❤️", "Я тоже волнуюсь... Но спасибо, что ты рядом!", "Увидимся у входа в школу!"], morning_choice_callback)
     
-    # 🔑 ИСПРАВЛЕНИЕ: Ждём клика игрока в интерфейсе чата, иначе контекст сбивается
     $ store.wait_for_chat()
     $ disable_chat_mode()
     
-    # Продолжение сценария единым потоком
     narrator "[persistent.user_name] начала собираться."
     scene bg kitchen with fade
     narrator "На кухне была записка от родителей: \"Удачи в новой школе! Мы в тебя верим!\""
@@ -530,6 +505,10 @@ label morning_scene:
     show lina smile at character_scale_center_soft_approach
     narrator "Лина обняла [persistent.user_name]."
     e "Ну что, готова? Я тебе все покажу!"
+    
+    # ЗАПУСК МИНИ-ИГРЫ 2 - ДНЕВНИК ЭМОЦИЙ (встреча с подругой)
+    call emotion_diary_minigame("meeting_lina")
+    
     hide lina
     play sound "song/school_bell.mp3"
     pause 2.0
@@ -543,7 +522,6 @@ label morning_scene:
     pause 0.5
     $ auto_save_chapter_complete("Глава Первая: Связь")
     
-    # Переход ко второй главе
     jump chapter_two
 
 ################################################################################
@@ -614,10 +592,25 @@ label chapter_two:
     t "Садись. Катя, покажешь нашей новой ученице всё?"
     show katia smile at character_scale_left
     k "Конечно, Анна Сергеевна!"
+    
+    # ЗАПУСК МИНИ-ИГРЫ 3 - ПЕРВЫЙ УРОК (Колесо эмоций)
     hide teacher
+    call emotion_wheel_game("first_lesson")
+    
     narrator "Катя помахала рукой."
     
-    # Перемена
+    # Конфликт в библиотеке - запуск Эмоционального детектива
+    scene bg library with fade
+    show katia nervous at character_scale
+    narrator "На перемене в библиотеке произошла небольшая ссора между Катей и Алексом."
+    katya "Я не хочу сейчас разговаривать!"
+    a "Но я只是想 помочь..."
+    narrator "Катя резко развернулась и отошла к окну."
+    
+    # ЗАПУСК МИНИ-ИГРЫ 4 - ЭМОЦИОНАЛЬНЫЙ ДЕТЕКТИВ
+    call emotion_detective_minigame("library_conflict")
+    
+    # Перемена продолжение
     scene bg school_entrance with fade
     show katia speak at character_scale_left
     show lina smile at character_scale_right
@@ -654,7 +647,7 @@ label music_room_scene:
     hide alex
     narrator "Алекс начал играть и предложил попробовать отбить ритм."
     
-    # ЗАПУСК МИНИ-ИГРЫ 2
+    # ЗАПУСК МИНИ-ИГРЫ 5 - РИТМ ДРУЖБЫ
     $ start_rhythm_game()
     
     $ beats_count = 0
@@ -679,6 +672,11 @@ label music_room_scene:
     show lina smile at character_scale
     user_char "Да... очень. Это красиво."
     hide lina
+    
+    # Еще одна запись в дневник
+    narrator "Вечером того же дня [persistent.user_name] решила записать свои впечатления."
+    call emotion_diary_minigame("meeting_lina")
+    
     jump chapter_two_end
 
 label library_scene:
@@ -705,6 +703,5 @@ label chapter_two_end:
     pause 0.5
     $ auto_save_chapter_complete("Глава Вторая: Новые знакомства")
     
-    # Заглушка для перехода к 3 главе или в главное меню
     "Глава Третья: В разработке..."
     return
