@@ -1,5 +1,5 @@
 # =============================================================================
-# MINI-GAME: Дневник наблюдений «Ситуация → Реакция»
+# MINI-GAME: Дневник наблюдений Ситуация - Реакция
 # =============================================================================
 
 default emotion_diary_unlocked = False
@@ -23,10 +23,10 @@ init python:
             "emotion_options": ["anxiety", "joy", "sadness", "shame", "trust"],
             "reactions": {
                 "speak_up": {
-                    "text": "Сказать: 'Мне немного неловко, но я рада тебя видеть'",
+                    "text": "Сказать: Мне немного неловко, но я рада тебя видеть",
                     "outcome": "healthy_boundary",
                     "effects": {"self_awareness": 8, "trust": 5, "anxiety": -2},
-                    "narration": "Ты назвала своё чувство — и оно стало менее пугающим. Лина кивнула: 'Спасибо, что сказала. Я подожду, когда будет проще.'"
+                    "narration": "Ты назвала своё чувство — и оно стало менее пугающим. Лина кивнула: Спасибо, что сказала. Я подожду, когда будет проще."
                 },
                 "smile_silent": {
                     "text": "Улыбнуться и промолчать",
@@ -53,12 +53,58 @@ init python:
             return "#ffc0c0"
         else:
             return "#e0e0ff"
+    
+    def save_body_sensation_stats(user_id, selected_sensations):
+        try:
+            if not hasattr(persistent, 'body_sensation_stats') or persistent.body_sensation_stats is None:
+                persistent.body_sensation_stats = {}
+            
+            str_id = str(user_id)
+            if str_id not in persistent.body_sensation_stats:
+                persistent.body_sensation_stats[str_id] = {
+                    'total_sessions': 0,
+                    'sensations_chosen': {}
+                }
+            
+            stats = persistent.body_sensation_stats[str_id]
+            stats['total_sessions'] += 1
+            
+            for sensation in selected_sensations:
+                if sensation not in stats['sensations_chosen']:
+                    stats['sensations_chosen'][sensation] = 0
+                stats['sensations_chosen'][sensation] += 1
+        except:
+            pass
+    
+    def save_reaction_stats(user_id, reaction_type):
+        try:
+            if not hasattr(persistent, 'reaction_stats') or persistent.reaction_stats is None:
+                persistent.reaction_stats = {}
+            
+            str_id = str(user_id)
+            if str_id not in persistent.reaction_stats:
+                persistent.reaction_stats[str_id] = {
+                    'total_reactions': 0,
+                    'reactions': {}
+                }
+            
+            stats = persistent.reaction_stats[str_id]
+            stats['total_reactions'] += 1
+            
+            if reaction_type not in stats['reactions']:
+                stats['reactions'][reaction_type] = 0
+            stats['reactions'][reaction_type] += 1
+        except:
+            pass
 
-# --- СКРИН: Выбор телесных ощущений ---
+# ============================================================================
+# СКРИН: ВЫБОР ТЕЛЕСНЫХ ОЩУЩЕНИЙ
+# ============================================================================
+
 screen body_sensations_picker(sensations_dict):
     modal True
     zorder 200
-    add "#000000CC"
+    add "gui/overlay/confirm.png"
     
     default selected_sensations = []
     
@@ -74,8 +120,18 @@ screen body_sensations_picker(sensations_dict):
             xalign 0.5
             yalign 0.5
             
-            text "📝 Что ты замечаешь в теле?" size 32 color gui.accent_color xalign 0.5 bold True
-            text "Отметь всё, что откликается — даже если кажется 'мелочью'" size 22 color "#cccccc" xalign 0.5
+            text "Что ты замечаешь в теле?":
+                size 32
+                color gui.accent_color
+                xalign 0.5
+                bold True
+                outlines [(2, "#1a1a1a", 0, 0)]
+            
+            text "Отметь всё, что откликается — даже если кажется мелочью":
+                size 22
+                color "#cccccc"
+                xalign 0.5
+                outlines [(1, "#1a1a1a", 0, 0)]
             
             viewport:
                 mousewheel True
@@ -85,34 +141,68 @@ screen body_sensations_picker(sensations_dict):
                     spacing 8
                     for sid, stext in sensations_dict.items():
                         $ is_selected = sid in selected_sensations
-                        hbox:
-                            spacing 10
-                            textbutton ("☑" if is_selected else "☐"):
-                                action (SetScreenVariable("selected_sensations", selected_sensations + [sid]) if not is_selected else SetScreenVariable("selected_sensations", [s for s in selected_sensations if s != sid]))
-                                xsize 50
-                                background None
-                                text_color "#a0a0ff"
-                                text_hover_color "#ffffff"
-                                text_size 28
-                            text "[stext]" size 18 color "#e0e0ff" yalign 0.5
+                        button:
+                            xfill True
+                            ysize 50
+                            action (SetScreenVariable("selected_sensations", selected_sensations + [sid]) if not is_selected else SetScreenVariable("selected_sensations", [s for s in selected_sensations if s != sid]))
+                            background (Solid("#6f573f") if is_selected else Solid("#544635"))
+                            hover_background Solid("#3f2626")
+                            padding (15, 10)
+                            
+                            hbox:
+                                spacing 10
+                                xfill True
+                                
+                                if is_selected:
+                                    text "☑":
+                                        size 24
+                                        color "#4caf50"
+                                        yalign 0.5
+                                else:
+                                    text "☐":
+                                        size 24
+                                        color "#a0a0ff"
+                                        yalign 0.5
+                                
+                                text "[stext]":
+                                    size 18
+                                    color "#e0e0ff"
+                                    yalign 0.5
+                                
+                                if is_selected:
+                                    text "✓":
+                                        size 16
+                                        color "#4caf50"
+                                        xalign 1.0
+                                        yalign 0.5
             
             hbox:
                 spacing 20
-                text "Выбрано: [len(selected_sensations)]" size 18 color "#aaaaaa"
-                textbutton "✓ Далее":
+                xalign 0.5
+                
+                text "Выбрано: [len(selected_sensations)]":
+                    size 24
+                    color "#5b5b5b"
+                    outlines [(1, "#1a1a1a", 0, 0)]
+                
+                textbutton "Далее":
                     action Return(selected_sensations)
                     background Frame("gui/button/choice_idle_background.png", 15, 15)
                     hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
                     padding (20, 10)
-                    xsize 150
+                    xsize 250
+                    ysize 50
     
     key "K_ESCAPE" action Return([])
 
-# --- СКРИН: Выбор реакции ---
+# ============================================================================
+# СКРИН: ВЫБОР РЕАКЦИИ
+# ============================================================================
+
 screen reaction_selector(reactions_dict):
     modal True
     zorder 200
-    add "#000000CC"
+    add "gui/overlay/confirm.png"
     
     default hovered_reaction = None
     
@@ -128,8 +218,18 @@ screen reaction_selector(reactions_dict):
             xalign 0.5
             yalign 0.5
             
-            text "Как ты можешь отреагировать?" size 32 color gui.accent_color xalign 0.5 bold True
-            text "Нет 'правильных' ответов — есть то, что сейчас ближе тебе" size 22 color "#cccccc" xalign 0.5
+            text "Как ты можешь отреагировать?":
+                size 32
+                color gui.accent_color
+                xalign 0.5
+                bold True
+                outlines [(2, "#1a1a1a", 0, 0)]
+            
+            text "Нет правильных ответов — есть то, что сейчас ближе тебе":
+                size 22
+                color "#cccccc"
+                xalign 0.5
+                outlines [(1, "#1a1a1a", 0, 0)]
             
             viewport:
                 mousewheel True
@@ -138,47 +238,165 @@ screen reaction_selector(reactions_dict):
                 vbox:
                     spacing 12
                     for rid, rdata in reactions_dict.items():
-                        textbutton "[rdata['text']]":
-                            action Return(rid)
+                        $ is_hovered = (hovered_reaction == rid)
+                        button:
                             xfill True
-                            background Frame("gui/reaction_btn.png", 15, 15)
-                            hover_background Frame("gui/reaction_btn_hover.png", 15, 15)
+                            ysize 80
+                            action Return(rid)
+                            background (Solid("#6f573f") if is_hovered else Solid("#544635"))
+                            hover_background Solid("#3f2626")
                             padding (25, 15)
-                            text_color "#f0f0ff"
-                            text_size 17
-                            text_xalign 0.0
                             hovered SetScreenVariable("hovered_reaction", rid)
+                            unhovered SetScreenVariable("hovered_reaction", None)
+                            
+                            vbox:
+                                spacing 5
+                                text "[rdata['text']]":
+                                    size 17
+                                    color "#f0f0ff"
+                                    xalign 0.0
+                                
+                                if is_hovered:
+                                    $ rinfo = reactions_dict[rid]
+                                    hbox:
+                                        spacing 15
+                                        for stat, value in rinfo["effects"].items():
+                                            $ stat_name_ru = {
+                                                "self_awareness": "Самопонимание",
+                                                "empathy": "Эмпатия",
+                                                "vocabulary": "Словарь",
+                                                "anxiety": "Тревога",
+                                                "trust": "Доверие"
+                                            }.get(stat, stat)
+                                            
+                                            if value > 0:
+                                                $ effect_text = f"{stat_name_ru}: +{value}"
+                                                $ effect_color = "#c0ffc0"
+                                            elif value < 0:
+                                                $ effect_text = f"{stat_name_ru}: {value}"
+                                                $ effect_color = "#ffc0c0"
+                                            else:
+                                                $ effect_text = f"{stat_name_ru}: 0"
+                                                $ effect_color = "#e0e0ff"
+                                            
+                                            text "[effect_text]":
+                                                size 14
+                                                color effect_color
             
-            if hovered_reaction and hovered_reaction in reactions_dict:
-                $ rinfo = reactions_dict[hovered_reaction]
-                frame:
-                    background Frame("gui/preview_box.png", 10, 10)
-                    xfill True
-                    padding (15, 12)
-                    vbox:
-                        text "Возможный эффект:" size 16 color "#aaaaaa" bold True
-                        for stat, value in rinfo["effects"].items():
-                            $ sign = "+" if value > 0 else ""
-                            text "[stat]: [sign][value]" size 15 color get_stat_color(value)
-            
-            textbutton "⤷ Пропустить выбор":
+            textbutton "Пропустить выбор":
                 action Return("skipped")
                 background Frame("gui/button/choice_idle_background.png", 15, 15)
                 hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
                 padding (15, 10)
                 xsize 200
+                ysize 50
                 xalign 0.5
     
     key "K_ESCAPE" action Return("skipped")
 
-# --- ОСНОВНАЯ ЛОГИКА ---
+# ============================================================================
+# СКРИН: ВЫБОР ЭМОЦИИ ДЛЯ ДНЕВНИКА
+# ============================================================================
+
+screen emotion_selector_diary(emotion_options_dict):
+    modal True
+    zorder 200
+    add "gui/overlay/confirm.png"
+    
+    default selected_emotion = None
+    
+    frame:
+        background Frame("gui/confirm_frame.png", 25, 25)
+        padding (40, 40)
+        xysize (1000, 600)
+        xalign 0.5
+        yalign 0.5
+        
+        vbox:
+            spacing 20
+            xalign 0.5
+            yalign 0.5
+            
+            text "Какую эмоцию ты испытываешь?":
+                size 32
+                color gui.accent_color
+                xalign 0.5
+                bold True
+                outlines [(2, "#1a1a1a", 0, 0)]
+            
+            grid 3 3:
+                spacing 15
+                xalign 0.5
+                for key, data in emotion_options_dict.items():
+                    if selected_emotion == key:
+                        $ bg_color = data["color"] + "77"
+                    else:
+                        $ bg_color = data["color"] + "22"
+                    
+                    button:
+                        xsize 200
+                        ysize 70
+                        action SetScreenVariable("selected_emotion", key)
+                        background Solid(bg_color)
+                        hover_background Solid(data["color"] + "55")
+                        
+                        if selected_emotion == key:
+                            text "[data['icon']] [data['name']] ✓":
+                                size 20
+                                color data["color"]
+                                bold True
+                                xalign 0.5
+                                yalign 0.5
+                        else:
+                            text "[data['icon']] [data['name']]":
+                                size 20
+                                color data["color"]
+                                xalign 0.5
+                                yalign 0.5
+            
+            hbox:
+                spacing 30
+                xalign 0.5
+                
+                if selected_emotion is not None:
+                    textbutton "Подтвердить":
+                        action Return(selected_emotion)
+                        background Frame("gui/button/choice_idle_background.png", 15, 15)
+                        hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                        padding (15, 10)
+                        xsize 200
+                        ysize 50
+                else:
+                    textbutton "Подтвердить":
+                        action Return(None)
+                        sensitive False
+                        background Frame("gui/button/choice_idle_background.png", 15, 15)
+                        hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                        padding (15, 10)
+                        xsize 200
+                        ysize 50
+                
+                textbutton "Пропустить":
+                    action Return(None)
+                    background Frame("gui/button/choice_idle_background.png", 15, 15)
+                    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                    padding (15, 10)
+                    xsize 200
+                    ysize 50
+    
+    key "K_ESCAPE" action Return(None)
+
+# ============================================================================
+# ОСНОВНАЯ ЛОГИКА МИНИ-ИГРЫ
+# ============================================================================
+
 label emotion_diary_minigame(scenario_id="meeting_lina"):
     if not emotion_diary_unlocked:
         $ emotion_diary_unlocked = True
     
     $ scenario = diary_scenarios.get(scenario_id)
     if not scenario:
-        narrator "⚠️ Сценарий '[scenario_id]' не найден. Возвращаемся к сюжету."
+        narrator "Сценарий не найден. Возвращаемся к сюжету."
         return
     
     if scenario_id in emotion_diary_entries:
@@ -186,27 +404,50 @@ label emotion_diary_minigame(scenario_id="meeting_lina"):
         return
     
     scene expression scenario["bg"] with fade
-    play music "music/diary_ambient.ogg" fadein 2.0
     narrator "[scenario['narration']]"
     pause 1.0
     
     call screen body_sensations_picker(scenario["body_sensations"])
     $ selected_sensations = _return
     
+    if selected_sensations and persistent.user_id:
+        $ save_body_sensation_stats(persistent.user_id, selected_sensations)
+    
     if len(selected_sensations) >= 2:
         $ update_player_state(self_awareness_change=2)
+        narrator "Ты заметила несколько телесных сигналов! Это важный шаг к пониманию себя."
     
-    # Эмоциональная мини-игра
-    call emotion_wheel_game("meeting_friend")
+    $ emotion_options_dict = {}
+    python:
+        for emo_id in scenario.get("emotion_options", []):
+            if emo_id in plutchik_emotions:
+                emotion_options_dict[emo_id] = {
+                    "name": plutchik_emotions[emo_id]["name_ru"],
+                    "icon": plutchik_emotions[emo_id]["icon"],
+                    "color": plutchik_emotions[emo_id]["color"]
+                }
+    
+    call screen emotion_selector_diary(emotion_options_dict)
+    $ selected_emotion = _return
+    
+    if selected_emotion:
+        $ selected_emotion_name = plutchik_emotions.get(selected_emotion, {}).get('name_ru', selected_emotion)
+        narrator "Ты записала: [selected_emotion_name]. Просто назвать чувство — уже шаг к тому, чтобы им управлять."
+        $ update_player_state(vocabulary_change=2)
     
     call screen reaction_selector(scenario["reactions"])
     $ selected_reaction = _return
     
-    if selected_reaction == "skipped":
+    if selected_reaction == "skipped" or not selected_reaction:
         narrator "Ты пока не готова выбирать реакцию — и это тоже часть процесса."
         $ diary_streak = 0
     else:
         $ reaction_data = scenario["reactions"][selected_reaction]
+        
+        if persistent.user_id:
+            $ reaction_type = reaction_data.get('outcome', 'unknown')
+            $ save_reaction_stats(persistent.user_id, reaction_type)
+        
         python:
             for stat, value in reaction_data["effects"].items():
                 if stat == "self_awareness":
@@ -225,23 +466,22 @@ label emotion_diary_minigame(scenario_id="meeting_lina"):
         
         if reaction_data["outcome"] in ["healthy_boundary", "self_compassion", "self_care"]:
             $ diary_streak += 1
-            play sound "audio/ui_success.ogg"
             if diary_streak >= 3 and not is_achievement_unlocked("diary_streak_3"):
                 $ unlock_achievement("diary_streak_3")
-                narrator "🏆 Достигнуто: 'Три шага подряд'"
+                narrator "Достигнуто: Три шага подряд"
         else:
             $ diary_streak = 0
-            play sound "audio/ui_neutral.ogg"
     
     narrator "[scenario['reflection_prompt']]"
+    
     menu:
         "Записать в дневник (бонус к самопониманию)":
             $ update_player_state(self_awareness_change=3)
             $ emotion_diary_entries.append(scenario_id)
             narrator "Ты делаешь пометку. Возможно, позже это поможет увидеть закономерности."
+        
         "Просто подумать":
             $ emotion_diary_entries.append(scenario_id)
             narrator "Ты обдумываешь это про себя. Иногда тишина — тоже ответ."
     
-    stop music fadeout 3.0
     return

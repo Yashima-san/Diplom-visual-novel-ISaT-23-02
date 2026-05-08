@@ -14,6 +14,7 @@ default persistent.user_name = ""
 default persistent.user_id = None
 default persistent.user_data = None
 
+# Основные переменные игры
 default player_self_awareness = 0
 default player_empathy = 0
 default player_emotional_vocabulary = 0
@@ -29,10 +30,32 @@ default chapter2_choice_final = 0
 default morning_choice = 0
 default emotion_game_results = []
 default emotion_game_completed = False
-default rhythm_game_score = 0
+default library_choice = 0
+default music_reaction = 0
+default conflict_help_choice = 0
+
+# НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ОТСЛЕЖИВАНИЯ СОБЫТИЙ
+default visited_music_room = False          # Были ли в музыкалке (слышали игру Алекса)
+default heard_alex_play = False             # Слышали ли игру Алекса на гитаре
+default after_music_invite_sent = False     # Отправляли ли предложение пойти в музыкалку снова
+default conflict_known_from = None          # Откуда узнали о конфликте: "direct", "lina", None
+
+# Переменные для сюжета
+default heard_about_conflict = False
+default conflict_version = 0
+default helped_katya = False
+
+# Статистика выборов
+default choice_statistics = {
+    "self_awareness_choices": 0,
+    "empathy_choices": 0,
+    "avoidance_choices": 0,
+    "healthy_choices": 0,
+    "total_choices": 0
+}
 
 ################################################################################
-## ФУНКЦИИ ДЛЯ РАБОТЫ С СОСТОЯНИЕМ ИГРОКА И ЗАГРУЗКИ
+## ФУНКЦИИ ДЛЯ РАБОТЫ С СОСТОЯНИЕМ ИГРОКА
 ################################################################################
 init python:
     import time
@@ -48,6 +71,16 @@ init python:
         store.player_anxiety_level = max(0, min(100, store.player_anxiety_level + anxiety_change))
         store.player_trust_level = max(0, min(100, store.player_trust_level + trust_change))
         
+        if self_awareness_change > 0:
+            store.choice_statistics["self_awareness_choices"] += 1
+        if empathy_change > 0:
+            store.choice_statistics["empathy_choices"] += 1
+        if anxiety_change > 0 and self_awareness_change == 0:
+            store.choice_statistics["avoidance_choices"] += 1
+        if trust_change > 0 and empathy_change > 0:
+            store.choice_statistics["healthy_choices"] += 1
+        store.choice_statistics["total_choices"] += 1
+        
         if persistent.user_id:
             if not hasattr(persistent, 'player_states') or persistent.player_states is None:
                 persistent.player_states = {}
@@ -60,44 +93,19 @@ init python:
                 'empathy': store.player_empathy,
                 'vocabulary': store.player_emotional_vocabulary,
                 'anxiety': store.player_anxiety_level,
-                'trust': store.player_trust_level
+                'trust': store.player_trust_level,
+                'choice_stats': dict(store.choice_statistics)
             })
             if len(persistent.player_states[str_id]) > 50:
                 persistent.player_states[str_id] = persistent.player_states[str_id][-50:]
 
-    def load_latest_save():
-        latest_slot = None
-        latest_time = 0
-        slots_to_check = [str(i) for i in range(1, 10)] + \
-                         [f"auto-{i}" for i in range(1, 10)] + \
-                         ["quick-save"]
-        
-        for slot in slots_to_check:
-            if renpy.can_load(slot):
-                try:
-                    save_json = renpy.json_load(renpy.slot_json_filename(slot))
-                    if save_json:
-                        timestamp = save_json.get("_timestamp", 0)
-                        if timestamp > latest_time:
-                            latest_time = timestamp
-                            latest_slot = slot
-                except:
-                    pass
-                    
-        if latest_slot:
-            renpy.load(latest_slot)
-        else:
-            renpy.notify("Нет сохранённой игры")
-    
-    def safe_get_emotion_stats(user_id):
+    def get_current_chapter_safe():
         try:
-            if 'get_emotion_stats' in globals() and callable(get_emotion_stats):
-                res = get_emotion_stats(user_id)
-                if isinstance(res, dict):
-                    return (res.get('total_attempts', 0), res.get('correct_matches', 0), res.get('emotions_chosen', {}))
+            if hasattr(store, 'current_chapter') and store.current_chapter:
+                return store.current_chapter
         except:
             pass
-        return (0, 0, {})
+        return "Глава Первая: Связь"
 
 ################################################################################
 ## ТРАНСФОРМАЦИИ
@@ -106,18 +114,22 @@ transform character_scale:
     zoom 0.28
     xalign 0.5
     yalign 1.0
+
 transform character_scale_left:
     zoom 0.28
     xalign 0.25
     yalign 1.0
+
 transform character_scale_right:
     zoom 0.28
     xalign 0.75
     yalign 1.0
+
 transform character_scale_center:
     zoom 0.28
     xalign 0.5
     yalign 1.0
+
 transform character_scale_center_soft_approach:
     zoom 0.28
     xalign 0.5
@@ -125,6 +137,7 @@ transform character_scale_center_soft_approach:
     easein 1.2 zoom 0.31
     pause 0.1
     easeout 0.28
+
 transform character_scale_fadein:
     zoom 0.28
     alpha 0.0
@@ -133,25 +146,29 @@ transform character_scale_fadein:
     yalign 1.0
 
 ################################################################################
-## ИЗОБРАЖЕНИЯ
+## ИЗОБРАЖЕНИЯ (спрайты и фоны)
 ################################################################################
-image lina neutral = ConditionSwitch("renpy.loadable('images/characters/lina_neutral.png')", "images/characters/lina_neutral.png", "True", "images/characters/lina.png")
-image lina speak = ConditionSwitch("renpy.loadable('images/characters/lina_speak.png')", "images/characters/lina_speak.png", "True", "images/characters/lina.png")
-image lina smile = ConditionSwitch("renpy.loadable('images/characters/lina_smile.png')", "images/characters/lina_smile.png", "True", "images/characters/lina.png")
-image alex neutral = ConditionSwitch("renpy.loadable('images/characters/alex_neutral.png')", "images/characters/alex_neutral.png", "True", "images/characters/alex_neutral.png")
-image alex smile = ConditionSwitch("renpy.loadable('images/characters/alex_smile.png')", "images/characters/alex_smile.png", "True", "images/characters/alex_neutral.png")
-image katia neutral = ConditionSwitch("renpy.loadable('images/characters/katia_neutral.png')", "images/characters/katia_neutral.png", "True", "images/characters/katia_neutral.png")
-image katia smile = ConditionSwitch("renpy.loadable('images/characters/katia_smile.png')", "images/characters/katia_smile.png", "True", "images/characters/katia_neutral.png")
-image katia nervous = ConditionSwitch("renpy.loadable('images/characters/katia_nervous.png')", "images/characters/katia_nervous.png", "True", "images/characters/katia_neutral.png")
-image katia thoughtful = ConditionSwitch("renpy.loadable('images/characters/katia_thoughtful.png')", "images/characters/katia_thoughtful.png", "True", "images/characters/katia_neutral.png")
-image teacher neutral = ConditionSwitch("renpy.loadable('images/characters/teacher_neutral.png')", "images/characters/teacher_neutral.png", "True", "images/characters/teacher_neutral.png")
-image teacher kind = ConditionSwitch("renpy.loadable('images/characters/teacher_kind.png')", "images/characters/teacher_kind.png", "True", "images/characters/teacher_neutral.png")
-image librarian neutral = ConditionSwitch("renpy.loadable('images/characters/librarian_neutral.png')", "images/characters/librarian_neutral.png", "True", "images/characters/librarian_neutral.png")
-image librarian kind = ConditionSwitch("renpy.loadable('images/characters/librarian_kind.png')", "images/characters/librarian_kind.png", "True", "images/characters/librarian_neutral.png")
+# Персонажи
+image lina neutral = ConditionSwitch("renpy.loadable('images/characters/lina_neutral.png')", "images/characters/lina_neutral.png", "True", "#707ef6")
+image lina speak = ConditionSwitch("renpy.loadable('images/characters/lina_speak.png')", "images/characters/lina_speak.png", "True", "#707ef6")
+image lina smile = ConditionSwitch("renpy.loadable('images/characters/lina_smile.png')", "images/characters/lina_smile.png", "True", "#707ef6")
+image alex neutral = ConditionSwitch("renpy.loadable('images/characters/alex_neutral.png')", "images/characters/alex_neutral.png", "True", "#6b8e23")
+image alex smile = ConditionSwitch("renpy.loadable('images/characters/alex_smile.png')", "images/characters/alex_smile.png", "True", "#6b8e23")
+image katia neutral = ConditionSwitch("renpy.loadable('images/characters/katia_neutral.png')", "images/characters/katia_neutral.png", "True", "#fe7d90")
+image katia smile = ConditionSwitch("renpy.loadable('images/characters/katia_smile.png')", "images/characters/katia_smile.png", "True", "#fe7d90")
+image katia nervous = ConditionSwitch("renpy.loadable('images/characters/katia_nervous.png')", "images/characters/katia_nervous.png", "True", "#fe7d90")
+image katia thoughtful = ConditionSwitch("renpy.loadable('images/characters/katia_thoughtful.png')", "images/characters/katia_thoughtful.png", "True", "#fe7d90")
+image teacher neutral = ConditionSwitch("renpy.loadable('images/characters/teacher_neutral.png')", "images/characters/teacher_neutral.png", "True", "#9370db")
+image teacher kind = ConditionSwitch("renpy.loadable('images/characters/teacher_kind.png')", "images/characters/teacher_kind.png", "True", "#9370db")
+image librarian neutral = ConditionSwitch("renpy.loadable('images/characters/librarian_neutral.png')", "images/characters/librarian_neutral.png", "True", "#a0522d")
+image librarian kind = ConditionSwitch("renpy.loadable('images/characters/librarian_kind.png')", "images/characters/librarian_kind.png", "True", "#a0522d")
+
+# Фоны
 image bg night_room = ConditionSwitch("renpy.loadable('images/night_room.png')", "images/night_room.png", "True", "#000000")
 image bg room_pk = ConditionSwitch("renpy.loadable('images/room_pk.png')", "images/room_pk.png", "True", "#2a2a2a")
 image bg bg_room_pk_light = ConditionSwitch("renpy.loadable('images/room_pk_light.png')", "images/room_pk_light.png", "True", "#3a3a3a")
 image bg school_entrance = ConditionSwitch("renpy.loadable('images/school_entrance.png')", "images/school_entrance.png", "True", "#4a4a4a")
+image bg school_hallway = ConditionSwitch("renpy.loadable('images/school_hallway.png')", "images/school_hallway.png", "True", "#5c5c5c")
 image bg kitchen = ConditionSwitch("renpy.loadable('images/kitchen.png')", "images/kitchen.png", "True", "#5a5a5a")
 image bg street = ConditionSwitch("renpy.loadable('images/street.png')", "images/street.png", "True", "#6a6a6a")
 image bg classroom = ConditionSwitch("renpy.loadable('images/classroom.png')", "images/classroom.png", "True", "#8a8a8a")
@@ -160,107 +177,9 @@ image bg library = ConditionSwitch("renpy.loadable('images/library.png')", "imag
 image cg room_evening = ConditionSwitch("renpy.loadable('images/cg/room_evening.png')", "images/cg/room_evening.png", "True", "#2b2b2b")
 
 ################################################################################
-## ЭКРАН МИНИ-ИГРЫ "РИТМ ДРУЖБЫ"
-################################################################################
-
-screen rhythm_game_screen():
-    modal True
-    zorder 100
-    
-    add "#00000099"
-    
-    frame:
-        background Frame("gui/confirm_frame.png", 25, 25)
-        padding (50, 50)
-        xysize (800, 600)
-        xalign 0.5
-        yalign 0.5
-        
-        vbox:
-            spacing 30
-            xalign 0.5
-            yalign 0.5
-            
-            text "🎵 РИТМ ДРУЖБЫ 🎵" size 40 color "#FFD700" xalign 0.5 bold True
-            text "Счет: [rhythm_game_score]" size 32 color "#ff9e5e" xalign 0.5
-            
-            null height 50
-            
-            frame:
-                xsize 400
-                ysize 200
-                background Solid("#ffffff33")
-                xalign 0.5
-                
-                vbox:
-                    xalign 0.5
-                    yalign 0.5
-                    text "🎯" size 80 xalign 0.5
-                    text "НАЖМИ ПРОБЕЛ!" size 24 color "#ffffff" xalign 0.5
-            
-            null height 30
-            
-            text "Нажми ПРОБЕЛ или кликни, когда круг совпадет с целью!" color "#cccccc" size 20 xalign 0.5
-            textbutton "УДАР! (Пробел)" action Function(play_rhythm_hit) xalign 0.5 xsize 300
-
-################################################################################
-## ЛОГИКА МИНИ-ИГРЫ "РИТМ ДРУЖБЫ"
-################################################################################
-init python:
-    rhythm_active = False
-    rhythm_timer = None
-    rhythm_target_time = 0
-    rhythm_interval = 2.0
-    rhythm_animation = 0.0
-
-    def start_rhythm_game():
-        store.rhythm_game_score = 0
-        store.rhythm_active = True
-        schedule_next_beat()
-        renpy.show_screen("rhythm_game_screen")
-        
-    def schedule_next_beat():
-        if not store.rhythm_active:
-            return
-        store.rhythm_target_time = time.time() + store.rhythm_interval
-
-    def play_rhythm_hit():
-        if not store.rhythm_active:
-            return
-        
-        current_time = time.time()
-        diff = abs(current_time - store.rhythm_target_time)
-        
-        if diff < 0.3:
-            store.rhythm_game_score += 10
-            renpy.notify("Отлично! +10")
-        elif diff < 0.6:
-            store.rhythm_game_score += 5
-            renpy.notify("Неплохо! +5")
-        else:
-            renpy.notify("Мимо...")
-            
-        schedule_next_beat()
-
-    def stop_rhythm_game():
-        store.rhythm_active = False
-        renpy.hide_screen("rhythm_game_screen")
-
-################################################################################
 ## ФУНКЦИИ СОХРАНЕНИЯ И ПЕРЕХОДОВ
 ################################################################################
 init python:
-    def continue_to_next_chapter(old_chapter, new_chapter_title, new_chapter_subtitle):
-        store.current_chapter = new_chapter_title
-        if renpy.has_label("chapter_two"):
-            renpy.jump("chapter_two")
-        else:
-            renpy.notify("Глава в разработке")
-            renpy.jump("main_menu")
-
-    def exit_to_main_menu(old_chapter):
-        renpy.jump("main_menu")
-
     def auto_save_chapter_complete(chapter_name):
         if persistent.user_id and 'db' in globals() and hasattr(db, 'update_save_progress'):
             try:
@@ -288,6 +207,7 @@ init python:
                 "anxiety": store.player_anxiety_level,
                 "trust": store.player_trust_level
             }
+            json_data["choice_statistics"] = dict(store.choice_statistics)
         except Exception:
             json_data["chapter"] = "Глава Первая: Связь"
             json_data["_timestamp"] = time.time()
@@ -296,14 +216,6 @@ init python:
     if hasattr(config, 'save_json_callbacks'):
         config.save_json_callbacks = []
         config.save_json_callbacks.append(add_user_info_to_save)
-    
-    def get_current_chapter_safe():
-        try:
-            if hasattr(store, 'current_chapter') and store.current_chapter:
-                return store.current_chapter
-        except:
-            pass
-        return "Глава Первая: Связь"
 
 ################################################################################
 ## CALLBACK ФУНКЦИИ ДЛЯ ВЫБОРОВ
@@ -319,7 +231,6 @@ init python:
         elif "Привет! Я очень рада" in choice_text:
             store.first_choice = 3
             update_player_state(empathy_change=5, trust_change=10, anxiety_change=-8)
-        return
 
     def second_choice_callback(choice_text):
         if "Звучит здорово! Я согласна" in choice_text:
@@ -340,7 +251,6 @@ init python:
         elif "Спасибо, Лина! Я очень ценю твою дружбу" in choice_text:
             store.second_choice = 32
             update_player_state(empathy_change=8, trust_change=15, vocabulary_change=3)
-        return
 
     def morning_choice_callback(choice_text):
         if "Спасибо, Лина! Я уже встаю" in choice_text:
@@ -352,10 +262,9 @@ init python:
         elif "Увидимся у входа" in choice_text:
             store.morning_choice = 3
             update_player_state(trust_change=5, anxiety_change=-5)
-        return
 
 ################################################################################
-## ГЛАВА ПЕРВАЯ: СВЯЗЬ
+## НАЧАЛО ИГРЫ
 ################################################################################
 label start:
     $ current_chapter = "Глава Первая: Связь"
@@ -364,6 +273,12 @@ label start:
     $ player_emotional_vocabulary = 0
     $ player_anxiety_level = 50
     $ player_trust_level = 30
+    $ choice_statistics = {"self_awareness_choices": 0, "empathy_choices": 0, "avoidance_choices": 0, "healthy_choices": 0, "total_choices": 0}
+    $ helped_katya = False
+    $ visited_music_room = False
+    $ heard_alex_play = False
+    $ after_music_invite_sent = False
+    $ conflict_known_from = None
     
     python:
         if not hasattr(persistent, 'player_states') or persistent.player_states is None:
@@ -388,8 +303,9 @@ label start:
         $ user_id = db.add_user(player_name)
     $ persistent.user_id = user_id
     
-    "Ты ничего не забыла, [persistent.user_name]?"
-    "Пора просыпаться..."
+    narrator "Ты ничего не забыла, [persistent.user_name]?"
+    narrator "Пора просыпаться..."
+    
     scene black with fade
     show text "{size=80}Глава Первая{/size}\n{size=60}Связь{/size}" with dissolve
     pause 3.0
@@ -399,7 +315,6 @@ label start:
         $ db.update_save_progress(persistent.user_id, "Глава Первая: Связь")
     
     $ unlock_achievement("wake_up")
-    $ unlock_gallery_item("room_evening")
     scene cg room_evening at truecenter with fade
     stop music
     play music "song/Audio_soft_1.mp3" fadein 5.0
@@ -413,13 +328,11 @@ label start:
     thought_user "Алекситимия. Это слово, которое мне сказала врач. Оно звучит так… официально. Как диагноз."
     
     show bg bg_room_pk_light with dissolve
-    $ unlock_gallery_item("room_pk_light")
     narrator "На стене висел постер с изображением аниме-персонажа."
     thought_user "Я научилась имитировать. Улыбаться, когда нужно. Но внутри – тишина."
     thought_user "Единственный, кто меня понимает – это моя интернет-подруга, Лина."
     
     show bg room_pk with dissolve
-    $ unlock_gallery_item("room_pk")
     thought_user "Новая школа. Новые люди. Там учится Лина. Это хорошо."
     thought_user "Но я боюсь не справиться. Боюсь снова почувствовать эту пустоту."
     
@@ -438,17 +351,17 @@ label continue_chat_after_first:
     if first_choice == 1:
         $ e("Ура! Я так рада!")
         $ e("Я уже придумала, что мы можем пойти в кафе после уроков! Что скажешь?")
-        $ show_chat_choices(["Звучит здорово! Я согласна на все!", "Давай сначала посмотрим, как пройдет день."], second_choice_callback)
+        $ show_chat_choices(["Звучит здорово! Я согласна на все! 👍", "Давай сначала посмотрим, как пройдет день. 🤔"], second_choice_callback)
         $ store.wait_for_chat()
     elif first_choice == 2:
-        $ e("Ой, я понимаю! Но не переживай! Мы же вместе!")
+        $ e("Ой, я понимаю! Но не переживай! Мы же вместе! 🤗")
         $ e("Я придумала, что мы можем ходить в библиотеку, там так тихо и уютно!")
-        $ show_chat_choices(["Звучит здорово! Библиотека – отличная идея!", "Спасибо, Лина! Я пока буду просто наблюдать."], second_choice_callback)
+        $ show_chat_choices(["Звучит здорово! Библиотека – отличная идея!", "Спасибо, Лина! Я пока буду просто наблюдать. 👀"], second_choice_callback)
         $ store.wait_for_chat()
     elif first_choice == 3:
         $ e("Ой, [persistent.user_name]! 🥺 Я так тронута!")
-        $ e("Я тоже очень рада! И ты не волнуйся, я буду рядом!")
-        $ show_chat_choices(["Спасибо, Лина! Ты лучшая!", "Спасибо, Лина! Я очень ценю твою дружбу."], second_choice_callback)
+        $ e("Я тоже очень рада! И ты не волнуйся, я буду рядом! 💕")
+        $ show_chat_choices(["Спасибо, Лина! Ты лучшая!", "Спасибо, Лина!"], second_choice_callback)
         $ store.wait_for_chat()
     
     pause 2.0
@@ -458,19 +371,17 @@ label continue_chat_after_first:
 label night_scene:
     stop music
     scene bg night_room with fade
-    play sound "song/night_ambient.mp3" fadein 3.0
     narrator "Ночь опустилась на город мягко."
     thought_user "Завтрашний день... Прыжок в неизвестность."
     thought_user "Психолог говорила, что важно анализировать свои состояния."
     narrator "[persistent.user_name] взяла в руки таблицу «Колесо эмоций»."
     
-    # ЗАПУСК МИНИ-ИГРЫ 1 - КОЛЕСО ЭМОЦИЙ ПЛУТЧИКА (утро в школе)
     call emotion_wheel_game("morning_school")
     
     $ emotion_game_completed = True
+    
     narrator "Засыпая, [persistent.user_name] думала только об одном…"
     thought_user "Скорее бы наступило утро..."
-    stop sound fadeout 3.0
     scene black with fade
     pause 1.0
     jump morning_scene
@@ -480,17 +391,19 @@ label morning_scene:
     scene cg room_evening with fade
     play music "song/Audio_soft_1.mp3" fadein 3.0
     narrator "Утро 3 сентября."
+    
     $ enable_chat_mode()
     $ e("Доброе утро, [persistent.user_name]! 🌅 Не забудь взять тетради и хорошее настроение 😘")
     
-    $ show_chat_choices(["Спасибо, Лина! Я уже встаю. Увидимся у входа! ❤️", "Я тоже волнуюсь... Но спасибо, что ты рядом!", "Увидимся у входа в школу!"], morning_choice_callback)
+    $ show_chat_choices(["Спасибо, Лина! Я уже встаю. Увидимся у входа! ❤️", "Я тоже волнуюсь... Но спасибо, что ты рядом!", "Увидимся у входа в школу! 👋"], morning_choice_callback)
     
     $ store.wait_for_chat()
+    pause 2.0
     $ disable_chat_mode()
     
     narrator "[persistent.user_name] начала собираться."
     scene bg kitchen with fade
-    narrator "На кухне была записка от родителей: \"Удачи в новой школе! Мы в тебя верим!\""
+    narrator "На кухне была записка от родителей: 'Удачи в новой школе! Мы в тебя верим!'"
     thought_user "Как всегда, коротко и по делу."
     stop music fadeout 2.0
     narrator "Она вышла из дома."
@@ -506,16 +419,12 @@ label morning_scene:
     narrator "Лина обняла [persistent.user_name]."
     e "Ну что, готова? Я тебе все покажу!"
     
-    # ЗАПУСК МИНИ-ИГРЫ 2 - ДНЕВНИК ЭМОЦИЙ (встреча с подругой)
     call emotion_diary_minigame("meeting_lina")
     
     hide lina
-    play sound "song/school_bell.mp3"
-    pause 2.0
     narrator "Прозвенел звонок."
     scene black with fade
     stop music fadeout 3.0
-    stop sound fadeout 3.0
     show text "{size=80}Конец первой главы{/size}" with dissolve
     pause 2.0
     hide text with dissolve
@@ -529,6 +438,10 @@ label morning_scene:
 ################################################################################
 label chapter_two:
     $ current_chapter = "Глава Вторая: Новые знакомства"
+    $ heard_about_conflict = False
+    $ conflict_version = 0
+    $ helped_katya = False
+    
     scene black with fade
     show text "{size=80}Глава Вторая{/size}\n{size=60}Новые знакомства{/size}" with dissolve
     pause 3.0
@@ -536,7 +449,7 @@ label chapter_two:
     
     play music "song/Audio_soft_2.mp3" fadein 5.0
     $ renpy.music.set_volume(0.4, delay=5)
-    scene bg school_entrance with fade
+    scene bg school_hallway with fade
     narrator "Лина вела [persistent.user_name] по коридорам."
     show lina speak at character_scale
     e "Смотри, это наша раздевалка! А тут спортзал."
@@ -582,119 +495,490 @@ label chapter_two:
         e "Ну хотя бы на пару минут заглянем?"
         user_char "Ладно, уговорила."
 
-    hide alex
-    hide lina
-    narrator "Прозвенел звонок на урок."
-    scene bg classroom with fade
-    show teacher kind at character_scale
-    t "Ребята, сегодня у нас новая ученица. Представься, пожалуйста."
-    user_char "Меня зовут [persistent.user_name]. Я надеюсь, мы подружимся."
-    t "Садись. Катя, покажешь нашей новой ученице всё?"
-    show katia smile at character_scale_left
-    k "Конечно, Анна Сергеевна!"
-    
-    # ЗАПУСК МИНИ-ИГРЫ 3 - ПЕРВЫЙ УРОК (Колесо эмоций)
-    hide teacher
-    call emotion_wheel_game("first_lesson")
-    
-    narrator "Катя помахала рукой."
-    
-    # Конфликт в библиотеке - запуск Эмоционального детектива
-    scene bg library with fade
-    show katia nervous at character_scale
-    narrator "На перемене в библиотеке произошла небольшая ссора между Катей и Алексом."
-    katya "Я не хочу сейчас разговаривать!"
-    a "Но я只是想 помочь..."
-    narrator "Катя резко развернулась и отошла к окну."
-    
-    # ЗАПУСК МИНИ-ИГРЫ 4 - ЭМОЦИОНАЛЬНЫЙ ДЕТЕКТИВ
-    call emotion_detective_minigame("library_conflict")
-    
-    # Перемена продолжение
-    scene bg school_entrance with fade
-    show katia speak at character_scale_left
-    show lina smile at character_scale_right
-    k "У нас есть театральный кружок!"
-    e "Ой, точно! [persistent.user_name], это же отличная идея!"
-    show alex smile at character_scale_center
-    a "Ну что, идете в музыкалку?"
-    
-    menu second_chapter_final_choice:
-        "Идем! Я хочу послушать.":
-            $ chapter2_choice_final = 1
-            $ update_player_state(self_awareness_change=5, vocabulary_change=5, anxiety_change=-5)
-            jump music_room_scene
-        "Может, в другой раз? Я немного устала.":
-            $ chapter2_choice_final = 2
-            $ update_player_state(self_awareness_change=3, vocabulary_change=3)
-            jump library_scene
-        "А можно мы с Катей тоже придем?":
-            $ chapter2_choice_final = 3
-            $ update_player_state(empathy_change=8, trust_change=5)
-            k "Ой, а можно? Я тоже очень хочу!"
-            a "Конечно!"
-            jump music_room_scene
+    # --- РАЗВЕТВЛЕНИЕ: ИДЁМ В МУЗЫКАЛКУ ИЛИ НЕТ ---
+    if chapter2_choice_2 != 2:
+        # Игрок согласился пойти в музыкалку
+        jump music_room_visit
+    else:
+        # Игрок не хотел идти, но Лина уговорила
+        jump music_room_visit
 
-label music_room_scene:
-    hide alex
-    hide katia
-    hide lina
+label music_room_visit:
     scene bg music_room with fade
     play music "song/gentle_guitar.mp3" fadein 3.0
-    narrator "Актовый зал оказался уютным."
+    
+    $ visited_music_room = True
+    
+    narrator "Актовый зал оказался уютным и светлым."
     show alex smile at character_scale
     a "Мы сейчас разучиваем новую песню. Хотите послушать?"
+    
     hide alex
-    narrator "Алекс начал играть и предложил попробовать отбить ритм."
+    narrator "Алекс взял гитару и начал играть мелодичную композицию."
+    narrator "Звуки гитары наполнили комнату теплом и уютом."
+    narrator "Музыка закончилась, и Алекс посмотрел на тебя с надеждой."
     
-    # ЗАПУСК МИНИ-ИГРЫ 5 - РИТМ ДРУЖБЫ
-    $ start_rhythm_game()
+    $ heard_alex_play = True
     
-    $ beats_count = 0
-    while beats_count < 5:
-        $ renpy.pause(2.0)
-        $ beats_count += 1
+    show alex smile at character_scale_center
     
-    $ stop_rhythm_game()
+    menu music_reaction_menu:
+        "Это было красиво. Спасибо!":
+            $ store.music_reaction = 1
+            $ update_player_state(self_awareness_change=5, vocabulary_change=5, anxiety_change=-3)
+            user_char "Это было красиво. Спасибо!"
+            a "Спасибо! Я очень рад, что тебе понравилось."
+        "Мне понравилось, очень душевно.":
+            $ store.music_reaction = 2
+            $ update_player_state(empathy_change=5, trust_change=5)
+            user_char "Мне понравилось, очень душевно."
+            a "Спасибо! Музыка помогает мне выражать то, что сложно сказать словами."
+        "Интересно, но для меня это пока непривычно.":
+            $ store.music_reaction = 3
+            $ update_player_state(self_awareness_change=3, vocabulary_change=3)
+            user_char "Интересно, но для меня это пока непривычно."
+            a "Понимаю. Но если захочешь послушать ещё — приходи, я всегда рад."
     
-    if rhythm_game_score >= 30:
-        narrator "У тебя отлично получилось! Алекс довольно заулыбался."
-        $ update_player_state(empathy_change=10, trust_change=10, self_awareness_change=5)
-    elif rhythm_game_score > 0:
-        narrator "Неплохо для начала."
-        $ update_player_state(empathy_change=5, trust_change=5)
-    else:
-        narrator "Ты сбивалась, но Алекс не обратил внимания."
-        $ update_player_state(anxiety_change=5)
+    show lina speak at character_scale_left
+    e "Ты здорово играешь, Алекс!"
+    a "Спасибо, Лина."
+    
+    # Лина уходит
+    e "Извините, мне нужно забежать в учительскую. Я быстро!"
+    hide lina with dissolve
+    
+    # --- ВАРИАНТЫ ДАЛЬНЕЙШИХ ДЕЙСТВИЙ ---
+    menu after_music_room_options:
+        "Пойти с Алексом в библиотеку (он предложил показать книги по музыке)":
+            $ library_choice = 1
+            $ update_player_state(self_awareness_change=3)
+            jump library_with_alex
+            
+        "Подождать Лину здесь, в музыкалке":
+            $ library_choice = 2
+            $ update_player_state(empathy_change=3)
+            jump wait_for_lina_in_music_room
 
-    show lina speak at character_scale
-    e "Тебе нравится, [persistent.user_name]?"
-    show lina smile at character_scale
-    user_char "Да... очень. Это красиво."
-    hide lina
-    
-    # Еще одна запись в дневник
-    narrator "Вечером того же дня [persistent.user_name] решила записать свои впечатления."
-    call emotion_diary_minigame("meeting_lina")
-    
-    jump chapter_two_end
-
-label library_scene:
-    hide alex
-    hide katia
-    hide lina
+# ============================================================================
+# ПУТЬ 1: В БИБЛИОТЕКУ С АЛЕКСОМ (ПРЯМОЕ НАБЛЮДЕНИЕ КОНФЛИКТА)
+# ============================================================================
+label library_with_alex:
     scene bg library with fade
-    narrator "В библиотеке было тихо."
-    show librarian kind at character_scale
-    lib "Здравствуй, дорогая! Хочешь что-то почитать?"
-    user_char "Здравствуйте. Да, я бы хотела... что-то поспокойнее?"
-    lib "Тогда тебе понравится этот сборник рассказов о природе."
-    hide librarian
-    narrator "[persistent.user_name] устроилась в кресле."
-    $ update_player_state(trust_change=10, empathy_change=5)
-    jump chapter_two_end
+    show alex smile at character_scale_center
+    
+    a "Вот мы и в библиотеке. Здесь так спокойно... Я часто сюда прихожу, когда хочу побыть один."
+    narrator "Алекс подошёл к стеллажу и взял книгу по музыкальной теории."
+    a "А ты любишь читать?"
+    
+    menu:
+        "Да, люблю. Особенно когда хочу понять свои чувства.":
+            $ update_player_state(self_awareness_change=5, vocabulary_change=3)
+            user_char "Да, люблю. Особенно когда хочу понять свои чувства."
+            a "Это здорово. Книги действительно помогают разобраться в себе."
+        "Не очень... Мне сложно сосредоточиться.":
+            $ update_player_state(anxiety_change=3)
+            user_char "Не очень... Мне сложно сосредоточиться."
+            a "Понимаю. Иногда я тоже не могу усидеть на месте."
+        "Иногда читаю, но больше люблю слушать музыку.":
+            $ update_player_state(empathy_change=3)
+            user_char "Иногда читаю, но больше люблю слушать музыку."
+            a "Музыка — это тоже язык чувств. Рад, что тебе понравилось."
+    
+    narrator "Вы мило поболтали о книгах и музыке."
+    
+    # Появляется Катя
+    show katia neutral at character_scale_right with dissolve
+    katya "Алекс? Ты тоже здесь?"
+    a "Да, ищу ноты. А ты что делаешь?"
+    katya "Готовлюсь к контрольной... Но у меня ничего не получается!"
+    
+    show katia nervous at character_scale_right
+    a "Может, я смогу помочь? Я неплохо разбираюсь в этих темах."
+    katya "Нет! Не надо! Оставь меня!"
+    a "Но я хочу помочь. Почему ты так реагируешь?"
+    katya "Ты не понимаешь! Родители и так давят на меня, а тут ещё и ты со своей помощью!"
+    
+    show alex neutral at character_scale_left
+    a "Извини... Я не хотел тебя обидеть."
+    katya "Просто... просто оставь меня в покое, пожалуйста."
+    
+    hide alex with dissolve
+    narrator "Алекс развернулся и ушёл, оставив Катю одну."
+    
+    show katia nervous at character_scale_center
+    katya "Почему всё так сложно..."
+    
+    $ heard_about_conflict = True
+    $ conflict_known_from = "direct"  # Узнали о конфликте напрямую
+    
+    jump help_katya_choice
 
-label chapter_two_end:
+# ============================================================================
+# ПУТЬ 2: ЖДЁМ ЛИНУ В МУЗЫКАЛКЕ (УЗНАЁМ О КОНФЛИКТЕ ОТ ЛИНЫ)
+# ============================================================================
+label wait_for_lina_in_music_room:
+    scene bg music_room with fade
+    narrator "Ты осталась в музыкальной комнате, ожидая Лину."
+    narrator "В тишине ты заметила, как спокойно и уютно здесь."
+    thought_user "Интересно, что чувствует Алекс, когда играет? Радость? Спокойствие? Или что-то другое?"
+    
+    show lina speak at character_scale_center
+    e "[persistent.user_name]! Прости, что так долго. Учительница дала мне журнал отнести."
+    
+    user_char "Всё в порядке."
+    
+    e "Слушай, я только что видела Катю... Она шла в библиотеку и выглядела очень расстроенной."
+    e "Кажется, она поругалась с Алексом. Он просто хотел помочь, а она накричала."
+    user_char "Правда? Бедная Катя... Может, с ней что-то случилось?"
+    e "Не знаю... Но мне кажется, ей нужна поддержка. Может, зайдём к ней?"
+    
+    $ heard_about_conflict = True
+    $ conflict_known_from = "lina"  # Узнали о конфликте от Лины
+    
+    menu go_to_katya_from_lina:
+        "Да, давай проверим, как она":
+            $ update_player_state(empathy_change=5)
+            narrator "Вы с Линой направились в библиотеку."
+            jump go_to_library_with_lina
+            
+        "Может, ей нужно побыть одной?":
+            $ update_player_state(self_awareness_change=3)
+            narrator "Ты решила, что Кате нужно время. Вы остались ждать в коридоре."
+            narrator "Через несколько минут Катя вышла из библиотеки, вытирая глаза."
+            jump meet_katya_after_conflict
+
+# ============================================================================
+# ПОМОЩЬ КАТЕ (ПРЯМОЕ НАБЛЮДЕНИЕ)
+# ============================================================================
+label help_katya_choice:
+    show katia nervous at character_scale_center
+    
+    menu:
+        "Подойти к Кате и поговорить (помочь разобраться)":
+            $ update_player_state(empathy_change=3, trust_change=2)
+            $ helped_katya = True
+            jump talk_to_katya_with_minigame
+            
+        "Дать ей время побыть одной":
+            $ update_player_state(self_awareness_change=3, empathy_change=2)
+            $ helped_katya = False
+            narrator "Ты решила не вмешиваться. Иногда людям нужно побыть наедине со своими мыслями."
+            narrator "Ты тихо села в кресло с книгой, но краем глаза всё равно поглядывала на Катю."
+            jump observe_katya_direct
+
+# ============================================================================
+# РАЗГОВОР С КАТЕЙ С ИСПОЛЬЗОВАНИЕМ МИНИ-ИГРЫ "ЭМОЦИОНАЛЬНЫЙ ДЕТЕКТИВ"
+# ============================================================================
+label talk_to_katya_with_minigame:
+    scene bg library with fade
+    show katia nervous at character_scale_center
+    
+    user_char "Катя... Ты в порядке? Может, поговорим?"
+    
+    katya "А? Да... Всё нормально. Просто..."
+    katya "Ты, наверное, слышала? Я накричала на Алекса."
+    
+    user_char "Я не хочу лезть не в своё дело, но если хочешь поговорить..."
+    
+    narrator "Ты вспомнила упражнения по распознаванию эмоций, которые практиковала..."
+    narrator "Попробуй понять, что на самом деле чувствует Катя."
+    
+    # Вызов мини-игры Эмоциональный детектив со специальным сценарием
+    call emotion_detective_minigame("help_katya")
+    
+    # После мини-игры проверяем успех
+    if detective_score >= 10:  # Успешно определили эмоцию
+        jump successful_help_katya
+    elif detective_score >= 5:  # Частичный успех
+        jump partial_help_katya
+    else:  # Неудачно
+        jump less_successful_help_katya
+
+# ============================================================================
+# УСПЕШНАЯ ПОМОЩЬ КАТЕ
+# ============================================================================
+label successful_help_katya:
+    show katia thoughtful at character_scale_center
+    
+    user_char "Катя... Мне кажется, ты не злишься на Алекса на самом деле. Ты просто... устала от давления и стыдишься того, что не справляешься?"
+    
+    katya "Откуда ты... Откуда ты знаешь?"
+    
+    user_char "Я вижу. Ты опускаешь плечи, будто хочешь стать меньше. И избегаешь смотреть в глаза."
+    
+    katya "Ты права... Родители требуют только отличных оценок. А я чувствую, что если получу четвёрку — подведу их."
+    katya "Алекс пришёл со своей помощью, а я... я просто сорвалась. Мне так стыдно."
+    
+    user_char "Понимаю. Иногда помощь может казаться давлением. Но Алекс искренне хотел поддержать тебя."
+    
+    katya "Знаю... Я поговорю с ним. Извинюсь."
+    katya "Спасибо тебе. Ты очень внимательная. Не каждый умеет так... замечать."
+    
+    user_char "Я учусь этому. Рада, что смогла помочь."
+    
+    $ update_player_state(empathy_change=10, trust_change=8, self_awareness_change=5, vocabulary_change=5)
+    
+    jump after_conflict_with_help
+
+# ============================================================================
+# ЧАСТИЧНО УСПЕШНАЯ ПОМОЩЬ
+# ============================================================================
+label partial_help_katya:
+    show katia thoughtful at character_scale_center
+    
+    user_char "Катя... Кажется, ты не столько злишься, сколько переживаешь из-за чего-то. Может, давление родителей?"
+    
+    katya "Ты... отчасти права. Да, мне сейчас непросто."
+    katya "Но я пока не готова говорить об этом подробно. Извини."
+    
+    user_char "Понимаю. Просто знай, что я рядом, если захочешь поговорить."
+    
+    katya "Спасибо... Это много значит."
+    
+    $ update_player_state(empathy_change=5, trust_change=4, self_awareness_change=3)
+    
+    jump after_conflict_with_help
+
+# ============================================================================
+# МЕНЕЕ УСПЕШНАЯ ПОМОЩЬ
+# ============================================================================
+label less_successful_help_katya:
+    show katia neutral at character_scale_center
+    
+    user_char "Катя... Всё наладится. Не переживай так."
+    
+    katya "Спасибо... но ты не совсем понимаешь."
+    katya "Ладно, мне пора. Увидимся."
+    
+    narrator "Катя быстро ушла, оставив тебя с чувством, что ты могла бы сделать больше."
+    
+    $ update_player_state(empathy_change=2, anxiety_change=3)
+    
+    jump after_conflict_without_help
+
+# ============================================================================
+# НАБЛЮДЕНИЕ ЗА КАТЕЙ (БЕЗ АКТИВНОЙ ПОМОЩИ)
+# ============================================================================
+label observe_katya_direct:
+    narrator "Через несколько минут Катя глубоко вздохнула и вытерла глаза."
+    
+    show katia thoughtful at character_scale_center
+    katya "Эй... Ты здесь?"
+    
+    user_char "Да, просто читаю."
+    
+    katya "Ты... не хочешь спросить, что случилось?"
+    
+    menu:
+        "Если хочешь рассказать — я послушаю":
+            $ update_player_state(empathy_change=5, trust_change=8)
+            $ helped_katya = True
+            user_char "Я не хочу давить. Если захочешь поделиться — я рядом."
+            katya "Ты очень добрая... Спасибо."
+            katya "Просто у меня давление от родителей. Они ждут от меня идеальных результатов."
+            katya "Алекс... он просто оказался не в то время не в том месте."
+            
+            # Даже при наблюдении можно попробовать мини-игру, но более короткую
+            narrator "Ты задумалась, что чувствует Катя на самом деле..."
+            call emotion_wheel_game("simple_empathy")
+            
+            jump after_conflict_with_help
+            
+        "Извини, я не хочу вмешиваться":
+            $ update_player_state(anxiety_change=3)
+            $ helped_katya = False
+            user_char "Извини, я не очень хороша в таких разговорах..."
+            katya "Понимаю... Извини, что отвлекла."
+            jump after_conflict_without_help
+
+# ============================================================================
+# ПУТЬ С ЛИНОЙ (ПОСЛЕ ТОГО КАК ЛИНА РАССКАЗАЛА)
+# ============================================================================
+label go_to_library_with_lina:
+    scene bg library with fade
+    show katia nervous at character_scale_center
+    
+    katya "Ой, вы здесь... Извините, если я выгляжу странно."
+    e "Всё в порядке, Катя. Ты как?"
+    katya "Уже лучше... Простите, что вы видели меня в таком состоянии."
+    user_char "Ничего страшного. Если захочешь поговорить — мы рядом."
+    katya "Спасибо... Вы очень добры."
+    
+    menu help_katya_with_lina:
+        "Попробовать поговорить с Катей (помочь разобраться)":
+            $ helped_katya = True
+            jump talk_to_katya_with_minigame
+        "Оставить Катю, пусть отдохнёт":
+            $ helped_katya = False
+            jump after_conflict_without_help
+
+# ============================================================================
+# ВСТРЕЧА С КАТЕЙ ПОСЛЕ КОНФЛИКТА (ЕСЛИ НЕ ПОШЛИ В БИБЛИОТЕКУ)
+# ============================================================================
+label meet_katya_after_conflict:
+    scene bg school_entrance with fade
+    show katia thoughtful at character_scale_center
+    
+    katya "Ой, вы здесь... Извините, если я выгляжу странно."
+    e "Всё в порядке, Катя. Ты как?"
+    katya "Уже лучше... Простите, что вы видели меня в таком состоянии."
+    user_char "Ничего страшного. Если захочешь поговорить — мы рядом."
+    katya "Спасибо... Вы очень добры."
+    
+    $ update_player_state(empathy_change=3, trust_change=3)
+    $ heard_about_conflict = True
+    
+    jump after_conflict_skip_help
+
+# ============================================================================
+# ЗАВЕРШЕНИЕ КОНФЛИКТА (С ПОМОЩЬЮ)
+# ============================================================================
+label after_conflict_with_help:
+    narrator "Разговор помог немного разрядить обстановку."
+    
+    if player_empathy >= 20:
+        narrator "Катя немного улыбнулась и поблагодарила тебя за поддержку."
+        $ update_player_state(trust_change=5)
+    
+    if helped_katya:
+        narrator "Вы обменялись телефонами, и Катя сказала, что будет рада новой подруге."
+        if not is_achievement_unlocked("new_friends"):
+            $ unlock_achievement("new_friends")
+    
+    jump after_conflict_end
+
+# ============================================================================
+# ЗАВЕРШЕНИЕ КОНФЛИКТА (БЕЗ ПОМОЩИ)
+# ============================================================================
+label after_conflict_without_help:
+    narrator "Ты решила не вмешиваться глубоко, но Катя всё равно оценила твоё присутствие."
+    narrator "Иногда просто быть рядом — уже достаточно."
+    
+    jump after_conflict_end
+
+# ============================================================================
+# ЗАВЕРШЕНИЕ БЕЗ ВМЕШАТЕЛЬСТВА
+# ============================================================================
+label after_conflict_skip_help:
+    narrator "Катя поблагодарила вас за внимание и ушла, сказав, что ей нужно побыть одной."
+    
+    jump after_conflict_end
+
+# ============================================================================
+# ОБЩЕЕ ЗАВЕРШЕНИЕ ГЛАВЫ 2
+# ============================================================================
+label after_conflict_end:
+    hide katia with dissolve
+    scene bg school_entrance with fade
+    
+    show lina smile at character_scale_left
+    show alex smile at character_scale_right
+    
+    # --- ЛОГИКА ПОВТОРНОГО ПОСЕЩЕНИЯ МУЗЫКАЛКИ ---
+    if visited_music_room and not after_music_invite_sent:
+        # Если уже были в музыкалке и слышали Алекса, предлагаем сходить ещё раз
+        a "Слушайте, я как раз новую мелодию придумал. Хотите послушать?"
+        
+        menu repeat_music_visit:
+            "С удовольствием! (Пойти в музыкалку)":
+                $ after_music_invite_sent = True
+                jump repeat_music_room_visit
+            "В другой раз, сейчас просто погуляем":
+                jump final_chapter2_scene
+    elif not visited_music_room:
+        # Если НЕ были в музыкалке, Алекс предлагает сходить в первый раз
+        a "А вы не хотите зайти в музыкалку? Я мог бы сыграть для вас."
+        
+        menu first_music_suggestion:
+            "Давай, сходим!":
+                $ visited_music_room = True
+                $ heard_alex_play = True
+                jump music_room_first_visit_from_end
+            "В другой раз, сейчас просто погуляем":
+                jump final_chapter2_scene
+    else:
+        jump final_chapter2_scene
+
+# ============================================================================
+# ПОВТОРНОЕ ПОСЕЩЕНИЕ МУЗЫКАЛКИ (НОВАЯ МЕЛОДИЯ)
+# ============================================================================
+label repeat_music_room_visit:
+    scene bg music_room with fade
+    play music "song/gentle_guitar.mp3" fadein 2.0
+    
+    narrator "Вы снова в музыкальной комнате. Алекс берёт гитару."
+    show alex smile at character_scale_center
+    
+    a "Эта мелодия... она о том, как иногда сложно найти слова, но музыка говорит сама за себя."
+    
+    narrator "Алекс начинает играть. Мелодия звучит более грустно, но в ней чувствуется надежда."
+    
+    menu music_reaction_repeat:
+        "Эта мелодия очень трогательная":
+            $ update_player_state(empathy_change=5, self_awareness_change=3)
+            user_char "Эта мелодия очень трогательная... В ней есть и грусть, и надежда."
+            a "Ты точно подметила. Я рад, что ты чувствуешь это."
+        "Красиво. Ты талантлив":
+            $ update_player_state(vocabulary_change=3)
+            user_char "Красиво. Ты очень талантлив."
+            a "Спасибо. Музыка помогает мне справляться с эмоциями."
+        "Спасибо, мне понравилось":
+            $ update_player_state(trust_change=3)
+            user_char "Спасибо, мне очень понравилось."
+            a "Рад, что тебе хорошо у нас."
+    
+    jump final_chapter2_scene
+
+# ============================================================================
+# ПЕРВОЕ ПОСЕЩЕНИЕ МУЗЫКАЛКИ В КОНЦЕ ГЛАВЫ
+# ============================================================================
+label music_room_first_visit_from_end:
+    scene bg music_room with fade
+    play music "song/gentle_guitar.mp3" fadein 3.0
+    
+    narrator "Вы заходите в музыкальную комнату. Алекс садится с гитарой."
+    show alex smile at character_scale_center
+    
+    a "Я немного волнуюсь, но надеюсь, вам понравится."
+    
+    narrator "Алекс начинает играть красивую, вдохновляющую мелодию."
+    narrator "Звуки гитары наполняют комнату теплом, и ты чувствуешь, как напряжение уходит."
+    
+    menu first_music_reaction:
+        "Это потрясающе! Спасибо":
+            $ update_player_state(self_awareness_change=5, anxiety_change=-5)
+            user_char "Это потрясающе! Спасибо тебе."
+            a "Я очень рад, что тебе понравилось!"
+        "Очень душевно...":
+            $ update_player_state(empathy_change=5, trust_change=3)
+            user_char "Очень душевно... Спасибо."
+            a "Музыка помогает мне выражать чувства. Рад, что ты это чувствуешь."
+        "Красивая мелодия":
+            $ update_player_state(vocabulary_change=3)
+            user_char "Красивая мелодия."
+            a "Спасибо! Приходи ещё, у меня есть ещё несколько песен."
+    
+    jump final_chapter2_scene
+
+# ============================================================================
+# ФИНАЛЬНАЯ СЦЕНА ГЛАВЫ 2
+# ============================================================================
+label final_chapter2_scene:
+    scene bg school_entrance with fade
+    
+    show lina smile at character_scale_left
+    show alex smile at character_scale_right
+    
+    e "Сегодня был отличный день! Правда, [persistent.user_name]?"
+    
+    a "Да, здорово, что мы подружились."
+    
+    user_char "Мне было очень приятно провести с вами время."
+    
+    narrator "День подходил к концу, и ты чувствовала, как что-то внутри меняется..."
+    thought_user "Сегодня я сделала первый шаг. Не знаю, правильный ли, но я попробовала."
+    thought_user "Возможно, у меня получится. Возможно, я смогу научиться понимать не только других, но и себя."
+    
     scene black with fade
     stop music fadeout 3.0
     show text "{size=80}Конец второй главы{/size}" with dissolve
@@ -703,5 +987,5 @@ label chapter_two_end:
     pause 0.5
     $ auto_save_chapter_complete("Глава Вторая: Новые знакомства")
     
-    "Глава Третья: В разработке..."
+    narrator "Глава Третья: В разработке..."
     return

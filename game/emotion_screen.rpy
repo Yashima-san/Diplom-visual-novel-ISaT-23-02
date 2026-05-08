@@ -3,7 +3,6 @@
 ################################################################################
 
 init python:
-    # База эмоций Плутчика (8 базовых эмоций)
     plutchik_emotions = {
         "joy": {
             "name": "Радость",
@@ -79,7 +78,6 @@ init python:
         }
     }
     
-    # Сценарии для мини-игры
     emotion_scenarios = {
         "morning_school": {
             "title": "Утро в новой школе",
@@ -90,17 +88,6 @@ init python:
                 "correct": "Ты верно определила! Волнение перед новым — это нормально. Предвкушение помогает настроиться на позитивный лад.",
                 "partial": "Интересный выбор! Но попробуй прислушаться к своим ощущениям — что именно ты чувствуешь?",
                 "wrong": "Это эмоция, но возможно, сейчас ты испытываешь что-то другое. Прислушайся к своему телу."
-            }
-        },
-        "meeting_friend": {
-            "title": "Встреча с подругой",
-            "situation": "Лина подходит к тебе с улыбкой и обнимает. Ты чувствуешь, как напряжение уходит. На душе становится тепло и спокойно.",
-            "possible_emotions": ["joy", "trust", "sadness"],
-            "best_emotion": "joy",
-            "feedback": {
-                "correct": "Верно! Радость от встречи с близким человеком — одно из самых тёплых чувств.",
-                "partial": "Хороший вариант! А что ещё ты чувствуешь в этот момент?",
-                "wrong": "Подумай ещё. Возможно, ты упускаешь что-то важное?"
             }
         },
         "first_lesson": {
@@ -117,7 +104,6 @@ init python:
     }
     
     def get_emotion_stats(user_id):
-        """Получение статистики по мини-игре"""
         try:
             if hasattr(persistent, 'emotion_stats') and persistent.emotion_stats:
                 str_id = str(user_id)
@@ -133,7 +119,6 @@ init python:
         return {'total_attempts': 0, 'correct_matches': 0, 'emotions_chosen': {}}
     
     def save_emotion_stats(user_id, is_correct, emotion_chosen):
-        """Сохранение статистики мини-игры"""
         try:
             if not hasattr(persistent, 'emotion_stats') or persistent.emotion_stats is None:
                 persistent.emotion_stats = {}
@@ -158,76 +143,68 @@ init python:
                 stats['emotions_chosen'][emotion_chosen] += 1
         except:
             pass
-    
-    def safe_get_emotion_stats(user_id):
-        """Безопасное получение статистики для экранов"""
-        try:
-            stats = get_emotion_stats(user_id)
-            return (stats.get('total_attempts', 0), stats.get('correct_matches', 0), stats.get('emotions_chosen', {}))
-        except:
-            return (0, 0, {})
-
-################################################################################
-## ЭКРАН МИНИ-ИГРЫ "КОЛЕСО ЭМОЦИЙ"
-################################################################################
 
 screen plutchik_wheel(scenario_data, scenario_id):
     modal True
     zorder 200
-    add "#000000CC"
+    add "gui/overlay/confirm.png"
     
     default selected_emotion = None
     default show_hint = False
     default hint_text = ""
     
-    # Получаем данные сценария
     python:
         title = scenario_data.get('title', 'Колесо эмоций')
         situation = scenario_data.get('situation', '')
         possible = scenario_data.get('possible_emotions', [])
         best_id = scenario_data.get('best_emotion', 'joy')
-        best_name = plutchik_emotions.get(best_id, {}).get('name_ru', 'Радость')
     
     frame:
         background Frame("gui/confirm_frame.png", 25, 25)
-        padding (40, 40)
-        xysize (1400, 920)
+        padding (30, 30)
+        xysize (1200, 800)
         xalign 0.5
         yalign 0.5
         
         vbox:
-            spacing 20
+            spacing 15
             xfill True
             
-            # Заголовок
-            text "🎡 [title]" size 38 color gui.accent_color xalign 0.5 bold True
+            text title:
+                size 34
+                color gui.accent_color
+                xalign 0.5
+                outlines [(2, "#671a1a", 0, 0)]
             
-            # Ситуация
             frame:
                 background Frame("gui/frame.png", 15, 15)
                 xfill True
-                padding (25, 20)
-                text "[situation]":
-                    size 22
-                    color "#ffffff"
+                padding (20, 15)
+                text situation:
+                    size 20
+                    color "#e0e0e0"
                     text_align 0.0
                     xfill True
+                    outlines [(1, "#1a1a1a", 0, 0)]
             
-            # Основное содержимое
+            null height 5
+            
             hbox:
-                spacing 30
+                spacing 25
                 xfill True
                 
-                # Левая колонка - колесо эмоций
                 vbox:
-                    xsize 650
-                    spacing 15
+                    xsize 550
+                    spacing 10
                     
-                    text "Выбери эмоцию, которую ты сейчас чувствуешь:" size 22 color "#e0e0e0" xalign 0.5 bold True
+                    text "Выбери эмоцию, которую ты сейчас чувствуешь:":
+                        size 20
+                        color "#e0e0e0"
+                        xalign 0.5
+                        outlines [(1, "#1a1a1a", 0, 0)]
                     
-                    # Сетка эмоций 2x4 (базовые эмоции Плутчика)
                     grid 2 4:
-                        spacing 20
+                        spacing 15
                         xalign 0.5
                         
                         for emo_id, emo_data in plutchik_emotions.items():
@@ -235,39 +212,45 @@ screen plutchik_wheel(scenario_data, scenario_id):
                             $ emo_icon = emo_data['icon']
                             $ emo_color = emo_data['color']
                             
+                            if selected_emotion == emo_id:
+                                $ btn_bg = Solid(emo_color + "55")
+                                $ check_mark = " ✓"
+                                $ text_color_value = "#ffffff"
+                            else:
+                                $ btn_bg = Solid(emo_color + "22")
+                                $ check_mark = ""
+                                $ text_color_value = "#e0e0e0"
+                                $ text_bold = False
+                            
                             button:
-                                xsize 280
-                                ysize 90
+                                xsize 250
+                                ysize 70
                                 action SetScreenVariable("selected_emotion", emo_id)
+                                background btn_bg
+                                hover_background Solid(emo_color + "77")
                                 
                                 frame:
                                     xfill True
                                     yfill True
-                                    background (Solid(emo_color + "33") if selected_emotion == emo_id else Solid(emo_color + "11"))
+                                    background None
                                     padding (10, 10)
-                                    
-                                    hbox:
-                                        spacing 15
+                                    text "[emo_icon] [emo_name][check_mark]":
+                                        size 22
+                                        color text_color_value
+                                        bold text_bold
                                         xalign 0.5
                                         yalign 0.5
-                                        
-                                        text emo_icon size 42
-                                        $ text_color_value = "#ffffff" if selected_emotion == emo_id else "#e0e0e0"
-                                        text emo_name size 24 color text_color_value
-                                        if selected_emotion == emo_id:
-                                            text "✓" size 24 color "#4caf50"
+                                        outlines [(1, "#1a1a1a", 0, 0)]
                 
-                # Правая колонка - информация и кнопки
                 vbox:
-                    xsize 380
-                    spacing 25
+                    xsize 400
+                    spacing 20
                     yalign 0.5
                     
-                    # Информация о выбранной эмоции
                     if selected_emotion:
                         $ sel_data = plutchik_emotions.get(selected_emotion, {})
                         $ sel_name = sel_data.get('name_ru', '')
-                        $ sel_icon = sel_data.get('icon', '❓')
+                        $ sel_icon = sel_data.get('icon', '?')
                         $ sel_color = sel_data.get('color', '#ffffff')
                         $ sel_desc = sel_data.get('description', '')
                         $ opposite_id = sel_data.get('opposite', '')
@@ -275,102 +258,122 @@ screen plutchik_wheel(scenario_data, scenario_id):
                         
                         frame:
                             background Frame("gui/confirm_frame_1.png", 15, 15)
-                            padding (20, 15)
+                            padding (15, 12)
                             xfill True
                             vbox:
-                                spacing 12
-                                text "Твой выбор:" size 20 color "#aaaaaa" xalign 0.5
-                                text "[sel_icon] [sel_name]" size 36 color sel_color xalign 0.5 bold True
-                                text "[sel_desc]" size 16 color "#cccccc" xalign 0.5 text_align 0.5
-                                
-                                null height 5
-                                text "Противоположная эмоция:" size 16 color "#aaaaaa" xalign 0.5
-                                text "[opposite_name]" size 20 color "#888888" xalign 0.5
+                                spacing 8
+                                text "Твой выбор:":
+                                    size 18
+                                    color "#aaaaaa"
+                                    xalign 0.5
+                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                text "[sel_icon] [sel_name]":
+                                    size 32
+                                    color sel_color
+                                    xalign 0.5
+                                    outlines [(2, "#1a1a1a", 0, 0)]
+                                text "[sel_desc]":
+                                    size 15
+                                    color "#dddddd"
+                                    xalign 0.5
+                                    text_align 0.5
+                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                text "Противоположная эмоция: [opposite_name]":
+                                    size 14
+                                    color "#aaaaaa"
+                                    xalign 0.5
+                                    outlines [(1, "#1a1a1a", 0, 0)]
                         
-                        # Проверка правильности (в зависимости от сценария)
                         if selected_emotion == best_id:
-                            text "✅ Точное попадание!" size 24 color "#4caf50" xalign 0.5 bold True
+                            text "Точное попадание!":
+                                size 22
+                                color "#4caf50"
+                                xalign 0.5
+                                outlines [(1, "#1a1a1a", 0, 0)]
                         elif selected_emotion in possible:
-                            text "🟡 Хороший вариант!" size 24 color "#ff9800" xalign 0.5 bold True
+                            text "Хороший вариант!":
+                                size 22
+                                color "#ff9800"
+                                xalign 0.5
+                                outlines [(1, "#1a1a1a", 0, 0)]
                         else:
-                            text "❓ Возможно, стоит присмотреться к другим эмоциям" size 22 color "#ff5722" xalign 0.5
+                            text "Возможно, стоит присмотреться к другим эмоциям":
+                                size 20
+                                color "#ff5722"
+                                xalign 0.5
+                                outlines [(1, "#1a1a1a", 0, 0)]
                     
-                    # Кнопка подсказки
                     if show_hint:
                         frame:
                             background Frame("gui/frame.png", 10, 10)
-                            padding (15, 12)
+                            padding (12, 10)
                             xfill True
-                            text "[hint_text]" size 18 color "#aaaaaa" text_align 0.0
+                            text "[hint_text]":
+                                size 14
+                                color "#bbbbbb"
+                                text_align 0.0
+                                outlines [(1, "#1a1a1a", 0, 0)]
                         
-                        textbutton "🙈 Скрыть подсказку":
+                        textbutton "Скрыть подсказку":
                             xalign 0.5
                             action SetScreenVariable("show_hint", False)
+                            background Frame("gui/button/choice_idle_background.png", 15, 15)
+                            hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                            padding (12, 8)
+                            xsize 280
                     else:
-                        textbutton "📖 Показать подсказку":
+                        textbutton "Показать подсказку":
                             xalign 0.5
                             action SetScreenVariable("show_hint", True)
                             hovered SetScreenVariable("hint_text", "Обрати внимание на свои телесные ощущения:\n• Как бьётся сердце?\n• Какое дыхание?\n• Что чувствуешь в теле?")
+                            background Frame("gui/button/choice_idle_background.png", 15, 15)
+                            hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                            padding (12, 8)
+                            xsize 280
                     
-                    null height 30
+                    null height 20
                     
                     hbox:
-                        spacing 25
+                        spacing 16
                         xalign 0.5
+                        yalign 0.25
                         
                         if selected_emotion:
-                            textbutton "✅ Подтвердить выбор":
+                            textbutton "Подтвердить выбор":
                                 background Frame("gui/button/choice_idle_background.png", 15, 15)
                                 hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
-                                padding (15, 12)
-                                xsize 220
+                                padding (12, 8)
+                                xsize 360
                                 action Return(selected_emotion)
                         else:
-                            textbutton "✅ Подтвердить выбор":
+                            textbutton "Подтвердить выбор":
                                 background Frame("gui/button/choice_idle_background.png", 15, 15)
                                 hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
-                                padding (15, 12)
-                                xsize 220
+                                padding (12, 8)
+                                xsize 360
                                 action Return(None)
                                 sensitive False
                         
-                        textbutton "❌ Пропустить":
+                        textbutton "Пропустить":
                             background Frame("gui/button/choice_idle_background.png", 15, 15)
                             hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
-                            padding (15, 12)
-                            xsize 180
+                            padding (12, 8)
+                            xsize 260
                             action Return("skip")
     
-    # Клавиши управления
     key "K_ESCAPE" action Return("skip")
     key "game_menu" action Return("skip")
-    key "K_RETURN" action Return(selected_emotion if selected_emotion else "skip")
-
-################################################################################
-## ФУНКЦИЯ ЗАПУСКА МИНИ-ИГРЫ
-################################################################################
 
 label emotion_wheel_game(scenario_id="morning_school"):
-    """Вызов мини-игры Колесо эмоций Плутчика"""
-    
     python:
-        # Получаем сценарий
         scenario = emotion_scenarios.get(scenario_id, emotion_scenarios["morning_school"])
-        
-        # Показываем ситуацию (если не в режиме тишины)
-        if not renpy.is_skipping():
-            renpy.say(None, "📖 " + scenario.get('title', 'Эмоциональная ситуация'))
-            renpy.say(None, scenario.get('situation', ''))
     
-    # Запускаем экран выбора эмоции
     call screen plutchik_wheel(scenario, scenario_id)
-    
     $ result = _return
     
     if result == "skip":
         $ update_player_state(self_awareness_change=2, vocabulary_change=1)
         $ save_emotion_stats(persistent.user_id, False, "skip")
-        narrator "Ты решила пока не анализировать свои чувства. Это тоже нормально — иногда нужно просто побыть в тишине."
         return
     
     $ selected = result
@@ -378,40 +381,22 @@ label emotion_wheel_game(scenario_id="morning_school"):
     $ possible = scenario.get('possible_emotions', [])
     $ selected_name = plutchik_emotions.get(selected, {}).get('name_ru', selected)
     
-    # Получаем feedback в зависимости от правильности
-    $ feedback_dict = scenario.get('feedback', {})
-    
-    # Проверка правильности
     if selected == best:
         $ is_correct = True
-        $ feedback_text = feedback_dict.get('correct', "Ты верно определила эмоцию!")
+        $ feedback_text = scenario.get('feedback', {}).get('correct', "Ты верно определила эмоцию!")
         narrator "[feedback_text]"
         $ update_player_state(self_awareness_change=12, empathy_change=5, vocabulary_change=8, anxiety_change=-5)
     elif selected in possible:
         $ is_correct = True
-        $ feedback_text = feedback_dict.get('partial', "Хороший вариант! Ты на верном пути.")
+        $ feedback_text = scenario.get('feedback', {}).get('partial', "Хороший вариант! Ты на верном пути.")
         narrator "[feedback_text]"
         $ update_player_state(self_awareness_change=8, empathy_change=3, vocabulary_change=5, anxiety_change=-3)
     else:
         $ is_correct = False
-        $ feedback_text = feedback_dict.get('wrong', "Попробуй ещё раз. Прислушайся к своим ощущениям.")
+        $ feedback_text = scenario.get('feedback', {}).get('wrong', "Попробуй ещё раз. Прислушайся к своим ощущениям.")
         narrator "[feedback_text]"
         $ update_player_state(self_awareness_change=5, vocabulary_change=3, anxiety_change=2)
     
-    # Сохраняем статистику
     $ save_emotion_stats(persistent.user_id, is_correct, selected)
-    
-    # Бонусная информация об эмоции
-    $ emo = plutchik_emotions.get(selected, {})
-    $ opposite = plutchik_emotions.get(emo.get('opposite', ''), {}).get('name_ru', 'неизвестно')
-    narrator "💡 Знаешь ли ты? Эмоция «[selected_name]» противоположна эмоции «[opposite]». Понимание этого помогает лучше осознавать свои чувства."
-    
-    # Отмечаем прогресс в достижениях
-    if persistent.user_id:
-        $ stats = get_emotion_stats(persistent.user_id)
-        if stats.get('total_attempts', 0) >= 1:
-            $ unlock_achievement("emotion_beginner")
-        if stats.get('correct_matches', 0) >= 3:
-            $ unlock_achievement("emotion_treasure_hunter")
     
     return
