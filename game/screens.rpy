@@ -2,180 +2,246 @@
 ## ИНИЦИАЛИЗАЦИЯ
 ################################################################################
 init offset = -1
+
 init python:
     import time
     import json
+    import os
+
+    # ========================================================================
+    # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+    # ========================================================================
     
-    def get_last_save_info(user_id):
-        """Получение информации о последнем сохранении пользователя"""
-        result = {
-            'time': "Нет сохранений",
-            'chapter': "Нет данных"
-        }
-        last_time = 0
-        last_chapter = "Нет данных"
-        
+    def safe_get_emotion_stats(user_id):
         try:
-            chapter_display = {
-                "Глава Первая: Связь": "Глава 1",
-                "Глава Вторая: Новые знакомства": "Глава 2",
-                "Глава Третья: Испытание дружбой": "Глава 3",
+            if 'get_emotion_stats' in globals() and callable(get_emotion_stats):
+                res = get_emotion_stats(user_id)
+                if isinstance(res, dict):
+                    return (
+                        res.get('total_attempts', 0),
+                        res.get('correct_matches', 0),
+                        res.get('emotions_chosen', {})
+                    )
+        except:
+            pass
+        return (0, 0, {})
+
+    def get_current_chapter_safe():
+        try:
+            if hasattr(store, 'current_chapter') and store.current_chapter:
+                return store.current_chapter
+        except:
+            pass
+        return "Глава Первая: Связь"
+    
+    def get_save_user_name(slot):
+        try:
+            slot_str = str(slot)
+            if renpy.can_load(slot_str):
+                save_json = renpy.json_load(renpy.slot_json_filename(slot_str))
+                if save_json:
+                    return save_json.get("user_name", "")
+        except:
+            pass
+        return ""
+    
+    def get_save_chapter(slot):
+        try:
+            slot_str = str(slot)
+            if renpy.can_load(slot_str):
+                save_json = renpy.json_load(renpy.slot_json_filename(slot_str))
+                if save_json:
+                    chapter = save_json.get("chapter", "")
+                    if "Первая" in chapter or "Связь" in chapter:
+                        return "Глава 1"
+                    elif "Вторая" in chapter or "Новые знакомства" in chapter:
+                        return "Глава 2"
+                    elif "Третья" in chapter:
+                        return "Глава 3"
+                    elif chapter:
+                        return chapter[:20] + "..." if len(chapter) > 20 else chapter
+        except:
+            pass
+        return ""
+
+    # ========================================================================
+    # СИСТЕМА СОХРАНЕНИЙ
+    # ========================================================================
+    
+    def add_save_metadata(json_data):
+        try:
+            json_data["user_id"] = persistent.user_id if hasattr(persistent, 'user_id') else None
+            json_data["user_name"] = persistent.user_name if hasattr(persistent, 'user_name') else ""
+            json_data["chapter"] = get_current_chapter_safe()
+            json_data["_timestamp"] = time.time()
+            json_data["player_state"] = {
+                "self_awareness": store.player_self_awareness if hasattr(store, 'player_self_awareness') else 0,
+                "empathy": store.player_empathy if hasattr(store, 'player_empathy') else 0,
+                "vocabulary": store.player_emotional_vocabulary if hasattr(store, 'player_emotional_vocabulary') else 0,
+                "anxiety": store.player_anxiety_level if hasattr(store, 'player_anxiety_level') else 50,
+                "trust": store.player_trust_level if hasattr(store, 'player_trust_level') else 30
             }
-            
-            all_slots = []
-            for i in range(1, 10):
-                all_slots.append(str(i))
-            for i in range(1, 10):
-                all_slots.append(f"auto-{i}")
-            all_slots.append("quick-save")
-            
-            for slot_name in all_slots:
-                if renpy.can_load(slot_name):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                        if save_json and save_json.get("user_id") == user_id:
-                            timestamp = save_json.get("_timestamp", 0)
-                            if timestamp > last_time:
-                                last_time = timestamp
-                                if timestamp:
-                                    try:
-                                        time_str = time.strftime("%d.%m.%Y %H:%M", time.localtime(timestamp))
-                                        result['time'] = time_str
-                                    except:
-                                        result['time'] = "Недавно"
-                                
-                                save_chapter = save_json.get("chapter", "")
-                                if save_chapter:
-                                    if save_chapter in chapter_display:
-                                        last_chapter = chapter_display[save_chapter]
-                                    else:
-                                        if "Первая" in save_chapter or "Связь" in save_chapter:
-                                            last_chapter = "Глава 1"
-                                        elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
-                                            last_chapter = "Глава 2"
-                                        elif "Третья" in save_chapter:
-                                            last_chapter = "Глава 3"
-                                        else:
-                                            last_chapter = save_chapter[:20] + "..." if len(save_chapter) > 20 else save_chapter
-                    except:
-                        continue
-            
-            result['chapter'] = last_chapter
-            
-            if result['chapter'] == "Нет данных" and last_time > 0:
-                if hasattr(db, 'get_user_progress'):
-                    progress = db.get_user_progress(user_id)
-                    if progress:
-                        result['chapter'] = progress[-1] if progress else "Нет данных"
-        except Exception as e:
-            print(f"Ошибка в get_last_save_info: {e}")
-        
-        return result
-    
-    def get_user_progress(user_id):
-        """Получение прогресса игрока по главам"""
-        progress = []
-        
-        chapter_formats = {
-            "Глава Первая: Связь": "Глава 1",
-            "Глава Вторая: Новые знакомства": "Глава 2",
-            "Глава Третья: Испытание дружбой": "Глава 3",
-        }
-        
+        except:
+            pass
+        return json_data
+
+    if not hasattr(config, 'save_json_callbacks'):
+        config.save_json_callbacks = []
+    if add_save_metadata not in config.save_json_callbacks:
+        config.save_json_callbacks.append(add_save_metadata)
+
+    def custom_save_action(slot):
         try:
-            all_slots = []
-            for i in range(1, 10):
-                all_slots.append(str(i))
-            for i in range(1, 10):
-                all_slots.append(f"auto-{i}")
-            all_slots.append("quick-save")
-            
-            chapters_found = set()
-            
-            for slot_name in all_slots:
-                if renpy.can_load(slot_name):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                        if save_json and save_json.get("user_id") == user_id:
-                            chapter = save_json.get("chapter", "")
-                            if chapter:
-                                if chapter in chapter_formats:
-                                    chapters_found.add(chapter_formats[chapter])
-                                else:
-                                    if "Первая" in chapter or "Связь" in chapter:
-                                        chapters_found.add("Глава 1")
-                                    elif "Вторая" in chapter or "Новые знакомства" in chapter:
-                                        chapters_found.add("Глава 2")
-                                    elif "Третья" in chapter:
-                                        chapters_found.add("Глава 3")
-                    except:
-                        continue
-            
-            chapter_order = {"Глава 1": 1, "Глава 2": 2, "Глава 3": 3}
-            progress = sorted(list(chapters_found), key=lambda x: chapter_order.get(x, 0))
-            
+            renpy.save(str(slot))
+            renpy.notify(f"Игра сохранена в слот {slot}")
+            return True
         except Exception as e:
-            print(f"Ошибка в get_user_progress: {e}")
+            renpy.notify(f"Ошибка сохранения: {str(e)}")
+            return False
+
+    def custom_load_action(slot):
+        slot_str = str(slot)
+        try:
+            if renpy.can_load(slot_str):
+                save_json = renpy.json_load(renpy.slot_json_filename(slot_str))
+                current_user_id = persistent.user_id if hasattr(persistent, 'user_id') else None
+                if save_json:
+                    save_user_id = save_json.get("user_id")
+                    if save_user_id is not None and save_user_id != current_user_id:
+                        renpy.show_screen("confirm_user_switch", slot=slot)
+                        return
+                renpy.load(slot_str)
+            else:
+                renpy.notify(f"Слот {slot} пуст")
+        except Exception as e:
+            renpy.notify(f"Ошибка загрузки: {str(e)}")
+
+    def load_latest_save():
+        current_user_id = persistent.user_id if hasattr(persistent, 'user_id') else None
         
-        return progress
+        latest_slot = None
+        latest_time = 0
+        slots_to_check = [str(i) for i in range(1, 10)] + [f"auto-{i}" for i in range(1, 10)] + ["quick-save"]
+        
+        for slot in slots_to_check:
+            if renpy.can_load(slot):
+                try:
+                    save_json = renpy.json_load(renpy.slot_json_filename(slot))
+                    if save_json:
+                        save_user_id = save_json.get("user_id")
+                        if save_user_id == current_user_id or current_user_id is None:
+                            timestamp = save_json.get("_timestamp", 0)
+                            if timestamp > latest_time:
+                                latest_time = timestamp
+                                latest_slot = slot
+                except:
+                    pass
+                    
+        if latest_slot:
+            try:
+                renpy.load(latest_slot)
+            except Exception as e:
+                renpy.notify(f"Ошибка загрузки: {str(e)}")
+        else:
+            renpy.notify("Нет сохранённой игры для текущего пользователя")
+
+    def load_other_user_save(slot):
+        try:
+            slot_str = str(slot)
+            if renpy.can_load(slot_str):
+                save_json = renpy.json_load(renpy.slot_json_filename(slot_str))
+                if save_json:
+                    save_user_id = save_json.get("user_id")
+                    save_user_name = save_json.get("user_name", "")
+                    if save_user_id:
+                        persistent.user_id = save_user_id
+                        persistent.user_name = save_user_name
+                        renpy.load(slot_str)
+        except Exception as e:
+            renpy.notify(f"Ошибка загрузки: {str(e)}")
+
+    def delete_save(slot):
+        try:
+            renpy.unlink_save(str(slot))
+            renpy.notify(f"Сохранение {slot} удалено")
+        except Exception as e:
+            renpy.notify(f"Ошибка удаления: {str(e)}")
+
 ################################################################################
-## СТИЛИ
+## СТИЛИ (ОРИГИНАЛЬНЫЕ)
 ################################################################################
 style default:
     properties gui.text_properties()
     language gui.language
+
 style input:
     properties gui.text_properties("input", accent=True)
     adjust_spacing False
+
 style hyperlink_text:
     properties gui.text_properties("hyperlink", accent=True)
     hover_underline True
+
 style gui_text:
     properties gui.text_properties("interface")
+
 style button:
     properties gui.button_properties("button")
+
 style button_text is gui_text:
     properties gui.text_properties("button")
     yalign 0.5
 
 style label_text is gui_text:
     properties gui.text_properties("label", accent=True)
+
 style prompt_text is gui_text:
     properties gui.text_properties("prompt")
+
 style bar:
     ysize gui.bar_size
     left_bar Frame("gui/bar/left.png", gui.bar_borders, tile=gui.bar_tile)
     right_bar Frame("gui/bar/right.png", gui.bar_borders, tile=gui.bar_tile)
+
 style vbar:
     xsize gui.bar_size
     top_bar Frame("gui/bar/top.png", gui.vbar_borders, tile=gui.bar_tile)
     bottom_bar Frame("gui/bar/bottom.png", gui.vbar_borders, tile=gui.bar_tile)
+
 style scrollbar:
     ysize gui.scrollbar_size
     base_bar Frame("gui/scrollbar/horizontal_[prefix_]bar.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
     thumb Frame("gui/scrollbar/horizontal_[prefix_]thumb.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
+
 style vscrollbar:
     xsize gui.scrollbar_size
     base_bar Frame("gui/scrollbar/vertical_[prefix_]bar.png", gui.vscrollbar_borders, tile=gui.scrollbar_tile)
     thumb Frame("gui/scrollbar/vertical_[prefix_]thumb.png", gui.vscrollbar_borders, tile=gui.scrollbar_tile)
+
 style slider:
     ysize gui.slider_size
     base_bar Frame("gui/slider/horizontal_[prefix_]bar.png", gui.slider_borders, tile=gui.slider_tile)
     thumb "gui/slider/horizontal_[prefix_]thumb.png"
+
 style vslider:
     xsize gui.slider_size
     base_bar Frame("gui/slider/vertical_[prefix_]bar.png", gui.vslider_borders, tile=gui.slider_tile)
     thumb "gui/slider/vertical_[prefix_]thumb.png"
+
 style frame:
     padding gui.frame_borders.padding
     background Frame("gui/frame.png", gui.frame_borders, tile=gui.frame_tile)
+
 style navigation_button:
     size_group "navigation"
     properties gui.button_properties("navigation_button")
+
 style quick_button:
     properties gui.button_properties("quick_button")
+
 style choice_button:
     properties gui.button_properties("choice_button")
+    
 ################################################################################
 ## ВНУТРИИГРОВЫЕ ЭКРАНЫ
 ################################################################################
@@ -183,34 +249,26 @@ screen say(who, what):
     zorder 1
     window:
         id "window"
-
         if who is not None:
-
             window:
                 id "namebox"
                 style "namebox"
                 text who id "who"
-
         text what id "what"
-
     if not renpy.variant("small"):
         add SideImage() xalign 0.0 yalign 1.0
 
 init python:
     config.character_id_prefixes.append('namebox')
 
-style window is default
-style say_label is default
-style say_dialogue is default
-style say_thought is say_dialogue
-style namebox is default
-style namebox_label is say_label
 style window:
     xalign 0.5
     xfill True
     yalign gui.textbox_yalign
     ysize gui.textbox_height
     background Image("gui/textbox.png", xalign=0.5, yalign=1.0)
+    padding (25, 20, 25, 20)
+
 style namebox:
     xpos gui.name_xpos
     xanchor gui.name_xalign
@@ -219,16 +277,21 @@ style namebox:
     ysize gui.namebox_height
     background Frame("gui/namebox.png", gui.namebox_borders, tile=gui.namebox_tile, xalign=gui.name_xalign)
     padding gui.namebox_borders.padding
+
 style say_label:
     properties gui.text_properties("name", accent=True)
     xalign gui.name_xalign
     yalign 0.5
+    outlines [(2, "#1a1a1a", 0, 0)]
+
 style say_dialogue:
     properties gui.text_properties("dialogue")
     xpos gui.dialogue_xpos
     xsize gui.dialogue_width
     ypos gui.dialogue_ypos
     adjust_spacing False
+    line_spacing 5
+    outlines [(1, "#1a1a1a", 0, 0)]
 
 screen input(prompt):
     style_prefix "input"
@@ -245,6 +308,7 @@ style input_prompt is default
 style input_prompt:
     xalign gui.dialogue_text_xalign
     properties gui.text_properties("input_prompt")
+
 style input:
     xalign gui.dialogue_text_xalign
     xmaximum gui.dialogue_width
@@ -255,18 +319,19 @@ screen choice(items):
         for i in items:
             textbutton i.caption action i.action
 
-style choice_vbox is vbox
-style choice_button is button
-style choice_button_text is button_text
 style choice_vbox:
     xalign 0.5
     ypos 405
     yanchor 0.5
     spacing gui.choice_spacing
+
 style choice_button is default:
     properties gui.button_properties("choice_button")
+
 style choice_button_text is default:
     properties gui.text_properties("choice_button")
+    outlines [(1, "#2a1a0a", 0, 0)]
+    line_spacing 3
 
 screen quick_menu():
     zorder 100
@@ -286,16 +351,16 @@ screen quick_menu():
 init python:
     config.overlay_screens.append("quick_menu")
 
-style quick_menu is hbox
-style quick_button is default
-style quick_button_text is button_text
 style quick_menu:
     xalign 0.5
     yalign 0.97
+
 style quick_button:
     properties gui.button_properties("quick_button")
+
 style quick_button_text:
     properties gui.text_properties("quick_button")
+    
 ################################################################################
 ## ЭКРАНЫ ГЛАВНОГО И ИГРОВОГО МЕНЮ
 ################################################################################
@@ -305,253 +370,71 @@ screen navigation():
         xpos gui.navigation_xpos
         yalign 0.8
         spacing gui.navigation_spacing
-
         if main_menu:
             textbutton _("Начать") action Start() 
         else:
             textbutton _("История") action ShowMenu("history")
             textbutton _("Сохранить") action ShowMenu("save")
-
         textbutton _("Загрузить") action ShowMenu("load")
         textbutton _("Настройки") action ShowMenu("preferences")
-
+        textbutton _("Статистика") action ShowMenu("player_stats_screen")
         if _in_replay:
             textbutton _("Завершить повтор") action EndReplay(confirm=True)
         elif not main_menu:
             textbutton _("Главное меню") action MainMenu()
-
         textbutton _("Об игре") action ShowMenu("about")
-
         if renpy.variant("pc") or (renpy.variant("web") and not renpy.variant("mobile")):
             textbutton _("Помощь") action ShowMenu("help")
-
         if renpy.variant("pc"):
             textbutton _("Выход") action Quit(confirm=not main_menu)
 
-style navigation_button is gui_button
-style navigation_button_text is gui_button_text
 style navigation_button:
     size_group "navigation"
     properties gui.button_properties("navigation_button")
+
 style navigation_button_text:
     properties gui.text_properties("navigation_button")
-
-screen select_user_screen():
-    modal True
-    zorder 200
-    add "#000000CC"
-    
-    frame:
-        style "select_user_frame"
-        xalign 0.5
-        yalign 0.5
-        xsize 1200
-        ysize 900
-        padding (70, 70)
-        
-        vbox:
-            spacing 20
-            xfill True
-            text "Выберите пользователя для продолжения:" size 32 color "#ffffff" font gui.interface_text_font xalign 0.5 yalign 0.5
-            null height 10
-            
-            $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
-            
-            if users:
-                frame:
-                    style "select_user_header"
-                    xfill True
-                    padding (10, 12)
-                    hbox:
-                        spacing 20
-                        xfill True
-                        text "Имя" size 22 color "#ffffff" xsize 200 text_align 0.5
-                        text "Сохранение" size 22 color "#ffffff" xsize 400 text_align 0.5
-                        text "Прогресс" size 22 color "#ffffff" xsize 250 text_align 0.5
-                        text "Достижений" size 22 color "#ffffff" xsize 150 text_align 0.5
-                
-                viewport:
-                    ysize 350
-                    scrollbars "vertical"
-                    mousewheel True
-                    draggable True
-                    vbox:
-                        spacing 5
-                        xfill True
-                        for user in users:
-                            $ user_id = user['user_ID']
-                            $ user_name = user['name']
-                            $ last_save_info = get_last_save_info(user_id)
-                            $ last_save_time = last_save_info['time']
-                            $ last_save_chapter = last_save_info['chapter']
-                            $ user_progress = get_user_progress(user_id)
-                            $ progress_text = ", ".join(user_progress) if user_progress else "Нет данных"
-                            $ user_achievements = db.get_user_achievements(user_id) if hasattr(db, 'get_user_achievements') else []
-                            $ ach_count = len(user_achievements)
-                            
-                            button:
-                                style "select_user_row"
-                                xfill True
-                                action [Function(set_current_user, user_id, user_name), Function(load_last_save_for_user, user_id), Hide("select_user_screen")]
-                                hbox:
-                                    spacing 20
-                                    xfill True
-                                    text "[user_name]" size 22 color "#ffffff" xsize 200 text_align 0.5
-                                    text "[last_save_time]" size 22 color "#ffffff" xsize 400 text_align 0.5
-                                    text "[progress_text]" size 22 color "#ffffff" xsize 250 text_align 0.5
-                                    text "[ach_count]" size 22 color "#ffffff" xsize 150 text_align 0.5
-            else:
-                vbox:
-                    spacing 30
-                    xalign 0.5
-                    yalign 0.5
-                    text "Нет сохраненных игроков" size 28 xalign 0.5 color "#656565"
-                    text "Начните новую игру, чтобы создать сохранение" size 22 xalign 0.5 color "#737373"
-                    null height 20
-            
-            null height 20
-            hbox:
-                spacing 5
-                xalign 0.5
-                yalign 0.1
-                textbutton "Начать новую игру" style "select_user_button" action [Start(), Hide("select_user_screen")]
-                textbutton "Отмена" style "select_user_button" action Hide("select_user_screen")
-    
-    key "game_menu" action Hide("select_user_screen")
-    key "K_ESCAPE" action Hide("select_user_screen")
-
-style select_user_frame:
-    background Frame("gui/confirm_frame.png", 25, 25, 25, 25)
-    padding (30, 30)
-style select_user_header:
-    background "#c66b2f"
-    xfill True
-style select_user_header_text:
-    color "#ffffff"
-    size 22
-style select_user_row:
-    background "#d9874d"
-    hover_background "#97321b"
-    xfill True
-    padding (10, 8)
-    margin (0, 2)
-style select_user_button:
-    padding (5, 5)
-    xsize 350
-style select_user_button_text:
-    color "#ffffff"
-    hover_color "#fb906d"
-    outlines[(2, "#671a1a", 0, 0)]
-    size 22
-    font gui.interface_text_font
-    text_align 0.5
-
-init python:
-    def get_user_last_chapter(user_id):
-        last_chapter = None
-        last_time = 0
-        try:
-            for i in range(1, 10):
-                if renpy.can_load(str(i)):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(str(i)))
-                        if save_json and save_json.get("user_id") == user_id:
-                            timestamp = save_json.get("_timestamp", 0)
-                            if timestamp > last_time:
-                                last_time = timestamp
-                                last_chapter = save_json.get("chapter", "Глава 1")
-                    except:
-                        continue
-            if not last_chapter and hasattr(db, 'sqlite_available') and db.sqlite_available:
-                try:
-                    db.connect()
-                    db.cursor.execute('''SELECT chapter FROM save_progress_users WHERE user_ID = ? ORDER BY save_point DESC LIMIT 1''', (user_id,))
-                    row = db.cursor.fetchone()
-                    if row:
-                        last_chapter = row['chapter']
-                except:
-                    pass
-                finally:
-                    db.disconnect()
-        except:
-            pass
-        return last_chapter if last_chapter else "Нет сохранений"
-    
-    def load_last_save_for_user(user_id):
-        saves = []
-        try:
-            all_slots = []
-            for i in range(1, 10):
-                all_slots.append(str(i))
-            for i in range(1, 10):
-                all_slots.append(f"auto-{i}")
-            all_slots.append("quick-save")
-            for slot_name in all_slots:
-                if renpy.can_load(slot_name):
-                    try:
-                        save_json = renpy.json_load(renpy.slot_json_filename(slot_name))
-                        if save_json and save_json.get("user_id") == user_id:
-                            timestamp = save_json.get("_timestamp", 0)
-                            saves.append((slot_name, timestamp))
-                    except:
-                        continue
-        except Exception as e:
-            print(f"Ошибка при поиске сохранений: {e}")
-        saves.sort(key=lambda x: x[1], reverse=True)
-        if saves:
-            try:
-                renpy.load(saves[0][0])
-                return True
-            except:
-                return False
-        return False
-
-    def set_current_user(user_id, user_name):
-        persistent.user_id = user_id
-        persistent.user_name = user_name
-        renpy.notify(f"Выбран игрок: {user_name}")
 
 screen main_menu():
     tag menu
     add "gui/main_menu.png"
-    
-    # Проверяем наличие сохранений для отображения кнопки "Продолжить"
     python:
         has_saves = False
+        current_user_id = persistent.user_id if hasattr(persistent, 'user_id') else None
         slots_to_check = [str(i) for i in range(1, 10)] + [f"auto-{i}" for i in range(1, 10)] + ["quick-save"]
         for slot in slots_to_check:
             if renpy.can_load(slot):
-                has_saves = True
-                break
-    
+                try:
+                    save_json = renpy.json_load(renpy.slot_json_filename(slot))
+                    if save_json:
+                        save_user_id = save_json.get("user_id")
+                        if save_user_id == current_user_id or current_user_id is None:
+                            has_saves = True
+                            break
+                except:
+                    pass
     if gui.show_name:
         text "[config.name!t]":
             style "main_menu_title"
-    
     text "Версия [config.version]":
         style "main_menu_version"
         at transform:
             alpha 0.5
-    
     frame:
         style "main_menu_frame"
         xalign 0.5
         yalign 0.5
         xsize 500
         ysize 650
-        background Frame("gui/choice_idle_background.png", 25, 25, 25, 25)
-        
+        background Frame("gui/choice_idle_background.png", 25, 25)
         vbox:
             xalign 0.5
             yalign 0.5
             spacing 1
-            
-            # Кнопка "Продолжить" появляется только если есть сохранения
             if has_saves:
                 textbutton _("Продолжить"):
                     style "main_menu_button"
                     action Function(load_latest_save)
-                    
             textbutton _("Начать игру"):
                 style "main_menu_button"
                 action Start()
@@ -570,7 +453,6 @@ screen main_menu():
             textbutton _("Выход"):
                 style "main_menu_button"
                 action Quit(confirm=True)
-    
     button:
         style "players_button"
         action ShowMenu("debug_database")
@@ -584,6 +466,7 @@ style main_menu_title:
     textalign 0.5
     layout "subtitle"
     outlines [(5, "#a43c13", 0, 0)]
+
 style main_menu_version:
     color "#ffffff"
     size gui.interface_text_size
@@ -592,20 +475,23 @@ style main_menu_version:
     yalign 0.98
     textalign 0.0
     outlines [(2, "#000000", 0, 0)]
+
 style main_menu_frame:
     xalign 0.5
     yalign 0.5
     xsize 500
     ysize 650
     background None
+
 style main_menu_button:
     xalign 0.5
     padding (20, 15)
     xsize 400
     ysize None
     margin (0, 5)
-    background Frame("gui/button/choice_idle_background.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    background Frame("gui/button/choice_idle_background.png", 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+
 style main_menu_button_text:
     color "#ffffff"
     hover_color "#fb906d"
@@ -615,13 +501,14 @@ style main_menu_button_text:
     outlines [(2, "#b64520", 0, 0)]
     text_align 0.5
     xalign 0.5
+
 style players_button:
     xpos 0.22
     ypos 0.55
     xsize 295
     ysize 139
-    background Frame("gui/button/choice_idle_background_3.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background_2.png", 15, 15, 15, 15)
+    background Frame("gui/button/choice_idle_background_3.png", 15, 15)
+    hover_background Frame("gui/button/choice_hover_background_2.png", 15, 15)
     padding (20, 20)
 
 screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
@@ -681,51 +568,373 @@ style game_menu_label is gui_label
 style game_menu_label_text is gui_label_text
 style return_button is navigation_button
 style return_button_text is navigation_button_text
+
 style game_menu_outer_frame:
     bottom_padding 45
     top_padding 180
     background "gui/overlay/game_menu.png"
+
 style game_menu_navigation_frame:
     xsize 420
     yfill True
+
 style game_menu_content_frame:
     left_margin 100
     right_margin 40
     top_margin 15
+
 style game_menu_viewport:
     xsize 1340
+
 style game_menu_vscrollbar:
     unscrollable gui.unscrollable
+
 style game_menu_side:
     spacing 15
+
 style game_menu_label:
     xpos 65
     ysize 180
+
 style game_menu_label_text:
     size gui.title_text_size
     color gui.accent_color
     yalign 0.5
+
 style return_button:
     xpos gui.navigation_xpos
     yalign 1.0
     yoffset -45
 
+################################################################################
+## ЭКРАН ОБ ИГРЕ
+################################################################################
 screen about():
     tag menu
     use game_menu(_("Об игре"), scroll="viewport"):
         style_prefix "about"
         vbox:
             label "[config.name!t]"
-            text _("Версия [config.version!t]\n")
+            text "Версия [config.version!t]\n"
             if gui.about:
                 text "[gui.about!t]\n"
-            text _("Сделано с помощью {a=https://www.renpy.org/}Ren'Py{/a} [renpy.version_only].\n\n[renpy.license!t]")
+            text "Сделано с помощью {a=https://www.renpy.org/}Ren'Py{/a} [renpy.version_only].\n\n[renpy.license!t]"
 
 style about_label is gui_label
 style about_label_text is gui_label_text
 style about_text is gui_text
 style about_label_text:
     size gui.label_text_size
+
+################################################################################
+## ЭКРАН ПОМОЩИ (ОРИГИНАЛЬНЫЙ СТИЛЬ)
+################################################################################
+screen help():
+    tag menu
+    default device = "keyboard"
+    use game_menu(_("Помощь"), scroll="viewport"):
+        vbox:
+            spacing 25
+            
+            text "Управление игрой":
+                size 36
+                color gui.accent_color
+                xalign 0.5
+                outlines [(2, "#671a1a", 0, 0)]
+            
+            null height 10
+            
+            frame:
+                background Frame("gui/confirm_frame.png", 15, 15)
+                xfill True
+                padding (25, 20)
+                
+                vbox:
+                    spacing 15
+                    
+                    text "Клавиатура и мышь":
+                        size 28
+                        color gui.accent_color
+                        outlines [(1, "#671a1a", 0, 0)]
+                    
+                    hbox:
+                        spacing 20
+                        xfill True
+                        text "Ввод/Продолжить:" size 22 xsize 250
+                        text "ЛКМ, Пробел, Enter" size 22 color "#cccccc"
+                    
+                    hbox:
+                        spacing 20
+                        xfill True
+                        text "Пропустить диалог:" size 22 xsize 250
+                        text "Ctrl, Tab" size 22 color "#cccccc"
+                    
+                    hbox:
+                        spacing 20
+                        xfill True
+                        text "Скрыть окно диалога:" size 22 xsize 250
+                        text "ПКМ, H" size 22 color "#cccccc"
+                    
+                    hbox:
+                        spacing 20
+                        xfill True
+                        text "Сделать скриншот:" size 22 xsize 250
+                        text "S" size 22 color "#cccccc"
+                    
+                    hbox:
+                        spacing 20
+                        xfill True
+                        text "Открыть меню:" size 22 xsize 250
+                        text "Esc, ПКМ" size 22 color "#cccccc"
+                    
+                    hbox:
+                        spacing 20
+                        xfill True
+                        text "Быстрое сохранение:" size 22 xsize 250
+                        text "F5" size 22 color "#cccccc"
+                    
+                    hbox:
+                        spacing 20
+                        xfill True
+                        text "Быстрая загрузка:" size 22 xsize 250
+                        text "F8" size 22 color "#cccccc"
+                    
+                    hbox:
+                        spacing 20
+                        xfill True
+                        text "Громкость (+/-):" size 22 xsize 250
+                        text "PageUp / PageDown" size 22 color "#cccccc"
+                    
+                    hbox:
+                        spacing 20
+                        xfill True
+                        text "Полноэкранный режим:" size 22 xsize 250
+                        text "F11" size 22 color "#cccccc"
+            
+            null height 15
+            
+            frame:
+                background Frame("gui/confirm_frame.png", 15, 15)
+                xfill True
+                padding (25, 20)
+                
+                vbox:
+                    spacing 15
+                    
+                    text "Советы":
+                        size 28
+                        color gui.accent_color
+                        outlines [(1, "#671a1a", 0, 0)]
+                    
+                    text "• Обращай внимание на телесные ощущения персонажей — они помогут распознавать эмоции." size 20 color "#dddddd"
+                    text "• В мини-игре «Колесо эмоций» выбирай эмоцию, которая лучше всего описывает ситуацию." size 20 color "#dddddd"
+                    text "• Дневник наблюдений помогает развивать эмоциональный интеллект." size 20 color "#dddddd"
+                    text "• Твои решения влияют на отношения с персонажами и доступные достижения." size 20 color "#dddddd"
+            
+            null height 30
+            
+            textbutton "Закрыть":
+                xalign 0.5
+                background Frame("gui/button/choice_idle_background_0.png", 15, 15)
+                hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                padding (35, 15)
+                xsize 300
+                action Return()
+
+################################################################################
+## ЭКРАН НАСТРОЕК (ОПЦИЙ) - ОРИГИНАЛЬНЫЙ СТИЛЬ
+################################################################################
+screen preferences():
+    tag menu
+    use game_menu(_("Настройки"), scroll="viewport"):
+        vbox:
+            spacing 25
+            xfill True
+            
+            text "Настройки игры":
+                size 36
+                color gui.accent_color
+                xalign 0.5
+                outlines [(2, "#671a1a", 0, 0)]
+            
+            null height 10
+            
+            frame:
+                background Frame("gui/confirm_frame.png", 15, 15)
+                xfill True
+                padding (25, 20)
+                
+                vbox:
+                    spacing 20
+                    
+                    text "Графика и звук":
+                        size 28
+                        color gui.accent_color
+                        outlines [(1, "#671a1a", 0, 0)]
+                    
+                    hbox:
+                        spacing 30
+                        xfill True
+                        text "Режим экрана:" size 24 xsize 250 yalign 0.5
+                        textbutton "Оконный" action Preference("display", "window")
+                        textbutton "Полный" action Preference("display", "fullscreen")
+                    
+                    null height 5
+                    
+                    hbox:
+                        spacing 30
+                        xfill True
+                        text "Громкость музыки:" size 24 xsize 250 yalign 0.5
+                        bar value Preference("music volume") xsize 400 ysize 25
+                    
+                    hbox:
+                        spacing 30
+                        xfill True
+                        text "Громкость звуков:" size 24 xsize 250 yalign 0.5
+                        bar value Preference("sound volume") xsize 400 ysize 25
+                    
+                    hbox:
+                        spacing 30
+                        xfill True
+                        text "Громкость голоса:" size 24 xsize 250 yalign 0.5
+                        bar value Preference("voice volume") xsize 400 ysize 25
+            
+            null height 15
+            
+            frame:
+                background Frame("gui/confirm_frame.png", 15, 15)
+                xfill True
+                padding (25, 20)
+                
+                vbox:
+                    spacing 20
+                    
+                    text "Текст и управление":
+                        size 28
+                        color gui.accent_color
+                        outlines [(1, "#671a1a", 0, 0)]
+                    
+                    hbox:
+                        spacing 30
+                        xfill True
+                        text "Скорость текста:" size 24 xsize 250 yalign 0.5
+                        bar value Preference("text speed") xsize 400 ysize 25
+                        text "[preferences.text_cps]" size 20 xsize 80 yalign 0.5
+                    
+                    hbox:
+                        spacing 30
+                        xfill True
+                        text "Авто-чтение:" size 24 xsize 250 yalign 0.5
+                        bar value Preference("auto-forward time") xsize 400 ysize 25
+                        text "сек/символ" size 20 xsize 100 yalign 0.5
+                    
+                    null height 5
+                    
+                    hbox:
+                        spacing 30
+                        xfill True
+                        text "Пропуск:" size 24 xsize 250 yalign 0.5
+                        textbutton "Непрочитанный" action Preference("skip", "seen")
+                        textbutton "Весь текст" action Preference("skip", "all")
+                    
+                    hbox:
+                        spacing 30
+                        xfill True
+                        text "После выбора:" size 24 xsize 250 yalign 0.5
+                        textbutton "Останавливать" action Preference("after choices", "stop")
+                        textbutton "Продолжать" action Preference("after choices", "skip")
+            
+            null height 15
+            
+            frame:
+                background Frame("gui/confirm_frame.png", 15, 15)
+                xfill True
+                padding (25, 20)
+                
+                vbox:
+                    spacing 20
+                    
+                    text "Система":
+                        size 28
+                        color gui.accent_color
+                        outlines [(1, "#671a1a", 0, 0)]
+                    
+                    hbox:
+                        spacing 30
+                        xfill True
+                        text "Язык:" size 24 xsize 250 yalign 0.5
+                        textbutton "Русский" action Language(None)
+                        textbutton "English" action Language("english")
+                    
+                    null height 5
+                    
+                    hbox:
+                        spacing 30
+                        xfill True
+                        text "Сброс настроек:" size 24 xsize 250 yalign 0.5
+                        textbutton "Сбросить всё" action Preference("reset")
+            
+            null height 30
+            
+            textbutton "Закрыть":
+                xalign 0.5
+                background Frame("gui/button/choice_idle_background_0.png", 15, 15)
+                hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                padding (35, 15)
+                xsize 300
+                action Return()
+
+################################################################################
+## ЭКРАН ИСТОРИИ
+################################################################################
+screen history():
+    tag menu
+    predict False
+    use game_menu(_("История"), scroll=("vpgrid" if gui.history_height else "viewport"), yinitial=1.0):
+        style_prefix "history"
+        
+        for h in _history_list:
+            window:
+                style "history_window"
+                has fixed:
+                    if h.who:
+                        label h.who:
+                            style "history_name"
+                            substitute False
+                            if "color" in h.who_args:
+                                text_color h.who_args["color"]
+                    $ what_text = h.what
+                    text "[what_text!t]" style "history_text"
+        if not _history_list:
+            label _("История пуста.")
+
+style history_window is empty
+style history_name is gui_label
+style history_name_text is gui_label_text
+style history_text is gui_text
+style history_text is gui_text
+style history_window:
+    xfill True
+    ysize gui.history_height
+
+style history_name:
+    xpos gui.history_name_xpos
+    xanchor gui.history_name_xalign
+    ypos gui.history_name_ypos
+    xsize gui.history_name_width
+
+style history_name_text:
+    min_width gui.history_name_width
+    text_align gui.history_name_xalign
+
+style history_text:
+    xpos gui.history_text_xpos
+    ypos gui.history_text_ypos
+    xanchor gui.history_text_xalign
+    xsize gui.history_text_width
+    min_width gui.history_text_width
+    text_align gui.history_text_xalign
+
 ################################################################################
 ## ЭКРАНЫ ЗАГРУЗКИ И СОХРАНЕНИЯ
 ################################################################################
@@ -739,20 +948,6 @@ screen load():
 
 screen file_slots_with_user(title, is_save=True):
     default page_name_value = FilePageNameInputValue(pattern=_("{} страница"), auto=_("Автосохранения"), quick=_("Быстрые сохранения"))
-    
-    frame:
-        style "user_info_frame"
-        xalign 0.5
-        yalign 0.05
-        xsize 600
-        padding (15, 10)
-        hbox:
-            spacing 10
-            xalign 0.5
-            text "Игрок:" size 24 color "#ffffff"
-            text "[persistent.user_name]" size 24 color "#ff832b" bold True
-            if persistent.user_id:
-                text "(ID: [persistent.user_id])" size 18 color "#cccccc"
     
     use game_menu(title):
         fixed:
@@ -772,51 +967,52 @@ screen file_slots_with_user(title, is_save=True):
                 spacing gui.slot_spacing
                 for i in range(gui.file_slot_cols * gui.file_slot_rows):
                     $ slot = i + 1
+                    $ slot_exists = renpy.can_load(str(slot))
                     button:
-                        if renpy.can_load(str(slot)):
-                            if is_save:
-                                action Function(custom_save_action, slot)
-                            else:
-                                action Function(custom_file_action, slot)
+                        if is_save:
+                            action Function(custom_save_action, slot)
+                        elif slot_exists:
+                            action Function(custom_load_action, slot)
                         else:
-                            if is_save:
-                                action Function(custom_save_action, slot)
-                            else:
-                                action NullAction()
+                            action NullAction()
                         has vbox
-                        $ thumbnail = FileScreenshot(slot)
-                        if thumbnail:
-                            add thumbnail xalign 0.5
-                        else:
-                            frame:
-                                xysize (config.thumbnail_width, config.thumbnail_height)
-                                background "#2a2a2a"
-                                text "Нет\nскриншота" size 20 xalign 0.5 yalign 0.5 color "#666666"
+                        frame:
+                            xysize (config.thumbnail_width, config.thumbnail_height)
+                            background Frame("gui/confirm_frame.png", 15, 15)
+                            if slot_exists:
+                                $ thumbnail = FileScreenshot(slot)
+                                if thumbnail:
+                                    add thumbnail xalign 0.5 yalign 0.5
+                                else:
+                                    text "Нет\nскриншота":
+                                        size 20
+                                        xalign 0.5
+                                        yalign 0.5
+                                        color "#666666"
+                            else:
+                                text "Пустой\nслот":
+                                    size 20
+                                    xalign 0.5
+                                    yalign 0.5
+                                    color "#666666"
                         $ file_time = FileTime(slot, format=_("{#file_time}%d.%m.%Y %H:%M"), empty=_("Пустой слот"))
-                        text file_time:
-                            style "slot_time_text"
+                        if file_time:
+                            text "[file_time]":
+                                style "slot_time_text"
                         $ file_name = FileSaveName(slot)
                         if file_name:
-                            text file_name:
+                            text "[file_name]":
                                 style "slot_name_text"
-                        $ save_user = FileJson(slot, "user_name", empty="")
+                        $ save_user = get_save_user_name(slot)
                         if save_user:
                             text "Игрок: [save_user]":
                                 style "slot_user_text"
-                        $ save_chapter = FileJson(slot, "chapter", empty="")
+                        $ save_chapter = get_save_chapter(slot)
                         if save_chapter:
-                            if "Первая" in save_chapter or "Связь" in save_chapter:
-                                $ display_chapter = "Глава 1"
-                            elif "Вторая" in save_chapter or "Новые знакомства" in save_chapter:
-                                $ display_chapter = "Глава 2"
-                            elif "Третья" in save_chapter:
-                                $ display_chapter = "Глава 3"
-                            else:
-                                $ display_chapter = save_chapter[:20] + "..." if len(save_chapter) > 20 else save_chapter
-                            text "Глава: [display_chapter]":
+                            text "Глава: [save_chapter]":
                                 style "slot_chapter_text"
-                        if renpy.can_load(str(slot)):
-                            key "save_delete" action FileDelete(slot)
+                        if slot_exists and not is_save:
+                            key "save_delete" action Function(delete_save, slot)
             vbox:
                 style_prefix "page"
                 xalign 0.5
@@ -835,619 +1031,186 @@ screen file_slots_with_user(title, is_save=True):
                     textbutton _(">") action FilePageNext()
                     key "save_page_next" action FilePageNext()
 
-screen preferences():
+################################################################################
+## ЭКРАН СТАТИСТИКИ ИГРОКА (ОРИГИНАЛЬНЫЙ СТИЛЬ)
+################################################################################
+screen player_stats_screen():
     tag menu
-    use game_menu(_("Настройки"), scroll="viewport"):
+    use game_menu(_("Статистика игрока"), scroll="viewport"):
         vbox:
-            hbox:
-                spacing 100
-                if renpy.variant("pc") or renpy.variant("web"):
+            spacing 20
+            xfill True
+            
+            text "Твой эмоциональный интеллект":
+                size 36
+                color gui.accent_color
+                xalign 0.5
+                outlines [(2, "#671a1a", 0, 0)]
+            
+            null height 10
+            
+            frame:
+                background Frame("gui/confirm_frame.png", 15, 15)
+                xfill True
+                padding (25, 20)
+                
+                vbox:
+                    spacing 15
+                    
+                    text "Понимание своих эмоций:":
+                        size 24
+                        color "#ffffff"
+                    bar:
+                        value player_self_awareness
+                        range 100
+                        xsize 800
+                        ysize 30
+                        left_bar "#c66b2f"
+                        right_bar "#3a3a3a"
+                    text "[player_self_awareness]%":
+                        size 20
+                        color "#cccccc"
+                        xalign 1.0
+                    
+                    text "Понимание чужих эмоций (эмпатия):":
+                        size 24
+                        color "#ffffff"
+                    bar:
+                        value player_empathy
+                        range 100
+                        xsize 800
+                        ysize 30
+                        left_bar "#c66b2f"
+                        right_bar "#3a3a3a"
+                    text "[player_empathy]%":
+                        size 20
+                        color "#cccccc"
+                        xalign 1.0
+                    
+                    text "Эмоциональный словарь:":
+                        size 24
+                        color "#ffffff"
+                    bar:
+                        value player_emotional_vocabulary
+                        range 100
+                        xsize 800
+                        ysize 30
+                        left_bar "#c66b2f"
+                        right_bar "#3a3a3a"
+                    text "[player_emotional_vocabulary]%":
+                        size 20
+                        color "#cccccc"
+                        xalign 1.0
+                    
+                    text "Уровень тревожности:":
+                        size 24
+                        color "#ffffff"
+                    bar:
+                        value player_anxiety_level
+                        range 100
+                        xsize 800
+                        ysize 30
+                        left_bar "#ff6666"
+                        right_bar "#3a3a3a"
+                    text "[player_anxiety_level]%":
+                        size 20
+                        color "#cccccc"
+                        xalign 1.0
+                    
+                    text "Уровень доверия:":
+                        size 24
+                        color "#ffffff"
+                    bar:
+                        value player_trust_level
+                        range 100
+                        xsize 800
+                        ysize 30
+                        left_bar "#4caf50"
+                        right_bar "#3a3a3a"
+                    text "[player_trust_level]%":
+                        size 20
+                        color "#cccccc"
+                        xalign 1.0
+            
+            null height 20
+            
+            if persistent.user_id:
+                $ stats_total_attempts, stats_correct_matches, stats_emotions_chosen = safe_get_emotion_stats(persistent.user_id)
+                frame:
+                    background Frame("gui/confirm_frame.png", 15, 15)
+                    xfill True
+                    padding (25, 20)
+                    
                     vbox:
-                        style_prefix "radio"
-                        label _("Режим экрана")
-                        textbutton _("Оконный") action Preference("display", "window")
-                        textbutton _("Полный") action Preference("display", "fullscreen")
-                vbox:
-                    style_prefix "check"
-                    label _("Пропуск")
-                    textbutton _("Всего текста") action Preference("skip", "toggle")
-                    textbutton _("После выборов") action Preference("after choices", "toggle")
-                    textbutton _("Переходов") action InvertSelected(Preference("transitions", "toggle"))
-            null height (4 * gui.pref_spacing)
-            hbox:
-                style_prefix "slider"
-                spacing 100
-                vbox:
-                    xsize 300
-                    label _("Скорость текста")
-                    bar value Preference("text speed")
-                    label _("Скорость авточтения")
-                    bar value Preference("auto-forward time")
-                vbox:
-                    xsize 400
-                    if config.has_music:
-                        label _("Громкость музыки")
+                        spacing 10
+                        
+                        text "Статистика мини-игры «Колесо эмоций»:":
+                            size 26
+                            color gui.accent_color
+                            xalign 0.5
+                        
                         hbox:
-                            bar value Preference("music volume")
-                    if config.has_sound:
-                        label _("Громкость звуков")
-                        hbox:
-                            bar value Preference("sound volume")
-                            if config.sample_sound:
-                                textbutton _("Тест") action Play("sound", config.sample_sound)
-                    if config.has_voice:
-                        label _("Громкость голоса")
-                        hbox:
-                            bar value Preference("voice volume")
-                            if config.sample_voice:
-                                textbutton _("Тест") action Play("voice", config.sample_voice)
-                    if config.has_music or config.has_sound or config.has_voice:
-                        null height gui.pref_spacing
-                        textbutton _("Без звука"):
-                            action Preference("all mute", "toggle")
-                            style "mute_all_button"
-
-style pref_label is gui_label
-style pref_label_text is gui_label_text
-style pref_vbox is vbox
-style radio_label is pref_label
-style radio_label_text is pref_label_text
-style radio_button is gui_button
-style radio_button_text is gui_button_text
-style radio_vbox is pref_vbox
-style check_label is pref_label
-style check_label_text is pref_label_text
-style check_button is gui_button
-style check_button_text is gui_button_text
-style check_vbox is pref_vbox
-style slider_label is pref_label
-style slider_label_text is pref_label_text
-style slider_slider is gui_slider
-style slider_button is gui_button
-style slider_button_text is gui_button_text
-style slider_pref_vbox is pref_vbox
-style mute_all_button is check_button
-style mute_all_button_text is check_button_text
-style pref_label:
-    top_margin gui.pref_spacing
-    bottom_margin 3
-style pref_label_text:
-    yalign 1.0
-style pref_vbox:
-    xsize 338
-style radio_vbox:
-    spacing gui.pref_button_spacing
-style radio_button:
-    properties gui.button_properties("radio_button")
-    foreground "gui/button/radio_[prefix_]foreground.png"
-style radio_button_text:
-    properties gui.text_properties("radio_button")
-style check_vbox:
-    spacing gui.pref_button_spacing
-style check_button:
-    properties gui.button_properties("check_button")
-    foreground "gui/button/check_[prefix_]foreground.png"
-style check_button_text:
-    properties gui.text_properties("check_button")
-style slider_slider:
-    xsize 525
-style slider_button:
-    properties gui.button_properties("slider_button")
-    yalign 0.5
-    left_margin 15
-style slider_button_text:
-    properties gui.text_properties("slider_button")
-style slider_vbox:
-    xsize 675
-
-screen history():
-    tag menu
-    predict False
-    use game_menu(_("История"), scroll=("vpgrid" if gui.history_height else "viewport"), yinitial=1.0, spacing=gui.history_spacing):
-        style_prefix "history"
-        for h in _history_list:
-            window:
-                has fixed:
-                    yfit True
-                if h.who:
-                    label h.who:
-                        style "history_name"
-                        substitute False
-                        if "color" in h.who_args:
-                            text_color h.who_args["color"]
-                $ what = renpy.filter_text_tags(h.what, allow=gui.history_allow_tags)
-                text what:
-                    substitute False
-        if not _history_list:
-            label _("История диалогов пуста.")
-
-define gui.history_allow_tags = { "alt", "noalt", "rt", "rb", "art" }
-
-style history_window is empty
-style history_name is gui_label
-style history_name_text is gui_label_text
-style history_text is gui_text
-style history_label is gui_label
-style history_label_text is gui_label_text
-style history_window:
-    xfill True
-    ysize gui.history_height
-style history_name:
-    xpos gui.history_name_xpos
-    xanchor gui.history_name_xalign
-    ypos gui.history_name_ypos
-    xsize gui.history_name_width
-style history_name_text:
-    min_width gui.history_name_width
-    textalign gui.history_name_xalign
-style history_text:
-    xpos gui.history_text_xpos
-    ypos gui.history_text_ypos
-    xanchor gui.history_text_xalign
-    xsize gui.history_text_width
-    min_width gui.history_text_width
-    textalign gui.history_text_xalign
-    layout ("subtitle" if gui.history_text_xalign else "tex")
-style history_label:
-    xfill True
-style history_label_text:
-    xalign 0.5
-
-screen help():
-    tag menu
-    default device = "keyboard"
-    use game_menu(_("Помощь"), scroll="viewport"):
-        style_prefix "help"
-        vbox:
-            spacing 23
-            hbox:
-                textbutton _("Клавиатура") action SetScreenVariable("device", "keyboard")
-                textbutton _("Мышь") action SetScreenVariable("device", "mouse")
-                if GamepadExists():
-                    textbutton _("Геймпад") action SetScreenVariable("device", "gamepad")
-            if device == "keyboard":
-                use keyboard_help
-            elif device == "mouse":
-                use mouse_help
-            elif device == "gamepad":
-                use gamepad_help
-
-screen keyboard_help():
-    hbox:
-        label _("Enter")
-        text _("Прохождение диалогов, активация интерфейса.")
-    hbox:
-        label _("Пробел")
-        text _("Прохождение диалогов без возможности делать выбор.")
-    hbox:
-        label _("Стрелки")
-        text _("Навигация по интерфейсу.")
-    hbox:
-        label _("Esc")
-        text _("Вход в игровое меню.")
-    hbox:
-        label _("Ctrl")
-        text _("Пропускает диалоги, пока зажат.")
-    hbox:
-        label _("Tab")
-        text _("Включает режим пропуска.")
-    hbox:
-        label _("Page Up")
-        text _("Откат назад по сюжету игры.")
-    hbox:
-        label _("Page Down")
-        text _("Откатывает предыдущее действие вперёд.")
-    hbox:
-        label "H"
-        text _("Скрывает интерфейс пользователя.")
-    hbox:
-        label "S"
-        text _("Делает снимок экрана.")
-    hbox:
-        label "V"
-        text _("Включает поддерживаемый {a=https://www.renpy.org/l/voicing}синтезатор речи{/a}.")
-    hbox:
-        label "Shift+A"
-        text _("Открывает меню специальных возможностей.")
-
-screen mouse_help():
-    hbox:
-        label _("Левый клик")
-        text _("Прохождение диалогов, активация интерфейса.")
-    hbox:
-        label _("Клик колёсиком")
-        text _("Скрывает интерфейс пользователя.")
-    hbox:
-        label _("Правый клик")
-        text _("Вход в игровое меню.")
-    hbox:
-        label _("Колёсико вверх")
-        text _("Откат назад по сюжету игры.")
-    hbox:
-        label _("Колёсико вниз")
-        text _("Откатывает предыдущее действие вперёд.")
-
-screen gamepad_help():
-    hbox:
-        label _("Правый триггер\nA/Нижняя кнопка")
-        text _("Прохождение диалогов, активация интерфейса.")
-    hbox:
-        label _("Левый Триггер\nЛевый Бампер")
-        text _("Откат назад по сюжету игры.")
-    hbox:
-        label _("Правый бампер")
-        text _("Откатывает предыдущее действие вперёд.")
-    hbox:
-        label _("Крестовина, Стики")
-        text _("Навигация по интерфейсу.")
-    hbox:
-        label _("Старт, Гид, B/Правая кнопка")
-        text _("Вход в игровое меню.")
-    hbox:
-        label _("Y/Верхняя кнопка")
-        text _("Скрывает интерфейс пользователя.")
-    textbutton _("Калибровка") action GamepadCalibrate()
-
-style help_button is gui_button
-style help_button_text is gui_button_text
-style help_label is gui_label
-style help_label_text is gui_label_text
-style help_text is gui_text
-style help_button:
-    properties gui.button_properties("help_button")
-    xmargin 12
-style help_button_text:
-    properties gui.text_properties("help_button")
-style help_label:
-    xsize 375
-    right_padding 30
-style help_label_text:
-    size gui.text_size
-    xalign 1.0
-    textalign 1.0
-################################################################################
-## ДОПОЛНИТЕЛЬНЫЕ ЭКРАНЫ
-################################################################################
-screen confirm(message, yes_action, no_action):
-    modal True
-    zorder 200
-    add "#000000CC"
-    frame:
-        vbox:
-            xalign .5
-            yalign .5
-            spacing 75
-            xysize (600, 450)
-            label _(message):
-                style "confirm_prompt"
+                            spacing 50
+                            xalign 0.5
+                            
+                            vbox:
+                                text "Всего попыток:" size 22
+                                text "[stats_total_attempts]":
+                                    size 28
+                                    color "#c66b2f"
+                                    bold True
+                                    xalign 0.5
+                            
+                            vbox:
+                                text "Правильных ответов:" size 22
+                                text "[stats_correct_matches]":
+                                    size 28
+                                    color "#4caf50"
+                                    bold True
+                                    xalign 0.5
+                            
+                            vbox:
+                                text "Точность:" size 22
+                                $ accuracy = int((stats_correct_matches / max(stats_total_attempts, 1)) * 100)
+                                text "[accuracy]%":
+                                    size 28
+                                    color "#ffaa00"
+                                    bold True
+                                    xalign 0.5
+                        
+                        if stats_emotions_chosen:
+                            text "Частота выбора эмоций:" size 22 xalign 0.5
+                            $ sorted_emotions = sorted(stats_emotions_chosen.items(), key=lambda x: x[1], reverse=True)[:5]
+                            for emotion, count in sorted_emotions:
+                                hbox:
+                                    spacing 20
+                                    xalign 0.5
+                                    text "• [emotion]:" size 20
+                                    text "[count] раз" size 20 color "#cccccc"
+            
+            null height 30
+            
+            textbutton "Закрыть":
                 xalign 0.5
-                yalign 0.5
-            hbox:
-                xalign 0.5
-                spacing 120
-                textbutton _("Да") action yes_action
-                textbutton _("Нет") action no_action
-    key "game_menu" action no_action
-    key "K_ESCAPE" action no_action
+                background Frame("gui/button/choice_idle_background_0.png", 15, 15)
+                hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                padding (35, 15)
+                xsize 300
+                action Return()
 
-style confirm_frame is gui_frame
-style confirm_prompt is gui_prompt
-style confirm_prompt_text is gui_prompt_text
-style confirm_button is gui_medium_button
-style confirm_button_text is gui_medium_button_text
-style confirm_frame:
-    background Frame([ "gui/confirm_frame.png", "gui/frame.png"], gui.confirm_frame_borders, tile=gui.frame_tile)
-    padding gui.confirm_frame_borders.padding
-    xalign .5
-    yalign .5
-style confirm_prompt_text:
-    textalign 0.5
-    layout "subtitle"
-style confirm_button:
-    properties gui.button_properties("confirm_button")
-style confirm_button_text:
-    properties gui.text_properties("confirm_button")
-
-screen skip_indicator():
-    zorder 100
-    style_prefix "skip"
-    frame:
-        hbox:
-            spacing 9
-            text _("Пропускаю")
-            text "▸" at delayed_blink(0.0, 1.0) style "skip_triangle"
-            text "▸" at delayed_blink(0.2, 1.0) style "skip_triangle"
-            text "▸" at delayed_blink(0.4, 1.0) style "skip_triangle"
-
-transform delayed_blink(delay, cycle):
-    alpha .5
-    pause delay
-    block:
-        linear .2 alpha 1.0
-        pause .2
-        linear .2 alpha 0.5
-        pause (cycle - .4)
-        repeat
-
-style skip_frame is empty
-style skip_text is gui_text
-style skip_triangle is skip_text
-style skip_frame:
-    ypos gui.skip_ypos
-    background Frame("gui/skip.png", gui.skip_frame_borders, tile=gui.frame_tile)
-    padding gui.skip_frame_borders.padding
-style skip_text:
-    size gui.notify_text_size
-style skip_triangle:
-    font "DejaVuSans.ttf"
-
-screen notify(message):
-    zorder 100
-    style_prefix "notify"
-    frame at notify_appear:
-        text "[message!tq]"
-    timer 3.25 action Hide('notify')
-
-transform notify_appear:
-    on show:
-        alpha 0
-        linear .25 alpha 1.0
-    on hide:
-        linear .5 alpha 0.0
-
-style notify_frame is empty
-style notify_text is gui_text
-style notify_frame:
-    ypos gui.notify_ypos
-    background Frame("gui/notify.png", gui.notify_frame_borders, tile=gui.frame_tile)
-    padding gui.notify_frame_borders.padding
-style notify_text:
-    properties gui.text_properties("notify")
-
-screen nvl(dialogue, items=None):
-    window:
-        style "nvl_window"
-        has vbox:
-            spacing gui.nvl_spacing
-        if gui.nvl_height:
-            vpgrid:
-                cols 1
-                yinitial 1.0
-                use nvl_dialogue(dialogue)
-        else:
-            use nvl_dialogue(dialogue)
-        for i in items:
-            textbutton i.caption:
-                action i.action
-                style "nvl_button"
-    add SideImage() xalign 0.0 yalign 1.0
-
-screen nvl_dialogue(dialogue):
-    for d in dialogue:
-        window:
-            id d.window_id
-            fixed:
-                yfit gui.nvl_height is None
-                if d.who is not None:
-                    text d.who:
-                        id d.who_id
-                text d.what:
-                    id d.what_id
-
-define config.nvl_list_length = gui.nvl_list_length
-
-style nvl_window is default
-style nvl_entry is default
-style nvl_label is say_label
-style nvl_dialogue is say_dialogue
-style nvl_button is button
-style nvl_button_text is button_text
-style nvl_window:
-    xfill True
-    yfill True
-    background "gui/nvl.png"
-    padding gui.nvl_borders.padding
-style nvl_entry:
-    xfill True
-    ysize gui.nvl_height
-style nvl_label:
-    xpos gui.nvl_name_xpos
-    xanchor gui.nvl_name_xalign
-    ypos gui.nvl_name_ypos
-    yanchor 0.0
-    xsize gui.nvl_name_width
-    min_width gui.nvl_name_width
-    textalign gui.nvl_name_xalign
-style nvl_dialogue:
-    xpos gui.nvl_text_xpos
-    xanchor gui.nvl_text_xalign
-    ypos gui.nvl_text_ypos
-    xsize gui.nvl_text_width
-    min_width gui.nvl_text_width
-    textalign gui.nvl_text_xalign
-    layout ("subtitle" if gui.nvl_text_xalign else "tex")
-style nvl_thought:
-    xpos gui.nvl_thought_xpos
-    xanchor gui.nvl_thought_xalign
-    ypos gui.nvl_thought_ypos
-    xsize gui.nvl_thought_width
-    min_width gui.nvl_thought_width
-    textalign gui.nvl_thought_xalign
-    layout ("subtitle" if gui.nvl_text_xalign else "tex")
-style nvl_button:
-    properties gui.button_properties("nvl_button")
-    xpos gui.nvl_button_xpos
-    xanchor gui.nvl_button_xalign
-
-style nvl_button_text:
-    properties gui.text_properties("nvl_button")
-
-screen bubble(who, what):
-    style_prefix "bubble"
-    window:
-        id "window"
-        if who is not None:
-            window:
-                id "namebox"
-                style "bubble_namebox"
-                text who:
-                    id "who"
-        text what:
-            id "what"
-        default ctc = None
-        showif ctc:
-            add ctc
-
-style bubble_window is empty
-style bubble_namebox is empty
-style bubble_who is default
-style bubble_what is default
-style bubble_window:
-    xpadding 30
-    top_padding 5
-    bottom_padding 5
-style bubble_namebox:
-    xalign 0.5
-style bubble_who:
-    xalign 0.5
-    textalign 0.5
-    color "#000"
-style bubble_what:
-    align (0.5, 0.5)
-    text_align 0.5
-    layout "subtitle"
-    color "#000"
-
-define bubble.frame = Frame("gui/bubble.png", 55, 55, 55, 95)
-define bubble.thoughtframe = Frame("gui/thoughtbubble.png", 55, 55, 55, 55)
-
-define bubble.properties = {
-    "bottom_left" : {
-        "window_background" : Transform(bubble.frame, xzoom=1, yzoom=1),
-        "window_bottom_padding" : 27,
-    },
-    "bottom_right" : {
-        "window_background" : Transform(bubble.frame, xzoom=-1, yzoom=1),
-        "window_bottom_padding" : 27,
-    },
-    "top_left" : {
-        "window_background" : Transform(bubble.frame, xzoom=1, yzoom=-1),
-        "window_top_padding" : 27,
-    },
-    "top_right" : {
-        "window_background" : Transform(bubble.frame, xzoom=-1, yzoom=-1),
-        "window_top_padding" : 27,
-    },
-    "thought" : {
-        "window_background" : bubble.thoughtframe,
-    }
-}
-
-define bubble.expand_area = {
-    "bottom_left" : (0, 0, 0, 22),
-    "bottom_right" : (0, 0, 0, 22),
-    "top_left" : (0, 22, 0, 0),
-    "top_right" : (0, 22, 0, 0),
-    "thought" : (0, 0, 0, 0),
-}
 ################################################################################
-## МОБИЛЬНЫЕ ВАРИАНТЫ
-################################################################################
-style pref_vbox:
-    variant "medium"
-    xsize 675
-
-screen quick_menu():
-    variant "touch"
-    zorder 100
-    if quick_menu:
-        hbox:
-            style "quick_menu"
-            style_prefix "quick"
-            textbutton _("Назад") action Rollback()
-            textbutton _("Пропуск") action Skip() alternate Skip(fast=True, confirm=True)
-            textbutton _("Авто") action Preference("auto-forward", "toggle")
-            textbutton _("Меню") action ShowMenu()
-
-style window:
-    variant "small"
-    background "gui/phone/textbox.png"
-style radio_button:
-    variant "small"
-    foreground "gui/phone/button/radio_[prefix_]foreground.png"
-style check_button:
-    variant "small"
-    foreground "gui/phone/button/check_[prefix_]foreground.png"
-style nvl_window:
-    variant "small"
-    background "gui/phone/nvl.png"
-style main_menu_frame:
-    variant "small"
-    background "gui/phone/overlay/main_menu.png"
-style game_menu_outer_frame:
-    variant "small"
-    background "gui/phone/overlay/game_menu.png"
-style game_menu_navigation_frame:
-    variant "small"
-    xsize 510
-style game_menu_content_frame:
-    variant "small"
-    top_margin 0
-style game_menu_viewport:
-    variant "small"
-    xsize 1305
-style pref_vbox:
-    variant "small"
-    xsize 600
-style bar:
-    variant "small"
-    ysize gui.bar_size
-    left_bar Frame("gui/phone/bar/left.png", gui.bar_borders, tile=gui.bar_tile)
-    right_bar Frame("gui/phone/bar/right.png", gui.bar_borders, tile=gui.bar_tile)
-style vbar:
-    variant "small"
-    xsize gui.bar_size
-    top_bar Frame("gui/phone/bar/top.png", gui.vbar_borders, tile=gui.bar_tile)
-    bottom_bar Frame("gui/phone/bar/bottom.png", gui.vbar_borders, tile=gui.bar_tile)
-style scrollbar:
-    variant "small"
-    ysize gui.scrollbar_size
-    base_bar Frame("gui/phone/scrollbar/horizontal_[prefix_]bar.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
-    thumb Frame("gui/phone/scrollbar/horizontal_[prefix_]thumb.png", gui.scrollbar_borders, tile=gui.scrollbar_tile)
-style vscrollbar:
-    variant "small"
-    xsize gui.scrollbar_size
-    base_bar Frame("gui/phone/scrollbar/vertical_[prefix_]bar.png", gui.vscrollbar_borders, tile=gui.scrollbar_tile)
-    thumb Frame("gui/phone/scrollbar/vertical_[prefix_]thumb.png", gui.vscrollbar_borders, tile=gui.scrollbar_tile)
-style slider:
-    variant "small"
-    ysize gui.slider_size
-    base_bar Frame("gui/phone/slider/horizontal_[prefix_]bar.png", gui.slider_borders, tile=gui.slider_tile)
-    thumb "gui/phone/slider/horizontal_[prefix_]thumb.png"
-style vslider:
-    variant "small"
-    xsize gui.slider_size
-    base_bar Frame("gui/phone/slider/vertical_[prefix_]bar.png", gui.vslider_borders, tile=gui.slider_tile)
-    thumb "gui/phone/slider/vertical_[prefix_]thumb.png"
-style slider_vbox:
-    variant "small"
-    xsize None
-style slider_slider:
-    variant "small"
-    xsize 900
-################################################################################
-## ЭКРАН ДЛЯ ВВОДА ИМЕНИ
+## ЭКРАН ДЛЯ ВВОДА ИМЕНИ (ОРИГИНАЛЬНЫЙ СТИЛЬ)
 ################################################################################
 screen input_name_screen():
     modal True
-    add "#00000080"
+    add "gui/overlay/confirm.png"
     default input_name = ""
     frame:
         style "input_frame"
         xalign 0.5
         yalign 0.5
         xsize 600
-        ysize 350
+        ysize 400
         padding (30, 30)
         vbox:
             spacing 25
@@ -1460,13 +1223,13 @@ screen input_name_screen():
                 outlines [(2, "#a83c1f", 0, 0)]
             frame:
                 style "input_field_frame"
-                xysize (550, 60)
+                xysize (540, 70)
                 xalign 0.5
+                background Frame("gui/button/choice_idle_background_1.png", 15, 15)
                 input:
                     id "name_input"
                     value ScreenVariableInputValue("input_name")
                     length 20
-                    pixel_width 400
                     color "#ffffff"
                     font gui.interface_text_font
                     size 32
@@ -1477,24 +1240,25 @@ screen input_name_screen():
                 style "input_confirm_button"
                 action Return(input_name)
             text "Нажмите ENTER, чтобы продолжить":
-                size 20
+                size 18
                 color "#ff9083"
                 font gui.interface_text_font
                 xalign 0.5
-                outlines [(2, "#de5d21", 0, 0)]
+                outlines [(1, "#de5d21", 0, 0)]
     key "K_RETURN" action Return(input_name)
+    key "K_ESCAPE" action Return("")
 
 init -1 python:
     style.create("input_frame", "default")
-    style.input_frame.background = Frame("gui/frame.png", 25, 25, 25, 25)
+    style.input_frame.background = Frame("gui/confirm_frame.png", 25, 25)
     style.input_frame.xalign = 0.5
     style.input_frame.yalign = 0.5
     style.create("input_field_frame", "default")
-    style.input_field_frame.background = Frame("gui/button/choice_idle_background_1.png", 15, 15, 15, 15)
+    style.input_field_frame.background = Frame("gui/button/choice_idle_background_1.png", 15, 15)
     style.input_field_frame.xysize = (500, 60)
     style.create("input_confirm_button", "button")
-    style.input_confirm_button.background = Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
-    style.input_confirm_button.hover_background = Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
+    style.input_confirm_button.background = Frame("gui/button/choice_idle_background_0.png", 15, 15)
+    style.input_confirm_button.hover_background = Frame("gui/button/choice_hover_background_1.png", 15, 15)
     style.input_confirm_button.xsize = 450
     style.input_confirm_button.padding = (20, 10)
     style.create("input_confirm_button_text", "button_text")
@@ -1504,62 +1268,14 @@ init -1 python:
     style.input_confirm_button_text.outlines = [(2, "#ff832b", 0, 0)]
     style.input_confirm_button_text.text_align = 0.5
     style.input_confirm_button_text.xalign = 0.5
-################################################################################
-## ЭКРАН ПЕРЕХОДА МЕЖДУ ГЛАВАМИ
-################################################################################
-screen chapter_transition(old_chapter, new_chapter_title, new_chapter_subtitle):
-    modal True
-    zorder 200
-    add "#000000CC"
-    frame:
-        style "chapter_transition_frame"
-        xalign 0.5
-        yalign 0.5
-        xsize 850
-        ysize 550
-        vbox:
-            spacing 25
-            xalign 0.5
-            yalign 0.5
-            text "Глава завершена" size 40 color "#ffffff" outlines [(3, "#671a1a", 0, 0)] xalign 0.5
-            if old_chapter:
-                text "[old_chapter]" size 30 color "#ffb995" outlines [(2, "#671a1a", 0, 0)] xalign 0.5
-            null height 20
-            text "Прогресс уже сохранен" size 28 color "#5e5e5e" xalign 0.5
-            text "Вы можете продолжить или вернуться в меню" size 22 color "#888888" xalign 0.5
-            null height 30
-            $ next_chapter_exists = False
-            if "Вторая" in new_chapter_title or "Новые знакомства" in new_chapter_title:
-                $ next_chapter_exists = renpy.has_label("chapter_two")
-            elif "Третья" in new_chapter_title or "Испытание" in new_chapter_title:
-                $ next_chapter_exists = renpy.has_label("chapter_three")
-            if next_chapter_exists:
-                hbox:
-                    spacing 30
-                    xalign 0.5
-                    textbutton "Да, продолжить":
-                        style "chapter_transition_button"
-                        action [Return(("continue", old_chapter, new_chapter_title, new_chapter_subtitle))]
-                    textbutton "Нет, выйти в главное меню":
-                        style "chapter_transition_button"
-                        action [Return(("exit", old_chapter))]
-            else:
-                textbutton "Выйти в главное меню":
-                    style "chapter_transition_button"
-                    xalign 0.5
-                    action [Return(("exit", old_chapter))]
-    key "K_RETURN" action If(next_chapter_exists, 
-        true=Return(("continue", old_chapter, new_chapter_title, new_chapter_subtitle)), 
-        false=Return(("exit", old_chapter)))
-    key "K_ESCAPE" action Return(("exit", old_chapter))
-    key "game_menu" action Return(("exit", old_chapter))
+
 ################################################################################
 ## ЭКРАН ПОДТВЕРЖДЕНИЯ ПЕРЕКЛЮЧЕНИЯ ПОЛЬЗОВАТЕЛЯ
 ################################################################################
 screen confirm_user_switch(slot):
     modal True
     zorder 200
-    add "#000000CC"
+    add "gui/overlay/confirm.png"
     frame:
         style "confirm_frame"
         xalign 0.5
@@ -1570,222 +1286,78 @@ screen confirm_user_switch(slot):
             spacing 25
             xalign 0.5
             yalign 0.5
-            text "ВНИМАНИЕ" size 36 color "#ff7171" xalign 0.5
-            text "Это сохранение принадлежит другому игроку." size 24 xalign 0.5 text_align 0.5
-            text "Загрузка переключит текущего пользователя." size 24 xalign 0.5 text_align 0.5
+            text "ВНИМАНИЕ":
+                size 36
+                color "#ff7171"
+                xalign 0.5
+            text "Это сохранение принадлежит другому игроку.":
+                size 24
+                xalign 0.5
+                text_align 0.5
+            text "Загрузка переключит текущего пользователя.":
+                size 24
+                xalign 0.5
+                text_align 0.5
             null height 20
             hbox:
                 spacing 30
                 xalign 0.5
-                textbutton "Загрузить" action [Function(load_other_user_save, slot), Hide("confirm_user_switch")]
-                textbutton "Отмена" action Hide("confirm_user_switch")
+                textbutton "Загрузить":
+                    action [Function(load_other_user_save, slot), Hide("confirm_user_switch")]
+                    background Frame("gui/button/choice_idle_background.png", 15, 15)
+                    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                    padding (15, 10)
+                textbutton "Отмена":
+                    action Hide("confirm_user_switch")
+                    background Frame("gui/button/choice_idle_background.png", 15, 15)
+                    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                    padding (15, 10)
     key "K_ESCAPE" action Hide("confirm_user_switch")
     key "game_menu" action Hide("confirm_user_switch")
-################################################################################
-## ЭКРАН ДЛЯ ОТОБРАЖЕНИЯ СТАТИСТИКИ ИГРОКА
-################################################################################
-screen player_stats_screen():
-    tag menu
-    use game_menu(_("Статистика игрока"), scroll="viewport"):
-        vbox:
-            spacing 20
-            xfill True
-            text "📊 Твой эмоциональный интеллект" size 36 color gui.accent_color xalign 0.5 outlines [(2, "#671a1a", 0, 0)]
-            null height 10
-            frame:
-                style "stats_frame"
-                xfill True
-                vbox:
-                    spacing 15
-                    text "Понимание своих эмоций:" size 24 color "#ffffff"
-                    bar:
-                        value player_self_awareness
-                        range 100
-                        xsize 800
-                        ysize 25
-                        left_bar "#c66b2f"
-                        right_bar "#3a3a3a"
-                    text f"{player_self_awareness}%" size 20 color "#cccccc" xalign 1.0
-                    text "Понимание чужих эмоций (эмпатия):" size 24 color "#ffffff"
-                    bar:
-                        value player_empathy
-                        range 100
-                        xsize 800
-                        ysize 25
-                        left_bar "#c66b2f"
-                        right_bar "#3a3a3a"
-                    text f"{player_empathy}%" size 20 color "#cccccc" xalign 1.0
-                    text "Эмоциональный словарь:" size 24 color "#ffffff"
-                    bar:
-                        value player_emotional_vocabulary
-                        range 100
-                        xsize 800
-                        ysize 25
-                        left_bar "#c66b2f"
-                        right_bar "#3a3a3a"
-                    text f"{player_emotional_vocabulary}%" size 20 color "#cccccc" xalign 1.0
-                    text "Уровень тревожности:" size 24 color "#ffffff"
-                    bar:
-                        value player_anxiety_level
-                        range 100
-                        xsize 800
-                        ysize 25
-                        left_bar "#ff6666"
-                        right_bar "#3a3a3a"
-                    text f"{player_anxiety_level}%" size 20 color "#cccccc" xalign 1.0
-                    text "Уровень доверия:" size 24 color "#ffffff"
-                    bar:
-                        value player_trust_level
-                        range 100
-                        xsize 800
-                        ysize 25
-                        left_bar "#4caf50"
-                        right_bar "#3a3a3a"
-                    text f"{player_trust_level}%" size 20 color "#cccccc" xalign 1.0
-            null height 20
-            if persistent.user_id:
-                $ stats_total_attempts = 0
-                $ stats_correct_matches = 0
-                $ stats_emotions_chosen = {}
-                python:
-                    try:
-                        if 'get_emotion_stats' in globals():
-                            temp_stats = get_emotion_stats(persistent.user_id)
-                            stats_total_attempts = temp_stats.get('total_attempts', 0)
-                            stats_correct_matches = temp_stats.get('correct_matches', 0)
-                            stats_emotions_chosen = temp_stats.get('emotions_chosen', {})
-                        else:
-                            stats_total_attempts = 0
-                            stats_correct_matches = 0
-                            stats_emotions_chosen = {}
-                    except Exception:
-                        stats_total_attempts = 0
-                        stats_correct_matches = 0
-                        stats_emotions_chosen = {}
-                frame:
-                    style "stats_frame"
-                    xfill True
-                    vbox:
-                        spacing 10
-                        text "🎮 Статистика мини-игры «Колесо эмоций»:" size 26 color gui.accent_color xalign 0.5
-                        hbox:
-                            spacing 50
-                            xalign 0.5
-                            vbox:
-                                text "Всего попыток:" size 22
-                                text f"{stats_total_attempts}" size 28 color "#c66b2f" bold True
-                            vbox:
-                                text "Правильных ответов:" size 22
-                                text f"{stats_correct_matches}" size 28 color "#4caf50" bold True
-                            vbox:
-                                text "Точность:" size 22
-                                $ accuracy = int((stats_correct_matches / max(stats_total_attempts, 1)) * 100)
-                                text f"{accuracy}%" size 28 color "#ffaa00" bold True
-                        if stats_emotions_chosen:
-                            text "Частота выбора эмоций:" size 22 xalign 0.5
-                            $ sorted_emotions = sorted(stats_emotions_chosen.items(), key=lambda x: x[1], reverse=True)[:5]
-                            for emotion, count in sorted_emotions:
-                                hbox:
-                                    spacing 20
-                                    xalign 0.5
-                                    text f"• {emotion}:" size 20
-                                    text f"{count} раз" size 20 color "#cccccc"
-            null height 30
-            textbutton "Закрыть":
-                style "stats_close_button"
-                xalign 0.5
-                action Hide("player_stats_screen")
 
-style stats_frame:
-    background Frame("gui/frame.png", 15, 15, 15, 15)
-    padding (25, 20)
-style stats_close_button:
-    background Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
-    padding (25, 12)
-    xsize 300
-style stats_close_button_text:
-    color "#ffffff"
-    hover_color "#ff9999"
-    size 24
-    text_align 0.5
 ################################################################################
-## СТИЛИ ДЛЯ ПЕРЕХОДОВ МЕЖДУ ГЛАВАМИ
+## СТИЛИ ДЛЯ СЛОТОВ СОХРАНЕНИЯ
 ################################################################################
-style chapter_transition_frame:
-    background Frame("gui/frame.png", 25, 25, 25, 25)
-    padding (40, 40)
-style chapter_transition_button:
-    background Frame("gui/button/choice_idle_background_0.png", 15, 15, 15, 15)
-    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15, 15, 15)
-    padding (20, 10)
-    xsize 250
-style chapter_transition_button_text:
-    color "#ffffff"
-    hover_color "#ff9999"
-    size 20
-    text_align 0.5
-################################################################################
-## ДОПОЛНИТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ ЗАГРУЗКИ
-################################################################################
-init python:
-    def load_other_user_save(slot):
-        try:
-            save_json = renpy.json_load(renpy.slot_json_filename(str(slot)))
-            if save_json:
-                persistent.user_id = save_json.get("user_id")
-                persistent.user_name = save_json.get("user_name", "")
-                if "player_state" in save_json:
-                    store.player_self_awareness = save_json["player_state"].get("self_awareness", 0)
-                    store.player_empathy = save_json["player_state"].get("empathy", 0)
-                    store.player_emotional_vocabulary = save_json["player_state"].get("vocabulary", 0)
-                    store.player_anxiety_level = save_json["player_state"].get("anxiety", 50)
-                    store.player_trust_level = save_json["player_state"].get("trust", 30)
-        except:
-            pass
-        renpy.run(FileAction(slot))
-################################################################################
-## ЭКРАН ДЛЯ ГАЛЕРЕИ (ЕСЛИ ОТСУТСТВУЕТ)
-################################################################################
-screen gallery_image_popup(image, title):
-    modal True
-    zorder 200
-    add "#000000CC"
-    frame:
-        background Frame("gui/confirm_frame.png", 25, 25)
-        padding (35, 35)
-        xysize (1600, 920)
-        xalign 0.5
-        yalign 0.5
-        vbox:
-            xalign 0.5
-            yalign 0.5
-            text title:
-                color "#ffffff"
-                size 32
-                font gui.interface_text_font
-                outlines [(2, "#671a1a", 0, 0)]
-                xalign 0.5
-            $ image_exists = renpy.loadable(image) if image else False
-            if image_exists:
-                add Transform(image, zoom=0.8, xalign=0.5, yalign=0.5) xsize 1170 ysize 620
-            else:
-                text "Изображение не найдено:\n[image]" size 30 xalign 0.5 yalign 0.5
-            textbutton _("Закрыть"):
-                xalign 0.5
-                ypos 50
-                background Frame("gui/button/choice_idle_background.png", 10, 10, 10, 10)
-                hover_background Frame("gui/button/choice_hover_background_1.png", 10, 10, 10, 10)
-                padding (30, 10)
-                xsize 250
-                action Hide("gallery_image_popup")
-                text_style "gallery_close_button_text"
-    key "game_menu" action Hide("gallery_image_popup")
-    key "K_ESCAPE" action Hide("gallery_image_popup")
+style slot_time_text:
+    color "#c66b2f"
+    size 16
+    font gui.interface_text_font
+    xalign 0.5
+    outlines [(1, "#1a1a1a", 0, 0)]
 
-style gallery_close_button_text:
+style slot_name_text:
     color "#ffffff"
-    hover_color "#FF7B4E"
+    size 18
+    font gui.interface_text_font
+    xalign 0.5
+    outlines [(1, "#1a1a1a", 0, 0)]
+
+style slot_user_text:
+    color "#aaaaaa"
+    size 14
+    font gui.interface_text_font
+    xalign 0.5
+
+style slot_chapter_text:
+    color "#ffaa66"
+    size 14
+    font gui.interface_text_font
+    xalign 0.5
+
+style page_label:
+    xpadding 10
+    ypadding 5
+    xalign 0.5
+
+style page_label_text:
     size 24
-    outlines [(2, "#671a1a", 0, 0)]
-    text_align 0.5
+    color gui.accent_color
+    outlines [(1, "#671a1a", 0, 0)]
+
+style confirm_frame:
+    background Frame("gui/confirm_frame.png", 25, 25)
+    padding (30, 30)
+    xalign 0.5
+    yalign 0.5
+    xsize 600
+    ysize 400
