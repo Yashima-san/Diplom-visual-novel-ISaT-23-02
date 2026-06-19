@@ -112,7 +112,7 @@
 <li>Для создания ярлыка на рабочем столе нажмите правой кнопкой мыши на .exe файл и выберите "Отправить" → "Рабочий стол (создать ярлык)".</li>
 </ol>
 
-<p>Ссылка на установку <b><a href="https://disk.yandex.ru/d/sOMQ1sxXnKwOeQ" download>ZagranyuChuvstv-1.0-win.zip|Скачать</a></b></p>
+<b><p>|Ссылка на установку| <a href="https://disk.yandex.ru/d/sOMQ1sxXnKwOeQ" download>ZagranyuChuvstv-1.0-win.zip|Скачать</a></p></b>
 
 <p><b>Примечание:</b> Не перемещайте и не переименовывайте папку <code>game</code> после распаковки - это может привести к ошибкам при запуске.</p>
 
