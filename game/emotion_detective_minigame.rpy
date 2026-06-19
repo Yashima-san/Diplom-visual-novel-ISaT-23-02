@@ -23,7 +23,7 @@ init python:
     detective_scenarios = {
         "library_conflict": {
             "bg": "bg library",
-            "character": "Катя",
+            "character": "katia",
             "situation": "Катя резко захлопнула учебник, когда подошёл Алекс. Она не смотрит на него, но пальцы нервно перебирают край страницы.",
             "correct_emotion": "anxiety",
             "available_clues": {
@@ -41,7 +41,7 @@ init python:
         },
         "help_katya": {
             "bg": "bg library",
-            "character": "Катя",
+            "character": "katia",
             "situation": "Катя сидит, опустив плечи. Голос дрожит, хотя она пытается говорить спокойно. Пальцы нервно теребят край книги. Она избегает смотреть в глаза. Её щёки слегка покраснели.",
             "correct_emotion": "shame",
             "available_clues": {
@@ -61,7 +61,7 @@ init python:
         },
         "school_morning": {
             "bg": "bg school_entrance",
-            "character": "Лина",
+            "character": "lina",
             "situation": "Лина улыбается, но ты замечаешь, что её улыбка не совсем искренняя. Она теребит край рюкзака и часто смотрит в сторону.",
             "correct_emotion": "anxiety",
             "available_clues": {

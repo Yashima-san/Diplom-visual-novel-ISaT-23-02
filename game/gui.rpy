@@ -512,3 +512,27 @@ init -1 python:
     except Exception:
         # Если не получается, используем значения по умолчанию
         pass
+
+
+################################################################################
+## Звуки кнопок
+################################################################################
+
+init -2 python:
+    # Звук при наведении курсора на любую кнопку
+    style.button.hover_sound = "sounds/hover.mp3"
+    
+    # Звук при нажатии на любую кнопку
+    style.button.activate_sound = "sounds/click.mp3"
+    
+    # Звуки для кнопок выбора (меню внутри игры)
+    style.choice_button.hover_sound = "sounds/hover.mp3"
+    style.choice_button.activate_sound = "sounds/click.mp3"
+    
+    # Звуки для кнопок навигации (главное меню, загрузки и т.д.)
+    style.navigation_button.hover_sound = "sounds/hover.mp3"
+    style.navigation_button.activate_sound = "sounds/click.mp3"
+    
+    # Звуки для кнопок слотов сохранения
+    style.slot_button.hover_sound = "sounds/hover.mp3"
+    style.slot_button.activate_sound = "sounds/click.mp3"
