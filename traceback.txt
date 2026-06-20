@@ -1,41 +1,36 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
 While running game code:
-  File "game/script.rpy", line 710, in script
-    show katia sad character_scale_center
-Exception: Image 'katia sad' does not accept attributes 'character_scale_center'.
+  File "game/script.rpy", line 465, in script
+    $ enable_chat_mode()
+  File "game/script.rpy", line 465, in <module>
+    $ enable_chat_mode()
+      ~~~~~~~~~~~~~~~~^^
+  File "game/messenger.rpy", line 191, in enable_chat_mode
+    original_a, original_t, original_k, original_lib = a, t, k, lib
+                                                          ^        
+NameError: name 't' is not defined
 
 -- Full Traceback ------------------------------------------------------------
 
 Traceback (most recent call last):
-  File "game/script.rpy", line 710, in script
-    show katia sad character_scale_center
-  File "renpy/ast.py", line 1358, in execute
-    show_imspec(self.imspec, atl=getattr(self, "atl", None))
-    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/ast.py", line 730, in show_imspec
-    renpy.config.show(
-    ~~~~~~~~~~~~~~~~~^
-        name, at_list=at_list, layer=layer, what=expression, zorder=zorder, tag=tag, behind=behind, atl=atl
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    )
-    ^
-  File "renpy/exports/displayexports.py", line 486, in show
-    if not base.find_target() and renpy.config.missing_show:
-           ~~~~~~~~~~~~~~~~^^                               
-  File "renpy/display/image.py", line 444, in find_target
-    self.target = target._duplicate(a)
-                  ~~~~~~~~~~~~~~~~~^^^
-  File "renpy/display/layout.py", line 151, in _duplicate
-    args.extraneous()
-    ~~~~~~~~~~~~~~~^^
-  File "renpy/display/displayable.py", line 118, in extraneous
-    raise Exception(
-    ...<4 lines>...
-    )
-Exception: Image 'katia sad' does not accept attributes 'character_scale_center'.
+  File "game/script.rpy", line 465, in script
+    $ enable_chat_mode()
+  File "renpy/ast.py", line 1187, in execute
+    renpy.python.py_exec_bytecode(self.code.bytecode, self.hide, store=self.store)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/python.py", line 1332, in py_exec_bytecode
+    exec(bytecode, globals, locals)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "game/script.rpy", line 465, in <module>
+    $ enable_chat_mode()
+      ~~~~~~~~~~~~~~~~^^
+  File "game/messenger.rpy", line 191, in enable_chat_mode
+    original_a, original_t, original_k, original_lib = a, t, k, lib
+                                                          ^        
+NameError: name 't' is not defined
 
 Windows-11-10.0.26200-SP0 AMD64
 Ren'Py 8.6.0.26031705+nightly
 За гранью чувств 1.0
-Sat Jun 20 03:34:53 2026
+Sat Jun 20 16:54:18 2026

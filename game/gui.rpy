@@ -41,7 +41,7 @@ define config.mouse["drag"] = [ ("gui/cursor/click.png", 0, 0) ]
 ## Цвета текста в интерфейсе.
 
 ## Акцентный цвет используется в заголовках и подчёркнутых текстах.
-define gui.accent_color = '#c66b2f'
+define gui.accent_color = '#b1602a'
 
 ## Цвет, используемый в текстовой кнопке, когда она не выбрана и не наведена.
 define gui.idle_color = '#af6d47'
@@ -63,11 +63,11 @@ define gui.insensitive_color = '#4c2f22'
 
 ## Цвета, используемые для частей панелей, которые не заполняются. Они
 ## используются не напрямую, а только при воссоздании файлов изображений.
-define gui.muted_color = '#d9874d'
-define gui.hover_muted_color = '#874927'
+define gui.muted_color = '#87532e'
+define gui.hover_muted_color = '#723d21'
 
 ## Цвета, используемые в тексте диалогов и выборов.
-define gui.text_color = '#b4744e'
+define gui.text_color = '#bd7a54'
 define gui.interface_text_color = '#976147'
 
 

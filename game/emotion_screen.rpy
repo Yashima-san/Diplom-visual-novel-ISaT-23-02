@@ -144,6 +144,9 @@ init python:
         except:
             pass
 
+# ============================================================================
+# ЭКРАН КОЛЕСА ЭМОЦИЙ С РЕГУЛИРУЕМЫМИ ПАРАМЕТРАМИ
+# ============================================================================
 screen plutchik_wheel(scenario_data, scenario_id):
     modal True
     zorder 200
@@ -153,7 +156,18 @@ screen plutchik_wheel(scenario_data, scenario_id):
     default show_hint = False
     default hint_text = ""
     
+    # ====== НАСТРОЙКИ ЭКРАНА ======
     python:
+        # Размеры кнопок эмоций
+        emotion_button_width = 250      # ← РЕГУЛИРУЙ ШИРИНУ КНОПОК
+        emotion_button_height = 70      # ← РЕГУЛИРУЙ ВЫСОТУ КНОПОК
+        emotion_button_text_size = 22   # ← РЕГУЛИРУЙ РАЗМЕР ШРИФТА КНОПОК
+        
+        # Размеры кнопок действий
+        action_button_width = 320       # ← РЕГУЛИРУЙ ШИРИНУ КНОПОК ДЕЙСТВИЙ
+        action_button_height = 60       # ← РЕГУЛИРУЙ ВЫСОТУ КНОПОК ДЕЙСТВИЙ
+        action_button_text_size = 20    # ← РЕГУЛИРУЙ РАЗМЕР ШРИФТА КНОПОК ДЕЙСТВИЙ
+        
         title = scenario_data.get('title', 'Колесо эмоций')
         situation = scenario_data.get('situation', '')
         possible = scenario_data.get('possible_emotions', [])
@@ -178,31 +192,33 @@ screen plutchik_wheel(scenario_data, scenario_id):
             
             frame:
                 background Frame("gui/frame.png", 15, 15)
-                xfill True
+                xsize 1000
                 padding (20, 15)
+                xalign 0.5
+                yalign 0.5
                 text situation:
                     size 20
-                    color "#e0e0e0"
                     text_align 0.0
                     xfill True
-                    outlines [(1, "#1a1a1a", 0, 0)]
             
-            null height 5
+            null height 15
             
+            # ====== БЛОК С ЭМОЦИЯМИ ======
             hbox:
                 spacing 25
                 xfill True
                 
+                # ЛЕВАЯ ЧАСТЬ: КНОПКИ ЭМОЦИЙ
                 vbox:
-                    xsize 550
+                    xsize 600
                     spacing 10
                     
                     text "Выбери эмоцию, которую ты сейчас чувствуешь:":
                         size 20
-                        color "#e0e0e0"
                         xalign 0.5
                         outlines [(1, "#1a1a1a", 0, 0)]
                     
+                    # Сетка эмоций (2 строки x 4 колонки)
                     grid 2 4:
                         spacing 15
                         xalign 0.5
@@ -220,11 +236,10 @@ screen plutchik_wheel(scenario_data, scenario_id):
                                 $ btn_bg = Solid(emo_color + "22")
                                 $ check_mark = ""
                                 $ text_color_value = "#e0e0e0"
-                                $ text_bold = False
                             
                             button:
-                                xsize 250
-                                ysize 70
+                                xsize emotion_button_width
+                                ysize emotion_button_height
                                 action SetScreenVariable("selected_emotion", emo_id)
                                 background btn_bg
                                 hover_background Solid(emo_color + "77")
@@ -235,16 +250,16 @@ screen plutchik_wheel(scenario_data, scenario_id):
                                     background None
                                     padding (10, 10)
                                     text "[emo_icon] [emo_name][check_mark]":
-                                        size 22
+                                        size emotion_button_text_size
                                         color text_color_value
-                                        bold text_bold
                                         xalign 0.5
                                         yalign 0.5
                                         outlines [(1, "#1a1a1a", 0, 0)]
                 
+                # ПРАВАЯ ЧАСТЬ: ИНФОРМАЦИЯ О ВЫБРАННОЙ ЭМОЦИИ
                 vbox:
                     xsize 400
-                    spacing 20
+                    spacing 15
                     yalign 0.5
                     
                     if selected_emotion:
@@ -257,14 +272,15 @@ screen plutchik_wheel(scenario_data, scenario_id):
                         $ opposite_name = plutchik_emotions.get(opposite_id, {}).get('name_ru', 'неизвестно')
                         
                         frame:
-                            background Frame("gui/confirm_frame_1.png", 15, 15)
+                            background Frame("gui/overlay/confirm.png", 15, 15)
                             padding (15, 12)
                             xfill True
+                            xalign 0.5
                             vbox:
                                 spacing 8
+                                xalign 0.5
                                 text "Твой выбор:":
                                     size 18
-                                    color "#aaaaaa"
                                     xalign 0.5
                                     outlines [(1, "#1a1a1a", 0, 0)]
                                 text "[sel_icon] [sel_name]":
@@ -274,45 +290,43 @@ screen plutchik_wheel(scenario_data, scenario_id):
                                     outlines [(2, "#1a1a1a", 0, 0)]
                                 text "[sel_desc]":
                                     size 15
-                                    color "#dddddd"
                                     xalign 0.5
                                     text_align 0.5
-                                    outlines [(1, "#1a1a1a", 0, 0)]
                                 text "Противоположная эмоция: [opposite_name]":
                                     size 14
-                                    color "#aaaaaa"
                                     xalign 0.5
-                                    outlines [(1, "#1a1a1a", 0, 0)]
                         
                         if selected_emotion == best_id:
                             text "Точное попадание!":
-                                size 22
+                                size 20
                                 color "#4caf50"
                                 xalign 0.5
-                                outlines [(1, "#1a1a1a", 0, 0)]
+                                outlines [(1, "#216717", 0, 0)]
                         elif selected_emotion in possible:
                             text "Хороший вариант!":
-                                size 22
+                                size 20
                                 color "#ff9800"
                                 xalign 0.5
-                                outlines [(1, "#1a1a1a", 0, 0)]
+                                outlines [(1, "#9f691e", 0, 0)]
+
                         else:
                             text "Возможно, стоит присмотреться к другим эмоциям":
                                 size 20
                                 color "#ff5722"
                                 xalign 0.5
-                                outlines [(1, "#1a1a1a", 0, 0)]
+                                outlines [(1, "#923a1c", 0, 0)]
+
                     
+                    # Кнопка подсказки
                     if show_hint:
                         frame:
                             background Frame("gui/frame.png", 10, 10)
                             padding (12, 10)
                             xfill True
+                            xalign 0.5
                             text "[hint_text]":
-                                size 14
-                                color "#bbbbbb"
+                                size 16
                                 text_align 0.0
-                                outlines [(1, "#1a1a1a", 0, 0)]
                         
                         textbutton "Скрыть подсказку":
                             xalign 0.5
@@ -320,7 +334,8 @@ screen plutchik_wheel(scenario_data, scenario_id):
                             background Frame("gui/button/choice_idle_background.png", 15, 15)
                             hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
                             padding (12, 8)
-                            xsize 280
+                            xsize action_button_width
+                            text_size action_button_text_size
                     else:
                         textbutton "Показать подсказку":
                             xalign 0.5
@@ -329,37 +344,47 @@ screen plutchik_wheel(scenario_data, scenario_id):
                             background Frame("gui/button/choice_idle_background.png", 15, 15)
                             hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
                             padding (12, 8)
-                            xsize 280
+                            xsize action_button_width
+                            text_size action_button_text_size
+            
+            # ====== ОТДЕЛЬНЫЙ БЛОК С КНОПКАМИ ДЕЙСТВИЙ ======
+            null height 70
+            vbox:
+                spacing 50
+                xfill True
+
+                hbox:
+                    spacing 20
+                    xalign 0.5
                     
-                    null height 20
-                    
-                    hbox:
-                        spacing 16
-                        xalign 0.5
-                        yalign 0.25
-                        
-                        if selected_emotion:
-                            textbutton "Подтвердить выбор":
-                                background Frame("gui/button/choice_idle_background.png", 15, 15)
-                                hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
-                                padding (12, 8)
-                                xsize 360
-                                action Return(selected_emotion)
-                        else:
-                            textbutton "Подтвердить выбор":
-                                background Frame("gui/button/choice_idle_background.png", 15, 15)
-                                hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
-                                padding (12, 8)
-                                xsize 360
-                                action Return(None)
-                                sensitive False
-                        
-                        textbutton "Пропустить":
+                    if selected_emotion:
+                        textbutton "Подтвердить выбор":
                             background Frame("gui/button/choice_idle_background.png", 15, 15)
                             hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
-                            padding (12, 8)
-                            xsize 260
-                            action Return("skip")
+                            padding (40, 10)
+                            xsize action_button_width
+                            ysize action_button_height
+                            text_size action_button_text_size
+                            action Return(selected_emotion)
+                    else:
+                        textbutton "Подтвердить выбор":
+                            background Frame("gui/button/choice_idle_background.png", 15, 15)
+                            hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                            padding (40, 10)
+                            xsize action_button_width
+                            ysize action_button_height
+                            text_size action_button_text_size
+                            action Return(None)
+                            sensitive False
+                    
+                    textbutton "Пропустить":
+                        background Frame("gui/button/choice_idle_background.png", 15, 15)
+                        hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                        padding (15, 10)
+                        xsize action_button_width
+                        ysize action_button_height
+                        text_size action_button_text_size
+                        action Return("skip")
     
     key "K_ESCAPE" action Return("skip")
     key "game_menu" action Return("skip")

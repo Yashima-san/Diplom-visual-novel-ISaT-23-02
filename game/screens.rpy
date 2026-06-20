@@ -742,7 +742,7 @@ screen help():
                 action Return()
 
 ################################################################################
-## ЭКРАН НАСТРОЕК (ОПЦИЙ) - ОРИГИНАЛЬНЫЙ СТИЛЬ
+## ЭКРАН НАСТРОЕК (ОПЦИЙ)
 ################################################################################
 screen preferences():
     tag menu
@@ -759,122 +759,281 @@ screen preferences():
             
             null height 10
             
+            # ОДИН ОБЩИЙ ФРЕЙМ ДЛЯ ВСЕХ НАСТРОЕК
             frame:
                 background Frame("gui/confirm_frame.png", 15, 15)
                 xfill True
                 padding (25, 20)
                 
                 vbox:
-                    spacing 20
+                    spacing 25
+                    xfill True
                     
+                    # ============================================
+                    # ГРАФИКА И ЗВУК
+                    # ============================================
                     text "Графика и звук":
                         size 28
                         color gui.accent_color
+                        xalign 0.05
                         outlines [(1, "#671a1a", 0, 0)]
                     
                     hbox:
                         spacing 30
                         xfill True
-                        text "Режим экрана:" size 24 xsize 250 yalign 0.5
-                        textbutton "Оконный" action Preference("display", "window")
-                        textbutton "Полный" action Preference("display", "fullscreen")
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Режим экрана:":
+                            size 24
+                            xsize 280
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        textbutton "Оконный":
+                            action Preference("display", "window")
+                            xsize 180
+                            text_align 0.5
+                        
+                        textbutton "Полный":
+                            action Preference("display", "fullscreen")
+                            xsize 180
+                            text_align 0.5
                     
                     null height 5
                     
                     hbox:
                         spacing 30
                         xfill True
-                        text "Громкость музыки:" size 24 xsize 250 yalign 0.5
-                        bar value Preference("music volume") xsize 400 ysize 25
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Громкость музыки:":
+                            size 24
+                            xsize 280
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        bar:
+                            value Preference("music volume")
+                            xsize 500
+                            ysize 25
+                            xalign 0.0
                     
                     hbox:
                         spacing 30
                         xfill True
-                        text "Громкость звуков:" size 24 xsize 250 yalign 0.5
-                        bar value Preference("sound volume") xsize 400 ysize 25
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Громкость звуков:":
+                            size 24
+                            xsize 280
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        bar:
+                            value Preference("sound volume")
+                            xsize 500
+                            ysize 25
+                            xalign 0.0
                     
                     hbox:
                         spacing 30
                         xfill True
-                        text "Громкость голоса:" size 24 xsize 250 yalign 0.5
-                        bar value Preference("voice volume") xsize 400 ysize 25
-            
-            null height 15
-            
-            frame:
-                background Frame("gui/confirm_frame.png", 15, 15)
-                xfill True
-                padding (25, 20)
-                
-                vbox:
-                    spacing 20
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Громкость голоса:":
+                            size 24
+                            xsize 280
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        bar:
+                            value Preference("voice volume")
+                            xsize 500
+                            ysize 25
+                            xalign 0.0
                     
+                    # Разделитель
+                    null height 10
+                    frame:
+                        xsize 1000
+                        ysize 4
+                        xalign 0.5
+                        background "#ac5032"
+                    null height 10
+                    
+                    # ============================================
+                    # ТЕКСТ И УПРАВЛЕНИЕ
+                    # ============================================
                     text "Текст и управление":
                         size 28
                         color gui.accent_color
+                        xalign 0.05
                         outlines [(1, "#671a1a", 0, 0)]
                     
                     hbox:
                         spacing 30
                         xfill True
-                        text "Скорость текста:" size 24 xsize 250 yalign 0.5
-                        bar value Preference("text speed") xsize 400 ysize 25
-                        text "[preferences.text_cps]" size 20 xsize 80 yalign 0.5
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Скорость текста:":
+                            size 24
+                            xsize 280
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        bar:
+                            value Preference("text speed")
+                            xsize 500
+                            ysize 25
+                            xalign 0.0
+                        
+                        # ОТОБРАЖЕНИЕ ЦЕЛОГО ЧИСЛА (без десятичных)
+                        $ text_speed = int(preferences.text_cps)
+                        text "[text_speed]":
+                            size 20
+                            xsize 80
+                            yalign 0.5
+                            text_align 0.5
+                            color "#b4744e"
                     
                     hbox:
                         spacing 30
                         xfill True
-                        text "Авто-чтение:" size 24 xsize 250 yalign 0.5
-                        bar value Preference("auto-forward time") xsize 400 ysize 25
-                        text "сек/символ" size 20 xsize 100 yalign 0.5
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Авто-чтение:":
+                            size 24
+                            xsize 280
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        bar:
+                            value Preference("auto-forward time")
+                            xsize 500
+                            ysize 25
+                            xalign 0.0
+                        
+                        # Отображение времени авто-чтения с одним знаком после запятой
+                        $ auto_time = preferences.afm_time
+                        text "[auto_time:.1f] сек/символ":
+                            size 20
+                            xsize 120
+                            yalign 0.5
+                            text_align 0.5
+                            color "#b4744e"
                     
                     null height 5
                     
                     hbox:
                         spacing 30
                         xfill True
-                        text "Пропуск:" size 24 xsize 250 yalign 0.5
-                        textbutton "Непрочитанный" action Preference("skip", "seen")
-                        textbutton "Весь текст" action Preference("skip", "all")
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Пропуск:":
+                            size 24
+                            xsize 280
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        textbutton "Непрочитанный":
+                            action Preference("skip", "seen")
+                            xsize 180
+                            text_align 0.5
+                        
+                        textbutton "Весь текст":
+                            action Preference("skip", "all")
+                            xsize 180
+                            text_align 0.5
                     
                     hbox:
                         spacing 30
                         xfill True
-                        text "После выбора:" size 24 xsize 250 yalign 0.5
-                        textbutton "Останавливать" action Preference("after choices", "stop")
-                        textbutton "Продолжать" action Preference("after choices", "skip")
-            
-            null height 15
-            
-            frame:
-                background Frame("gui/confirm_frame.png", 15, 15)
-                xfill True
-                padding (25, 20)
-                
-                vbox:
-                    spacing 20
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "После выбора:":
+                            size 24
+                            xsize 280
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        textbutton "Останавливать":
+                            action Preference("after choices", "stop")
+                            xsize 180
+                            text_align 0.5
+                        
+                        textbutton "Продолжать":
+                            action Preference("after choices", "skip")
+                            xsize 180
+                            text_align 0.5
                     
+                    # Разделитель
+                    null height 10
+                    frame:
+                        xsize 1000
+                        ysize 4
+                        xalign 0.5
+                        background "#ac5032"
+                    null height 10
+                    
+                    # ============================================
+                    # СИСТЕМА
+                    # ============================================
                     text "Система":
                         size 28
                         color gui.accent_color
+                        xalign 0.05
                         outlines [(1, "#671a1a", 0, 0)]
                     
                     hbox:
                         spacing 30
                         xfill True
-                        text "Язык:" size 24 xsize 250 yalign 0.5
-                        textbutton "Русский" action Language(None)
-                        textbutton "English" action Language("english")
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Язык:":
+                            size 24
+                            xsize 280
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        textbutton "Русский":
+                            action Language(None)
+                            xsize 180
+                            text_align 0.5
+                        
+                        textbutton "English":
+                            action Language("english")
+                            xsize 180
+                            text_align 0.5
                     
                     null height 5
                     
                     hbox:
                         spacing 30
                         xfill True
-                        text "Сброс настроек:" size 24 xsize 250 yalign 0.5
-                        textbutton "Сбросить всё" action Preference("reset")
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Сброс настроек:":
+                            size 24
+                            xsize 280
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        textbutton "Сбросить всё":
+                            action Preference("reset")
+                            xsize 500
+                            text_align 0.5
             
-            null height 30
+            null height 15
             
             textbutton "Закрыть":
                 xalign 0.5
@@ -1032,13 +1191,13 @@ screen file_slots_with_user(title, is_save=True):
                     key "save_page_next" action FilePageNext()
 
 ################################################################################
-## ЭКРАН СТАТИСТИКИ ИГРОКА (ОРИГИНАЛЬНЫЙ СТИЛЬ)
+## ЭКРАН СТАТИСТИКИ ИГРОКА - ОДИН ФРЕЙМ
 ################################################################################
 screen player_stats_screen():
     tag menu
     use game_menu(_("Статистика игрока"), scroll="viewport"):
         vbox:
-            spacing 20
+            spacing 25
             xfill True
             
             text "Твой эмоциональный интеллект":
@@ -1049,146 +1208,286 @@ screen player_stats_screen():
             
             null height 10
             
+            # ОДИН ОБЩИЙ ФРЕЙМ ДЛЯ ВСЕЙ СТАТИСТИКИ
             frame:
                 background Frame("gui/confirm_frame.png", 15, 15)
                 xfill True
                 padding (25, 20)
                 
                 vbox:
-                    spacing 15
-                    
-                    text "Понимание своих эмоций:":
-                        size 24
-                        color "#ffffff"
-                    bar:
-                        value player_self_awareness
-                        range 100
-                        xsize 800
-                        ysize 30
-                        left_bar "#c66b2f"
-                        right_bar "#3a3a3a"
-                    text "[player_self_awareness]%":
-                        size 20
-                        color "#cccccc"
-                        xalign 1.0
-                    
-                    text "Понимание чужих эмоций (эмпатия):":
-                        size 24
-                        color "#ffffff"
-                    bar:
-                        value player_empathy
-                        range 100
-                        xsize 800
-                        ysize 30
-                        left_bar "#c66b2f"
-                        right_bar "#3a3a3a"
-                    text "[player_empathy]%":
-                        size 20
-                        color "#cccccc"
-                        xalign 1.0
-                    
-                    text "Эмоциональный словарь:":
-                        size 24
-                        color "#ffffff"
-                    bar:
-                        value player_emotional_vocabulary
-                        range 100
-                        xsize 800
-                        ysize 30
-                        left_bar "#c66b2f"
-                        right_bar "#3a3a3a"
-                    text "[player_emotional_vocabulary]%":
-                        size 20
-                        color "#cccccc"
-                        xalign 1.0
-                    
-                    text "Уровень тревожности:":
-                        size 24
-                        color "#ffffff"
-                    bar:
-                        value player_anxiety_level
-                        range 100
-                        xsize 800
-                        ysize 30
-                        left_bar "#ff6666"
-                        right_bar "#3a3a3a"
-                    text "[player_anxiety_level]%":
-                        size 20
-                        color "#cccccc"
-                        xalign 1.0
-                    
-                    text "Уровень доверия:":
-                        size 24
-                        color "#ffffff"
-                    bar:
-                        value player_trust_level
-                        range 100
-                        xsize 800
-                        ysize 30
-                        left_bar "#4caf50"
-                        right_bar "#3a3a3a"
-                    text "[player_trust_level]%":
-                        size 20
-                        color "#cccccc"
-                        xalign 1.0
-            
-            null height 20
-            
-            if persistent.user_id:
-                $ stats_total_attempts, stats_correct_matches, stats_emotions_chosen = safe_get_emotion_stats(persistent.user_id)
-                frame:
-                    background Frame("gui/confirm_frame.png", 15, 15)
+                    spacing 25
                     xfill True
-                    padding (25, 20)
                     
-                    vbox:
-                        spacing 10
+                    # ============================================
+                    # ОСНОВНЫЕ ПОКАЗАТЕЛИ
+                    # ============================================
+                    text "Основные показатели":
+                        size 28
+                        color gui.accent_color
+                        xalign 0.05
+                        outlines [(1, "#671a1a", 0, 0)]
+                    
+                    # Понимание своих эмоций
+                    hbox:
+                        spacing 30
+                        xfill True
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Понимание своих эмоций:":
+                            size 24
+                            xsize 400
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        bar:
+                            value player_self_awareness
+                            range 100
+                            xsize 500
+                            ysize 30
+                            left_bar "#c66b2f"
+                            right_bar "#3a3a3a"
+                            xalign 0.0
+                        
+                        text "[player_self_awareness]%":
+                            size 20
+                            xsize 80
+                            yalign 0.5
+                            text_align 0.5
+                    
+                    # Понимание чужих эмоций (эмпатия)
+                    hbox:
+                        spacing 30
+                        xfill True
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Понимание чужих эмоций (эмпатия):":
+                            size 24
+                            xsize 400
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        bar:
+                            value player_empathy
+                            range 100
+                            xsize 500
+                            ysize 30
+                            left_bar "#c66b2f"
+                            right_bar "#3a3a3a"
+                            xalign 0.0
+                        
+                        text "[player_empathy]%":
+                            size 20
+                            xsize 80
+                            yalign 0.5
+                            text_align 0.5
+                    
+                    # Эмоциональный словарь
+                    hbox:
+                        spacing 30
+                        xfill True
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Эмоциональный словарь:":
+                            size 24
+                            xsize 400
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        bar:
+                            value player_emotional_vocabulary
+                            range 100
+                            xsize 500
+                            ysize 30
+                            left_bar "#c66b2f"
+                            right_bar "#3a3a3a"
+                            xalign 0.0
+                        
+                        text "[player_emotional_vocabulary]%":
+                            size 20
+                            xsize 80
+                            yalign 0.5
+                            text_align 0.5
+                    
+                    # Уровень тревожности
+                    hbox:
+                        spacing 30
+                        xfill True
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Уровень тревожности:":
+                            size 24
+                            xsize 400
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        bar:
+                            value player_anxiety_level
+                            range 100
+                            xsize 500
+                            ysize 30
+                            left_bar "#ff6666"
+                            right_bar "#3a3a3a"
+                            xalign 0.0
+                        
+                        text "[player_anxiety_level]%":
+                            size 20
+                            xsize 80
+                            yalign 0.5
+                            text_align 0.5
+                    
+                    # Уровень доверия
+                    hbox:
+                        spacing 30
+                        xfill True
+                        xalign 0.5
+                        xmaximum 1100
+                        
+                        text "Уровень доверия:":
+                            size 24
+                            xsize 400
+                            yalign 0.5
+                            text_align 0.0
+                        
+                        bar:
+                            value player_trust_level
+                            range 100
+                            xsize 500
+                            ysize 30
+                            left_bar "#4caf50"
+                            right_bar "#3a3a3a"
+                            xalign 0.0
+                        
+                        text "[player_trust_level]%":
+                            size 20
+                            xsize 80
+                            yalign 0.5
+                            text_align 0.5
+                    
+                    # Разделитель
+                    null height 10
+                    frame:
+                        xsize 1000
+                        ysize 4
+                        xalign 0.5
+                        background "#ac5032"
+                    null height 10
+                    
+                    # ============================================
+                    # СТАТИСТИКА МИНИ-ИГРЫ
+                    # ============================================
+                    if persistent.user_id:
+                        $ stats_total_attempts, stats_correct_matches, stats_emotions_chosen = safe_get_emotion_stats(persistent.user_id)
                         
                         text "Статистика мини-игры «Колесо эмоций»:":
-                            size 26
+                            size 28
                             color gui.accent_color
-                            xalign 0.5
+                            xalign 0.05
+                            outlines [(1, "#671a1a", 0, 0)]
                         
                         hbox:
                             spacing 50
+                            xfill True
                             xalign 0.5
+                            xmaximum 1100
                             
                             vbox:
-                                text "Всего попыток:" size 22
+                                xalign 0.5
+                                spacing 5
+                                
+                                text "Всего попыток:":
+                                    size 22
+                                    text_align 0.5
+                                    xalign 0.5
+                                
                                 text "[stats_total_attempts]":
                                     size 28
                                     color "#c66b2f"
-                                    bold True
                                     xalign 0.5
+                                    text_align 0.5
                             
                             vbox:
-                                text "Правильных ответов:" size 22
+                                xalign 0.5
+                                spacing 5
+                                
+                                text "Правильных ответов:":
+                                    size 22
+                                    text_align 0.5
+                                    xalign 0.5
+                                
                                 text "[stats_correct_matches]":
                                     size 28
                                     color "#4caf50"
-                                    bold True
                                     xalign 0.5
+                                    text_align 0.5
                             
                             vbox:
-                                text "Точность:" size 22
+                                xalign 0.5
+                                spacing 5
+                                
+                                text "Точность:":
+                                    size 22
+                                    text_align 0.5
+                                    xalign 0.5
+                                
                                 $ accuracy = int((stats_correct_matches / max(stats_total_attempts, 1)) * 100)
                                 text "[accuracy]%":
                                     size 28
                                     color "#ffaa00"
-                                    bold True
                                     xalign 0.5
+                                    text_align 0.5
                         
                         if stats_emotions_chosen:
-                            text "Частота выбора эмоций:" size 22 xalign 0.5
+                            null height 10
+                            
+                            text "Частота выбора эмоций:":
+                                size 22
+                                xalign 0.05
+                            
                             $ sorted_emotions = sorted(stats_emotions_chosen.items(), key=lambda x: x[1], reverse=True)[:5]
+                            
+                            # Отображение эмоций в виде списка
                             for emotion, count in sorted_emotions:
                                 hbox:
-                                    spacing 20
+                                    spacing 30
+                                    xfill True
                                     xalign 0.5
-                                    text "• [emotion]:" size 20
-                                    text "[count] раз" size 20 color "#cccccc"
+                                    xmaximum 1100
+                                    
+                                    text "• [emotion]:":
+                                        size 20
+                                        color "#b4744e"
+                                        xsize 300
+                                        text_align 0.0
+                                    
+                                    # Мини-бар для визуализации частоты
+                                    $ max_count = sorted_emotions[0][1] if sorted_emotions else 1
+                                    $ bar_width = int((count / max_count) * 300)
+                                    
+                                    frame:
+                                        xsize 300
+                                        ysize 20
+                                        
+                                        frame:
+                                            xsize bar_width
+                                            ysize 20
+                                            background "#c66b2f"
+                                    
+                                    text "[count] раз":
+                                        size 20
+                                        color "#b4744e"
+                                        xsize 100
+                                        text_align 0.5
+                    else:
+                        text "Нет данных для статистики":
+                            size 22
+                            color "#844646"
+                            xalign 0.5
             
-            null height 30
+            null height 15
             
             textbutton "Закрыть":
                 xalign 0.5
