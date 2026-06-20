@@ -1,0 +1,10 @@
+﻿I'm sorry, but errors were detected in your script. Please correct the
+errors listed below, and try again.
+
+
+File "game/debug_screen.rpy", line 151: '(' was never closed
+    outlines [(1, "#77472f, 0, 0)]
+              ^
+
+Ren'Py Version: Ren'Py 8.6.0.26031705+nightly
+Sun Jun 21 03:34:43 2026

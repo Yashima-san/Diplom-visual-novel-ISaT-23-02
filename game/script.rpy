@@ -1,4 +1,4 @@
-# Определения персонажей и изображений
+﻿# Определения персонажей и изображений
 define user_char = Character("[persistent.user_name]", color="#ff9e5e")
 define thought_user = Character("[persistent.user_name]", what_italic=True)
 define narrator = Character(None, what_italic=True)
@@ -112,6 +112,11 @@ init python:
 ################################################################################
 
 # Базовый размер спрайтов (остаётся zoom 0.28)
+transform character_scale:
+    zoom 0.28
+    xalign 0.5
+    yalign 1.0
+
 transform character_scale_left:
     zoom 0.28
     xalign 0.25
@@ -380,15 +385,7 @@ init python:
 ################################################################################
 ## НАЧАЛО ИГРЫ
 ################################################################################
-# Показываем экран для обработки очереди уведомлений
-screen notification_cleaner():
-    zorder 99
-    timer 0.5 repeat True action Function(process_notification_queue)
-
 label start:
-    # Показываем обработчик уведомлений
-    show screen notification_cleaner
-    
     # Показываем предупреждение
     $ show_warning = True
     while show_warning:
@@ -421,8 +418,7 @@ label start:
     else:
         $ entered_name = renpy.input("Введите ваше имя:", length=20)
     
-    # Если игрок закрыл экран Esc или ввел пустую строку
-    if not entered_name or entered_name.strip() == "":
+    if entered_name is None or entered_name.strip() == "":
         $ player_name = "Настя"
     else:
         $ player_name = entered_name.strip()
@@ -499,7 +495,7 @@ label continue_chat_after_first:
     jump night_scene
 
 label night_scene:
-    play music "song/night_ambient.mp3" fadein 4.0
+    stop music
     scene bg night_room with fade
     narrator "Ночь опустилась на город мягко."
     thought_user "Завтрашний день... Прыжок в неизвестность."
@@ -517,7 +513,7 @@ label night_scene:
     jump morning_scene
 
 label morning_scene:
-    stop music fadeout 3.0
+    stop music fadeout 1.0
     scene cg room_evening with fade
     play music "song/Audio_soft_1.mp3" fadein 3.0
     narrator "Утро 3 сентября."
@@ -552,7 +548,7 @@ label morning_scene:
     narrator "Лина обняла [persistent.user_name]."
     stop sound
 
-    e "Ну что, готова? Я тебе все покажу, так что не переживай!"
+    e "Ну что, готова? Я тебе все покажу, не переживай!"
     show lina speaksmile at character_speak_slide
     
     call emotion_diary_minigame("meeting_lina") from _call_emotion_diary_minigame
