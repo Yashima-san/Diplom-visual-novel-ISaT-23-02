@@ -139,19 +139,16 @@ screen debug_database():
                     xalign 0.5
                     text "Текущий игрок:":
                         size 26
-                        color "#ffffff"
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#77472f", 0, 0)]
                     $ current_user_name = persistent.user_name if hasattr(persistent, 'user_name') and persistent.user_name else "Не задан"
                     $ current_user_id = persistent.user_id if hasattr(persistent, 'user_id') and persistent.user_id else "Не задан"
                     text "[current_user_name]":
                         size 26
                         color gui.accent_color
-                        bold True
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#77472f", 0, 0)]
                     text "(ID: [current_user_id])":
                         size 24
-                        color "#cccccc"
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#77472f", 0, 0)]
             
             null height 10
             
@@ -200,39 +197,29 @@ screen debug_database():
                                 
                                 text "ID":
                                     size 20
-                                    bold True
-                                    color "#ffffff"
                                     xsize 80
                                     text_align 0.5
-                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                    outlines [(1, "#77472f", 0, 0)]
                                 text "Имя":
                                     size 20
-                                    bold True
-                                    color "#ffffff"
                                     xsize 200
                                     text_align 0.5
-                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                    outlines [(1, "#77472f", 0, 0)]
                                 text "Прогресс":
                                     size 20
-                                    bold True
-                                    color "#ffffff"
                                     xsize 250
                                     text_align 0.5
-                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                    outlines [(1, "#77472f", 0, 0)]
                                 text "ЭИ":
                                     size 20
-                                    bold True
-                                    color "#ffffff"
                                     xsize 200
                                     text_align 0.5
-                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                    outlines [(1, "#77472f", 0, 0)]
                                 text "Статистика":
                                     size 20
-                                    bold True
-                                    color "#ffffff"
                                     xsize 300
                                     text_align 0.5
-                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                    outlines [(1, "#77472f", 0, 0)]
                         
                         viewport:
                             mousewheel True
@@ -256,16 +243,12 @@ screen debug_database():
                                             
                                             text "[user_id]":
                                                 size 20
-                                                color "#ffffff"
                                                 xsize 80
                                                 text_align 0.5
-                                                outlines [(1, "#1a1a1a", 0, 0)]
                                             text "[user_name]":
                                                 size 20
-                                                color "#ffffff"
                                                 xsize 200
                                                 text_align 0.5
-                                                outlines [(1, "#1a1a1a", 0, 0)]
                                             
                                             $ progress = get_user_progress(user_id)
                                             $ total_chapters = 3
@@ -276,9 +259,7 @@ screen debug_database():
                                                 xsize 250
                                                 text "Глав: [completed]/[total_chapters]":
                                                     size 18
-                                                    color "#cccccc"
                                                     xalign 0.5
-                                                    outlines [(1, "#1a1a1a", 0, 0)]
                                                 bar:
                                                     value progress_percent
                                                     range 100
@@ -321,18 +302,13 @@ screen debug_database():
                                                 xsize 300
                                                 text "Попыток: [total_attempts]":
                                                     size 18
-                                                    color "#cccccc"
-                                                    outlines [(1, "#1a1a1a", 0, 0)]
                                                 text "Точность: [acc]%":
                                                     size 18
                                                     color acc_color_val
-                                                    outlines [(1, "#1a1a1a", 0, 0)]
                     else:
                         text "Нет игроков в базе данных":
                             size 22
                             xalign 0.5
-                            color "#cccccc"
-                            outlines [(1, "#1a1a1a", 0, 0)]
 
 ################################################################################
 ## ЭКРАН ДЕТАЛЬНОЙ ИНФОРМАЦИИ О ПОЛЬЗОВАТЕЛЕ
@@ -353,17 +329,6 @@ screen user_details(user_id, user_name):
                 background None
                 hover_background None
                 padding (10, 5)
-                
-                hbox:
-                    spacing 8
-                    text "←":
-                        size 28
-                        outlines [(1, "#1a1a1a", 0, 0)]
-                    text "Назад к списку игроков":
-                        size 26
-                        color "#494949"
-                        hover_color gui.hover_color
-                        outlines [(1, "#855133", 0, 0)]
             
             null height 10
             
@@ -388,13 +353,12 @@ screen user_details(user_id, user_name):
                     text "Прогресс игрока:":
                         size 26
                         color gui.accent_color
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#77472f", 0, 0)]
                     
                     text "[progress_percent]% глав пройдено":
                         size 20
-                        color "#cccccc"
                         xalign 0.5
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#77472f", 0, 0)]
                     bar:
                         value progress_percent
                         range 100
@@ -417,7 +381,7 @@ screen user_details(user_id, user_name):
                     text "Информация об игроке:":
                         size 26
                         color gui.accent_color
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#77472f", 0, 0)]
                     
                     $ metrics = get_player_metrics_from_saves(user_id)
                     
@@ -429,60 +393,50 @@ screen user_details(user_id, user_name):
                             xalign 0.5
                             text "Самопонимание:":
                                 size 20
-                                color "#aaaaaa"
-                                outlines [(1, "#1a1a1a", 0, 0)]
                             text "[metrics.get('self_awareness', 0)]%":
                                 size 20
                                 color "#c66b2f"
-                                outlines [(1, "#1a1a1a", 0, 0)]
+                                outlines [(1, "#77472f", 0, 0)]
                         
                         hbox:
                             spacing 30
                             xalign 0.5
                             text "Эмпатия:":
                                 size 20
-                                color "#aaaaaa"
-                                outlines [(1, "#1a1a1a", 0, 0)]
                             text "[metrics.get('empathy', 0)]%":
                                 size 20
                                 color "#c66b2f"
-                                outlines [(1, "#1a1a1a", 0, 0)]
+                                outlines [(1, "#77472f", 0, 0)]
                         
                         hbox:
                             spacing 30
                             xalign 0.5
                             text "Словарь эмоций:":
                                 size 20
-                                color "#aaaaaa"
-                                outlines [(1, "#1a1a1a", 0, 0)]
                             text "[metrics.get('vocabulary', 0)]%":
                                 size 20
                                 color "#c66b2f"
-                                outlines [(1, "#1a1a1a", 0, 0)]
+                                outlines [(1, "#77532f", 0, 0)]
                         
                         hbox:
                             spacing 30
                             xalign 0.5
                             text "Тревожность:":
                                 size 20
-                                color "#aaaaaa"
-                                outlines [(1, "#1a1a1a", 0, 0)]
                             text "[metrics.get('anxiety', 50)]%":
                                 size 20
                                 color "#ff6666"
-                                outlines [(1, "#1a1a1a", 0, 0)]
+                                outlines [(1, "#702b14", 0, 0)]
                         
                         hbox:
                             spacing 30
                             xalign 0.5
                             text "Доверие:":
                                 size 20
-                                color "#aaaaaa"
-                                outlines [(1, "#1a1a1a", 0, 0)]
                             text "[metrics.get('trust', 30)]%":
                                 size 20
                                 color "#4caf50"
-                                outlines [(1, "#1a1a1a", 0, 0)]
+                                outlines [(1, "#176721", 0, 0)]
             
             null height 10
             
@@ -522,20 +476,17 @@ screen confirm_clear_db():
                 color "#ff4444"
                 xalign 0.5
                 bold True
-                outlines [(2, "#1a1a1a", 0, 0)]
+                outlines [(2, "#641f1f", 0, 0)]
             
             text "Вы уверены, что хотите очистить базу данных?":
                 size 22
                 xalign 0.5
                 text_align 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
             
             text "Это действие НЕОБРАТИМО!":
                 size 20
                 color "#ff4444"
                 xalign 0.5
-                bold True
-                outlines [(1, "#1a1a1a", 0, 0)]
             
             null height 10
             

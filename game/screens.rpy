@@ -1548,7 +1548,6 @@ screen player_stats_screen():
 ################################################################################
 screen input_name_screen():
     modal True
-    add "gui/overlay/confirm.png"
     default input_name = ""
     frame:
         style "input_frame"
@@ -1562,10 +1561,10 @@ screen input_name_screen():
             xalign 0.5
             text "Как тебя зовут?":
                 size 36
-                color "#ff7171"
+                color "#e15a5a"
                 font gui.interface_text_font
                 xalign 0.5
-                outlines [(2, "#a83c1f", 0, 0)]
+                outlines [(2, "#913218", 0, 0)]
             frame:
                 style "input_field_frame"
                 xysize (540, 70)
@@ -1586,10 +1585,9 @@ screen input_name_screen():
                 action Return(input_name)
             text "Нажмите ENTER, чтобы продолжить":
                 size 18
-                color "#ff9083"
+                color "#b03b2e"
                 font gui.interface_text_font
                 xalign 0.5
-                outlines [(1, "#de5d21", 0, 0)]
     key "K_RETURN" action Return(input_name)
     key "K_ESCAPE" action Return("")
 

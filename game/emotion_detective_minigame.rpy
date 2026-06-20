@@ -102,12 +102,10 @@ screen emotion_wheel_detective(correct_answer, on_confirm):
                 size 36
                 color gui.accent_color
                 xalign 0.5
-                # Убираем bold
-                outlines [(2, "#1a1a1a", 0, 0)]
+                outlines [(2, "#671a1a", 0, 0)]
             text "Нажми на карточку, которая кажется наиболее точной":
                 size 24
                 xalign 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
             
             null height 20
             
@@ -148,7 +146,6 @@ screen emotion_wheel_detective(correct_answer, on_confirm):
                         for clue in hint_data.get("body_clues", []):
                             text "• [clue]":
                                 size 16
-                                color "#cccccc"
                                 xalign 0.5
             
             hbox:
@@ -185,15 +182,13 @@ screen body_clues_selector(available_clues, on_select):
                 size 32
                 color gui.accent_color
                 xalign 0.5
-                bold True
+                outlines [(2, "#671a1a", 0, 0)]
+
             text "Выбери 1-2 наиболее ярких признака":
                 size 24
-                color "#cccccc"
                 xalign 0.5
             
             viewport:
-                mousewheel True
-                scrollbars "vertical"
                 ysize 350
                 vbox:
                     spacing 12
@@ -249,11 +244,11 @@ label emotion_detective_minigame(scenario_id="library_conflict"):
     
     # Показываем персонажа в зависимости от сценария
     if current_scenario["character"] == "Катя":
-        show katia nervous at character_scale with dissolve
+        show katia sad at character_scale with dissolve
     elif current_scenario["character"] == "Лина":
         show lina neutral at character_scale with dissolve
     else:
-        show katia nervous at character_scale with dissolve
+        show katia sad at character_scale with dissolve
     
     pause 1.0
     
@@ -287,7 +282,7 @@ label emotion_detective_minigame(scenario_id="library_conflict"):
         $ update_player_state(self_awareness_change=5, empathy_change=5, vocabulary_change=5, anxiety_change=-3)
         
         if current_scenario["character"] == "Катя":
-            show katia thoughtful at character_scale with dissolve
+            show katia neutral at character_scale with dissolve
         else:
             show lina smile at character_scale with dissolve
         

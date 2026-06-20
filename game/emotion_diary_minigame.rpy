@@ -11,7 +11,10 @@ init python:
         "meeting_lina": {
             "title": "Разговор с Линой у входа в школу",
             "bg": "bg school_entrance",
-            "narration": "Лина подошла с улыбкой, спросила, как дела. Ты ответила кратко, но она не ушла — осталась рядом, молча.",
+            "character": "lina smile",
+            "character_position": "character_scale_center", 
+            "character_dialogue": "Как ты себя чувствуешь? Волнуешься?",
+            "narration": "Ты чувствуешь, как сердце бьётся чуть чаще. В груди тепло, но в то же время лёгкое напряжение. Лина смотрит на тебя с ожиданием.",  # ← ДОБАВЛЕНО
             "body_sensations": {
                 "heart_fast": "Сердце бьётся чуть чаще",
                 "throat_tight": "Ком в горле",
@@ -26,19 +29,22 @@ init python:
                     "text": "Сказать: Мне немного неловко, но я рада тебя видеть",
                     "outcome": "healthy_boundary",
                     "effects": {"self_awareness": 8, "trust": 5, "anxiety": -2},
-                    "narration": "Ты назвала своё чувство — и оно стало менее пугающим. Лина кивнула: Спасибо, что сказала. Я подожду, когда будет проще."
+                    "narration": "Ты назвала своё чувство — и оно стало менее пугающим.",
+                    "character_response": "Спасибо, что сказала. Я подожду, когда будет проще."
                 },
                 "smile_silent": {
                     "text": "Улыбнуться и промолчать",
                     "outcome": "suppression",
                     "effects": {"anxiety": 3, "empathy": -2, "self_awareness": -1},
-                    "narration": "Ты улыбнулась, но внутри осталось напряжение. Лина, кажется, почувствовала это — её улыбка стала чуть осторожнее."
+                    "narration": "Ты улыбнулась, но внутри осталось напряжение. Лина, кажется, почувствовала это — её улыбка стала чуть осторожнее.",
+                    "character_response": "Ты сегодня какая-то задумчивая... Но я рядом, если что."  # ← ДОБАВЛЕНО
                 },
                 "change_topic": {
                     "text": "Быстро перевести тему на учёбу",
                     "outcome": "avoidance",
                     "effects": {"anxiety": 1, "trust": -3},
-                    "narration": "Ты заговорила о расписании. Лина поддержала, но диалог стал более формальным."
+                    "narration": "Ты заговорила о расписании. Лина поддержала, но диалог стал более формальным.",
+                    "character_response": "Ну да, расписание... Главное, не опоздать на первый урок!"  # ← ДОБАВЛЕНО
                 }
             },
             "correct_emotion_hint": "trust",
@@ -123,12 +129,11 @@ screen body_sensations_picker(sensations_dict):
                 size 32
                 color gui.accent_color
                 xalign 0.5
-                outlines [(2, "#1a1a1a", 0, 0)]
+                outlines [(2, "#671a1a", 0, 0)]
             
             text "Отметь всё, что откликается — даже если кажется мелочью":
                 size 22
                 xalign 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
             
             viewport:
                 mousewheel True
@@ -139,7 +144,8 @@ screen body_sensations_picker(sensations_dict):
                     for sid, stext in sensations_dict.items():
                         $ is_selected = sid in selected_sensations
                         button:
-                            xfill True
+                            xalign 0.5
+                            xsize 700
                             ysize 50
                             action (SetScreenVariable("selected_sensations", selected_sensations + [sid]) if not is_selected else SetScreenVariable("selected_sensations", [s for s in selected_sensations if s != sid]))
                             background (Solid("#6f573f") if is_selected else Solid("#544635"))
@@ -179,8 +185,7 @@ screen body_sensations_picker(sensations_dict):
                 
                 text "Выбрано: [len(selected_sensations)]":
                     size 24
-                    color "#5b5b5b"
-                    outlines [(1, "#1a1a1a", 0, 0)]
+                    color "#b4744e"
                 
                 textbutton "Далее":
                     action Return(selected_sensations)
@@ -219,14 +224,11 @@ screen reaction_selector(reactions_dict):
                 size 32
                 color gui.accent_color
                 xalign 0.5
-                bold True
-                outlines [(2, "#1a1a1a", 0, 0)]
+                outlines [(2, "#671a1a", 0, 0)]
             
             text "Нет правильных ответов — есть то, что сейчас ближе тебе":
                 size 22
-                color "#cccccc"
                 xalign 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
             
             viewport:
                 mousewheel True
@@ -237,8 +239,9 @@ screen reaction_selector(reactions_dict):
                     for rid, rdata in reactions_dict.items():
                         $ is_hovered = (hovered_reaction == rid)
                         button:
-                            xfill True
+                            xsize 800
                             ysize 80
+                            xalign 0.5
                             action Return(rid)
                             background (Solid("#6f573f") if is_hovered else Solid("#544635"))
                             hover_background Solid("#3f2626")
@@ -252,6 +255,7 @@ screen reaction_selector(reactions_dict):
                                     size 17
                                     color "#f0f0ff"
                                     xalign 0.0
+                                    outlines [(1, "#1a1a1a", 0, 0)]
                                 
                                 if is_hovered:
                                     $ rinfo = reactions_dict[rid]
@@ -279,15 +283,17 @@ screen reaction_selector(reactions_dict):
                                             text "[effect_text]":
                                                 size 14
                                                 color effect_color
+                                                outlines [(1, "#1a1a1a", 0, 0)]
             
             textbutton "Пропустить выбор":
                 action Return("skipped")
                 background Frame("gui/button/choice_idle_background.png", 15, 15)
                 hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
                 padding (15, 10)
-                xsize 200
-                ysize 50
+                xsize 320
+                ysize 60
                 xalign 0.5
+                text_align 0.5
     
     key "K_ESCAPE" action Return("skipped")
 
@@ -318,11 +324,10 @@ screen emotion_selector_diary(emotion_options_dict):
                 size 32
                 color gui.accent_color
                 xalign 0.5
-                bold True
-                outlines [(2, "#1a1a1a", 0, 0)]
+                outlines [(2, "#671a1a", 0, 0)]
             
-            grid 3 3:
-                spacing 15
+            grid 3 2:
+                spacing 25
                 xalign 0.5
                 for key, data in emotion_options_dict.items():
                     if selected_emotion == key:
@@ -339,17 +344,18 @@ screen emotion_selector_diary(emotion_options_dict):
                         
                         if selected_emotion == key:
                             text "[data['icon']] [data['name']] ✓":
-                                size 20
+                                size 22
                                 color data["color"]
-                                bold True
                                 xalign 0.5
                                 yalign 0.5
+                                outlines [(1, "#1a1a1a", 0, 0)]
                         else:
                             text "[data['icon']] [data['name']]":
-                                size 20
+                                size 22
                                 color data["color"]
                                 xalign 0.5
                                 yalign 0.5
+                                outlines [(1, "#1a1a1a", 0, 0)]
             
             hbox:
                 spacing 30
@@ -361,8 +367,9 @@ screen emotion_selector_diary(emotion_options_dict):
                         background Frame("gui/button/choice_idle_background.png", 15, 15)
                         hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
                         padding (15, 10)
-                        xsize 200
+                        xsize 340
                         ysize 50
+                        text_align 0.5
                 else:
                     textbutton "Подтвердить":
                         action Return(None)
@@ -370,16 +377,18 @@ screen emotion_selector_diary(emotion_options_dict):
                         background Frame("gui/button/choice_idle_background.png", 15, 15)
                         hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
                         padding (15, 10)
-                        xsize 200
+                        xsize 340
                         ysize 50
+                        text_align 0.5
                 
                 textbutton "Пропустить":
                     action Return(None)
                     background Frame("gui/button/choice_idle_background.png", 15, 15)
                     hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
                     padding (15, 10)
-                    xsize 200
+                    xsize 340
                     ysize 50
+                    text_align 0.5
     
     key "K_ESCAPE" action Return(None)
 
@@ -400,10 +409,46 @@ label emotion_diary_minigame(scenario_id="meeting_lina"):
         narrator "Ты уже записывала этот момент в дневник."
         return
     
+    # ============================================================
+    # ПОКАЗЫВАЕМ ФОН И ПЕРСОНАЖА
+    # ============================================================
     scene expression scenario["bg"] with fade
-    narrator "[scenario['narration']]"
-    pause 1.0
     
+    # Показываем персонажа, если он указан
+    if "character" in scenario and scenario["character"]:
+        $ char_image = scenario["character"]
+        $ char_position = scenario.get("character_position", "character_scale_center")
+        
+        # Показываем персонажа с нужной трансформацией
+        if char_position == "character_scale_center":
+            show expression char_image at character_scale_center with dissolve
+        elif char_position == "character_scale_left":
+            show expression char_image at character_scale_left with dissolve
+        elif char_position == "character_scale_right":
+            show expression char_image at character_scale_right with dissolve
+        elif char_position == "character_slide_center":
+            show expression char_image at character_slide_center with dissolve
+        elif char_position == "character_slide_left":
+            show expression char_image at character_slide_left with dissolve
+        elif char_position == "character_slide_right":
+            show expression char_image at character_slide_right with dissolve
+        else:
+            show expression char_image at character_scale_center with dissolve
+    
+    # Диалог персонажа
+    if "character_dialogue" in scenario and scenario["character_dialogue"]:
+        e "[scenario['character_dialogue']]"
+    
+    # Наррация - добавляем проверку на существование ключа
+    if "narration" in scenario and scenario["narration"]:
+        narrator "[scenario['narration']]"
+    else:
+        narrator "Ты замечаешь, как меняется твоё состояние в этом моменте."
+    pause 0.5
+    
+    # ============================================================
+    # ВЫБОР ТЕЛЕСНЫХ ОЩУЩЕНИЙ
+    # ============================================================
     call screen body_sensations_picker(scenario["body_sensations"])
     $ selected_sensations = _return
     
@@ -414,6 +459,9 @@ label emotion_diary_minigame(scenario_id="meeting_lina"):
         $ update_player_state(self_awareness_change=2)
         narrator "Ты заметила несколько телесных сигналов! Это важный шаг к пониманию себя."
     
+    # ============================================================
+    # ВЫБОР ЭМОЦИИ
+    # ============================================================
     $ emotion_options_dict = {}
     python:
         for emo_id in scenario.get("emotion_options", []):
@@ -432,6 +480,9 @@ label emotion_diary_minigame(scenario_id="meeting_lina"):
         narrator "Ты записала: [selected_emotion_name]. Просто назвать чувство — уже шаг к тому, чтобы им управлять."
         $ update_player_state(vocabulary_change=2)
     
+    # ============================================================
+    # ВЫБОР РЕАКЦИИ
+    # ============================================================
     call screen reaction_selector(scenario["reactions"])
     $ selected_reaction = _return
     
@@ -458,8 +509,30 @@ label emotion_diary_minigame(scenario_id="meeting_lina"):
                 elif stat == "trust":
                     store.player_trust_level = max(0, min(100, store.player_trust_level + value))
         
+        # ============================================================
+        # ПОКАЗЫВАЕМ РЕЗУЛЬТАТ
+        # ============================================================
         scene expression scenario["bg"] with dissolve
+        
+        # Показываем персонажа снова
+        if "character" in scenario and scenario["character"]:
+            $ char_image = scenario["character"]
+            $ char_position = scenario.get("character_position", "character_scale_center")
+            
+            if char_position == "character_scale_center":
+                show expression char_image at character_scale_center with dissolve
+            elif char_position == "character_scale_left":
+                show expression char_image at character_scale_left with dissolve
+            elif char_position == "character_scale_right":
+                show expression char_image at character_scale_right with dissolve
+            else:
+                show expression char_image at character_scale_center with dissolve
+        
         narrator "[reaction_data['narration']]"
+        
+        # Ответ персонажа, если есть
+        if "character_response" in reaction_data and reaction_data["character_response"]:
+            e "[reaction_data['character_response']]"
         
         if reaction_data["outcome"] in ["healthy_boundary", "self_compassion", "self_care"]:
             $ diary_streak += 1
@@ -469,6 +542,9 @@ label emotion_diary_minigame(scenario_id="meeting_lina"):
         else:
             $ diary_streak = 0
     
+    # ============================================================
+    # РЕФЛЕКСИЯ
+    # ============================================================
     narrator "[scenario['reflection_prompt']]"
     
     menu:
@@ -480,5 +556,9 @@ label emotion_diary_minigame(scenario_id="meeting_lina"):
         "Просто подумать":
             $ emotion_diary_entries.append(scenario_id)
             narrator "Ты обдумываешь это про себя. Иногда тишина — тоже ответ."
+    
+    # Скрываем персонажа
+    if "character" in scenario and scenario["character"]:
+        hide expression char_image with dissolve
     
     return
