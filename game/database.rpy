@@ -464,53 +464,6 @@ init -2 python:
                     self.disconnect()
         
             return progress
-
-        def clear_all_data(self):
-            """Полная очистка всех данных игры"""
-            # 1. Очищаем SQLite
-            if self.sqlite_available:
-                try:
-                    self.connect()
-                    self.cursor.execute("DELETE FROM users")
-                    self.cursor.execute("DELETE FROM save_progress_users")
-                    self.cursor.execute("DELETE FROM achievements")
-                    self.connection.commit()
-                except Exception as e:
-                    renpy.notify(f"Ошибка при очистке БД: {str(e)}")
-                finally:
-                    self.disconnect()
-            
-            # 2. Очищаем persistent переменные
-            persistent.user_data = {
-                'users': {},
-                'achievements': {},
-                'save_progress': {},
-                'next_id': 1
-            }
-            persistent._achievements = {}
-            persistent._gallery_unlocks = {}
-            persistent.emotion_stats = {}
-            persistent.body_sensation_stats = {}
-            persistent.reaction_stats = {}
-            persistent.user_id = None
-            persistent.user_name = ""
-            persistent.player_states = {}
-            
-            # 3. Удаляем все файлы сохранений
-            try:
-                # Обычные слоты
-                for i in range(1, 10):
-                    renpy.unlink_save(str(i))
-                # Автосохранения
-                for i in range(1, 10):
-                    renpy.unlink_save(f"auto-{i}")
-                # Быстрое сохранение
-                renpy.unlink_save("quick-save")
-            except Exception as e:
-                print(f"Ошибка при удалении сохранений: {e}")
-            
-            renpy.notify("База данных и все сохранения очищены")
-            return True
     
     # Глобальный экземпляр базы данных
     db = Database()

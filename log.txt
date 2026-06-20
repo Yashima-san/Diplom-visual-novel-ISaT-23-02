@@ -1,34 +1,33 @@
-2026-06-20 19:19:26 UTC
+2026-06-20 19:26:52 UTC
 Windows-11-10.0.26200-SP0
 Ren'Py 8.6.0.26031705+nightly
 
-Early init took 491 ms
-Loading error handling took 410 ms
-Loading script took 8305 ms
-Loading save slot metadata took 229 ms
+Early init took 278 ms
+Loading error handling took 199 ms
+Loading script took 5386 ms
+Loading save slot metadata took 105 ms
 Loading persistent took 0 ms
- - Init at renpy/common/00library.rpy:456 took 313 ms.
-Running init code took 784 ms
-Loading analysis data took 48 ms
-Analyze and compile ATL took 33 ms
-Reloading save slot metadata took 155 ms
-Dump and make backups took 384 ms
+Running init code took 451 ms
+Loading analysis data took 22 ms
+Analyze and compile ATL took 11 ms
+Reloading save slot metadata took 75 ms
+Dump and make backups took 232 ms
 Cleaning cache took 1 ms
 Making clean stores took 1 ms
-Initial gc took 344 ms
+Initial gc took 1236 ms
 DPI scale factor: 1.250000
 nvdrs: Loaded, about to disable thread optimizations.
 nvdrs: b"Couldn't load nvlib." (can be ignored)
-Creating interface object took 16 ms
-Init translation took 1 ms
-Cleaning stores took 0 ms
-Load screen analysis took 398 ms
-Analyze screens took 3 ms
+Creating interface object took 18 ms
+Init translation took 6 ms
+Cleaning stores took 1 ms
+Load screen analysis took 474 ms
+Analyze screens took 5 ms
 Save screen analysis took 0 ms
 Save pyanalysis took 0 ms
-Save bytecode took 149 ms
-Running _start took 13 ms
-Interface start took 3256 ms
+Save bytecode took 144 ms
+Running _start took 3 ms
+Interface start took 3688 ms
 
 Initializing gl2 renderer:
 primary display bounds: (0, 0, 1920, 1080)
@@ -38,5 +37,5 @@ Vendor: 'Intel'
 Renderer: 'Intel(R) UHD Graphics 600'
 Version: '4.6.0 - Build 31.0.101.2125'
 Display Info: <Info({'bitsize': 32, 'bytesize': 4, 'masks': (16711680, 65280, 255, 0), 'shifts': (16, 8, 0, 0), 'losses': (0, 0, 0, 8), 'current_w': 1920, 'current_h': 1080, 'refresh_rate': 60, 'hw': False, 'wm': True, 'video_mem': 268435456, 'blit_hw': False, 'blit_hw_CC': False, 'blit_hw_A': False, 'blit_sw': False, 'blit_sw_CC': False, 'blit_sw_A': False})>
-Screen sizes: virtual=(1920, 1080) physical=(1739, 978) drawable=(1739, 978)
+Screen sizes: virtual=(1920, 1080) physical=(1738, 978) drawable=(1738, 978)
 Maximum texture size: 4096x4096

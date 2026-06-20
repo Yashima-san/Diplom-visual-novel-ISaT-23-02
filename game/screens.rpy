@@ -625,6 +625,7 @@ style about_label_text is gui_label_text
 style about_text is gui_text
 style about_label_text:
     size gui.label_text_size
+
 ################################################################################
 ## ЭКРАН ПОМОЩИ
 ################################################################################
@@ -643,15 +644,19 @@ screen help():
             
             null height 10
             
+            # ОДИН ОБЩИЙ ФРЕЙМ
             frame:
                 background Frame("gui/confirm_frame.png", 15, 15)
                 xfill True
-                padding (25, 25)
+                padding (25, 20)
                 
                 vbox:
                     spacing 25
                     xfill True
                     
+                    # ============================================
+                    # КЛАВИАТУРА И МЫШЬ
+                    # ============================================
                     text "Клавиатура и мышь":
                         size 28
                         color gui.accent_color
@@ -663,73 +668,74 @@ screen help():
                         xfill True
                         xalign 0.5
                         xmaximum 1100
-                        text "Ввод/Продолжить:" size 24 xsize 300 yalign 0.5 text_align 0.0
-                        text "ЛКМ, Пробел, Enter" size 24 color "#915d49" xsize 400
+                        text "Ввод/Продолжить" + ":" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "ЛКМ, Пробел, Enter" size 24 color "#845735" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
                         xalign 0.5
                         xmaximum 1100
-                        text "Пропустить диалог:" size 24 xsize 300 yalign 0.5 text_align 0.0
-                        text "Нажмите кнопку 'Пропуск' в быстром меню" size 24 color "#915d49" xsize 400
+                        text "Пропустить диалог" + ":" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "Ctrl, Tab" size 24 color "#845735" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
                         xalign 0.5
                         xmaximum 1100
-                        text "Скрыть окно диалога:" size 24 xsize 300 yalign 0.5 text_align 0.0
-                        text "ПКМ, H" size 24 color "#915d49" xsize 400
+                        text "Скрыть окно диалога" + ":" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "ПКМ, H" size 24 color "#845735" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
                         xalign 0.5
                         xmaximum 1100
-                        text "Сделать скриншот:" size 24 xsize 300 yalign 0.5 text_align 0.0
-                        text "S" size 24 color "#915d49" xsize 400
+                        text "Сделать скриншот" + ":" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "S" size 24 color "#845735" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
                         xalign 0.5
                         xmaximum 1100
-                        text "Открыть меню:" size 24 xsize 300 yalign 0.5 text_align 0.0
-                        text "Esc, ПКМ" size 24 color "#915d49" xsize 400
+                        text "Открыть меню" + ":" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "Esc, ПКМ" size 24 color "#845735" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
                         xalign 0.5
                         xmaximum 1100
-                        text "Быстрое сохранение:" size 24 xsize 300 yalign 0.5 text_align 0.0
-                        text "F5" size 24 color "#915d49" xsize 400
+                        text "Быстрое сохранение" + ":" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "F5" size 24 color "#845735" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
                         xalign 0.5
                         xmaximum 1100
-                        text "Быстрая загрузка:" size 24 xsize 300 yalign 0.5 text_align 0.0
-                        text "F8" size 24 color "#915d49" xsize 400
+                        text "Быстрая загрузка" + ":" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "F8" size 24 color "#845735" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
                         xalign 0.5
                         xmaximum 1100
-                        text "Громкость (+/-):" size 24 xsize 300 yalign 0.5 text_align 0.0
-                        text "PageUp / PageDown" size 24 color "#915d49" xsize 400
+                        text "Громкость (+/-)" + ":" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "PageUp / PageDown" size 24 color "#845735" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
                         xalign 0.5
                         xmaximum 1100
-                        text "Полноэкранный режим:" size 24 xsize 300 yalign 0.5 text_align 0.0
-                        text "F11" size 24 color "#915d49" xsize 400
+                        text "Полноэкранный режим" + ":" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "F11" size 24 color "#845735" xsize 400
                     
+                    # Разделитель
                     null height 10
                     frame:
                         xsize 1000
@@ -738,6 +744,9 @@ screen help():
                         background "#ac5032"
                     null height 10
                     
+                    # ============================================
+                    # СОВЕТЫ
+                    # ============================================
                     text "Советы":
                         size 28
                         color gui.accent_color
@@ -748,27 +757,27 @@ screen help():
                         size 22
                         xsize 1000
                         xalign 0.5
-                        text_align 0.1
+                        text_align 0.0
                     
                     text "• В мини-игре «Колесо эмоций» выбирай эмоцию, которая лучше всего описывает ситуацию.":
                         size 22
                         xsize 1000
                         xalign 0.5
-                        text_align 0.1
+                        text_align 0.0
                     
                     text "• Дневник наблюдений помогает развивать эмоциональный интеллект.":
                         size 22
                         xsize 1000
                         xalign 0.5
-                        text_align 0.1
+                        text_align 0.0
                     
                     text "• Твои решения влияют на отношения с персонажами и доступные достижения.":
                         size 22
                         xsize 1000
                         xalign 0.5
-                        text_align 0.1
+                        text_align 0.0
             
-            null height 25
+            null height 15
             
             textbutton "Закрыть":
                 xalign 0.5
@@ -777,6 +786,7 @@ screen help():
                 padding (35, 15)
                 xsize 300
                 action Return()
+
 ################################################################################
 ## ЭКРАН НАСТРОЕК (ОПЦИЙ)
 ################################################################################
@@ -1538,6 +1548,7 @@ screen player_stats_screen():
 ################################################################################
 screen input_name_screen():
     modal True
+    add "gui/overlay/confirm.png"
     default input_name = ""
     frame:
         style "input_frame"
@@ -1551,7 +1562,7 @@ screen input_name_screen():
             xalign 0.5
             text "Как тебя зовут?":
                 size 36
-                color "#ce5454"
+                color "#ff7171"
                 font gui.interface_text_font
                 xalign 0.5
                 outlines [(2, "#a83c1f", 0, 0)]
@@ -1575,11 +1586,11 @@ screen input_name_screen():
                 action Return(input_name)
             text "Нажмите ENTER, чтобы продолжить":
                 size 18
-                color "#ca6358"
+                color "#ff9083"
                 font gui.interface_text_font
                 xalign 0.5
-
-        key "K_RETURN" action Return(input_name)
+                outlines [(1, "#de5d21", 0, 0)]
+    key "K_RETURN" action Return(input_name)
     key "K_ESCAPE" action Return("")
 
 init -1 python:

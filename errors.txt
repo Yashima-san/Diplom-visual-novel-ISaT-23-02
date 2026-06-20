@@ -1,0 +1,10 @@
+﻿I'm sorry, but errors were detected in your script. Please correct the
+errors listed below, and try again.
+
+
+File "game/screens.rpy", line 728: 'Полноэкранный' is not a keyword argument or valid child of the text statement.
+    text "PageUp / PageDown" size 24 color "#845735Э xsize 400
+                                                                                                                                                                                                                                                                                                 ^
+
+Ren'Py Version: Ren'Py 8.6.0.26031705+nightly
+Sun Jun 21 02:39:52 2026
