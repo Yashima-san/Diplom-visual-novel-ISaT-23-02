@@ -100,7 +100,6 @@ init python:
 # ============================================================================
 # СКРИН: ВЫБОР ТЕЛЕСНЫХ ОЩУЩЕНИЙ
 # ============================================================================
-
 screen body_sensations_picker(sensations_dict):
     modal True
     zorder 200
@@ -124,12 +123,10 @@ screen body_sensations_picker(sensations_dict):
                 size 32
                 color gui.accent_color
                 xalign 0.5
-                bold True
                 outlines [(2, "#1a1a1a", 0, 0)]
             
             text "Отметь всё, что откликается — даже если кажется мелочью":
                 size 22
-                color "#cccccc"
                 xalign 0.5
                 outlines [(1, "#1a1a1a", 0, 0)]
             

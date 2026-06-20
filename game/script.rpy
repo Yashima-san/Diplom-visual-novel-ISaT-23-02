@@ -1,13 +1,13 @@
 ﻿# Определения персонажей и изображений
-define e = Character('Лина', color="#707ef6")
 define user_char = Character("[persistent.user_name]", color="#ff9e5e")
 define thought_user = Character("[persistent.user_name]", what_italic=True)
 define narrator = Character(None, what_italic=True)
 define a = Character('Алекс', color="#6b8e23")
-define t = Character('Анна Сергеевна', color="#9370db")
 define k = Character('Катя', color="#fe7d90")
+define e = Character('Лина', color="#707ef6")
+
+define t = Character('Анна Сергеевна', color="#9370db")
 define lib = Character('Библиотекарь', color="#a0522d")
-define katya = Character('Катя', color="#fe7d90")
 
 # Persistent переменные
 default persistent.user_name = ""
@@ -108,8 +108,10 @@ init python:
         return "Глава Первая: Связь"
 
 ################################################################################
-## ТРАНСФОРМАЦИИ
+## ТРАНСФОРМАЦИИ ДЛЯ СПРАЙТОВ (ПЛАВНОЕ ПЕРЕМЕЩЕНИЕ)
 ################################################################################
+
+# Базовый размер спрайтов (остаётся zoom 0.28)
 transform character_scale:
     zoom 0.28
     xalign 0.5
@@ -130,20 +132,128 @@ transform character_scale_center:
     xalign 0.5
     yalign 1.0
 
-transform character_scale_center_soft_approach:
+# Плавное приближение (мягкое)
+transform character_center_soft_approach:
     zoom 0.28
     xalign 0.5
     yalign 1.0
     easein 1.2 zoom 0.31
     pause 0.1
-    easeout 0.28
+    easeout 0.5 zoom 0.28
 
-transform character_scale_fadein:
+# Плавное появление с боков (для говорящих персонажей)
+transform character_speak_slide:
     zoom 0.28
-    alpha 0.0
-    linear 0.5 alpha 1.0
     xalign 0.5
     yalign 1.0
+    easein 0.3 xoffset 15
+    pause 0.15
+    easeout 0.3 xoffset 0
+
+# Плавное появление с боков
+transform character_slide_left:
+    xalign -0.3
+    yalign 1.0
+    zoom 0.28
+    easein 0.6 xalign 0.25
+
+transform character_slide_right:
+    xalign 1.3
+    yalign 1.0
+    zoom 0.28
+    easein 0.6 xalign 0.75
+
+transform character_slide_center:
+    xalign -0.3
+    yalign 1.0
+    zoom 0.28
+    easein 0.6 xalign 0.5
+
+# Плавное приближение к персонажу (камера приближается)
+transform character_zoom_in:
+    zoom 0.28
+    xalign 0.5
+    yalign 1.0
+    easein 1.0 zoom 0.35
+    pause 1.0
+    easeout 1.0 zoom 0.28
+
+# Плавное отдаление от персонажа
+transform character_zoom_out:
+    zoom 0.28
+    xalign 0.5
+    yalign 1.0
+    easein 1.0 zoom 0.22
+    pause 0.5
+    easeout 1.0 zoom 0.28
+
+# Эффект столкновения (тряска)
+transform character_collision(duration=0.6, intensity=8):
+    zoom 0.28
+    xalign 0.5
+    yalign 1.0
+    easein 0.1 xoffset intensity
+    easein 0.1 xoffset -intensity
+    easein 0.1 xoffset intensity * 0.6
+    easein 0.1 xoffset -intensity * 0.6
+    easein 0.1 xoffset intensity * 0.3
+    easein 0.1 xoffset -intensity * 0.3
+    easein 0.1 xoffset 0
+
+# Эффект столкновения для левого персонажа
+transform character_collision_left(duration=0.6, intensity=6):
+    zoom 0.28
+    xalign 0.25
+    yalign 1.0
+    easein 0.08 xoffset intensity
+    easein 0.08 xoffset -intensity
+    easein 0.08 xoffset intensity * 0.6
+    easein 0.08 xoffset -intensity * 0.6
+    easein 0.08 xoffset intensity * 0.3
+    easein 0.08 xoffset -intensity * 0.3
+    easein 0.08 xoffset 0
+
+# Эффект столкновения для правого персонажа
+transform character_collision_right(duration=0.6, intensity=6):
+    zoom 0.28
+    xalign 0.75
+    yalign 1.0
+    easein 0.08 xoffset -intensity
+    easein 0.08 xoffset intensity
+    easein 0.08 xoffset -intensity * 0.6
+    easein 0.08 xoffset intensity * 0.6
+    easein 0.08 xoffset -intensity * 0.3
+    easein 0.08 xoffset intensity * 0.3
+    easein 0.08 xoffset 0
+
+# Плавное исчезновение со смещением
+transform character_fade_left:
+    alpha 1.0
+    xalign 0.25
+    yalign 1.0
+    zoom 0.28
+    easeout 0.5 alpha 0.0 xoffset -50
+
+transform character_fade_right:
+    alpha 1.0
+    xalign 0.75
+    yalign 1.0
+    zoom 0.28
+    easeout 0.5 alpha 0.0 xoffset 50
+
+# Плавное появление с эффектом "взгляда"
+transform character_appear_thoughtful:
+    alpha 0.0
+    zoom 0.26
+    xalign 0.5
+    yalign 1.0
+    easein 0.8 alpha 1.0 zoom 0.28
+
+# Плавное движение в центр из любого положения
+transform character_move_to_center:
+    zoom 0.28
+    yalign 1.0
+    easein 0.6 xalign 0.5
 
 ################################################################################
 ## ИЗОБРАЖЕНИЯ (спрайты и фоны)
@@ -167,10 +277,10 @@ image katia smile = ConditionSwitch("renpy.loadable('images/characters/katia_smi
 image katia speaksmile = ConditionSwitch("renpy.loadable('images/characters/katia_speak_smile.png')", "images/characters/katia_speak_smile.png", "True", "#707ef6")
 image katia sad = ConditionSwitch("renpy.loadable('images/characters/katia_sad.png')", "images/characters/katia_sad.png", "True", "#707ef6")
 
-image teacher neutral = ConditionSwitch("renpy.loadable('images/characters/teacher_neutral.png')", "images/characters/teacher_neutral.png", "True", "#9370db")
-image teacher kind = ConditionSwitch("renpy.loadable('images/characters/teacher_kind.png')", "images/characters/teacher_kind.png", "True", "#9370db")
-image librarian neutral = ConditionSwitch("renpy.loadable('images/characters/librarian_neutral.png')", "images/characters/librarian_neutral.png", "True", "#a0522d")
-image librarian kind = ConditionSwitch("renpy.loadable('images/characters/librarian_kind.png')", "images/characters/librarian_kind.png", "True", "#a0522d")
+# image teacher neutral = ConditionSwitch("renpy.loadable('images/characters/teacher_neutral.png')", "images/characters/teacher_neutral.png", "True", "#9370db")
+# image teacher kind = ConditionSwitch("renpy.loadable('images/characters/teacher_kind.png')", "images/characters/teacher_kind.png", "True", "#9370db")
+# image librarian neutral = ConditionSwitch("renpy.loadable('images/characters/librarian_neutral.png')", "images/characters/librarian_neutral.png", "True", "#a0522d")
+# image librarian kind = ConditionSwitch("renpy.loadable('images/characters/librarian_kind.png')", "images/characters/librarian_kind.png", "True", "#a0522d")
 
 # Фоны
 image bg night_room = ConditionSwitch("renpy.loadable('images/night_room.png')", "images/night_room.png", "True", "#000000")
@@ -276,6 +386,13 @@ init python:
 ## НАЧАЛО ИГРЫ
 ################################################################################
 label start:
+    # Показываем предупреждение
+    $ show_warning = True
+    while show_warning:
+        call screen warning_screen
+        if _return:
+            $ show_warning = False
+
     $ current_chapter = "Глава Первая: Связь"
     $ player_self_awareness = 0
     $ player_empathy = 0
@@ -420,18 +537,19 @@ label morning_scene:
     play music "song/school_ambient.mp3" fadein 2.0
     play sound "sounds/footsteps.mp3" fadein 2.0
     narrator "Школа виднелась вдалеке."
+
     scene bg school_entrance with fade
-    show lina smile at character_scale_center
+    show lina smile at character_slide_center
     narrator "Лина махала ей рукой."
-    stop sound fadeout 5.0
-    show lina speaksmile at character_scale
+    show lina speaksmile at character_speak_slide
     e "[persistent.user_name]! Привет! Я так рада тебя видеть!"
-    show lina smile at character_scale_center_soft_approach
+    show lina smile at character_center_soft_approach
     play sound "sounds/hugs.mp3"
     narrator "Лина обняла [persistent.user_name]."
     stop sound
+
     e "Ну что, готова? Я тебе все покажу!"
-    show lina speaksmile at character_scale
+    show lina speaksmile at character_speak_slide
     
     call emotion_diary_minigame("meeting_lina") from _call_emotion_diary_minigame
     
@@ -464,16 +582,17 @@ label chapter_two:
     play sound "sounds/footsteps.mp3" fadein 2.0
     $ renpy.music.set_volume(0.4, delay=5)
     scene bg school_hallway with fade
-    show lina smile at character_scale
+    show lina smile at character_slide_left
     narrator "Лина вела [persistent.user_name] по коридорам."
-    show lina speaksmile at character_scale
+    show lina speaksmile at character_speak_slide
     e "Смотри, это наша раздевалка! А тут спортзал."
+    
     play sound "sounds/running.mp3" fadein 1.0
-    narrator "Пока Лина оюъясняла где что находится, внезапно, из-за угла выскочил парень."
+    narrator "Пока Лина объясняла где что находится, внезапно, из-за угла выскочил парень."
     stop sound fadeout 3.0
-    play sound "sounds/conflict.mp3" fadein 3.0
-    show lina neutral at character_scale_left
-    show alex speak at character_scale_right
+    play sound "sounds/conflict.mp3" fadein 1.0
+    show lina neutral at character_collision_left
+    show alex speak at character_collision_right
     stop sound fadeout 3.0
     a "Ой, простите! Вы новенькая?"
     
@@ -521,10 +640,8 @@ label chapter_two:
 
     # --- РАЗВЕТВЛЕНИЕ: ИДЁМ В МУЗЫКАЛКУ ИЛИ НЕТ ---
     if chapter2_choice_2 != 2:
-        # Игрок согласился пойти в музыкалку
         jump music_room_visit
     else:
-        # Игрок не хотел идти, но Лина уговорила
         jump music_room_visit
 
 label music_room_visit:
@@ -534,7 +651,7 @@ label music_room_visit:
     $ visited_music_room = True
     
     narrator "Актовый зал оказался уютным и светлым."
-    show alex speaksmile at character_scale
+    show alex speaksmile at character_scale_center
     a "Мы сейчас разучиваем новую песню. Хотите послушать?"
     
     hide alex
@@ -583,7 +700,7 @@ label music_room_visit:
     show alex speak at character_scale_center
     a "Давай тогда сходим в библиотеку, покажу тебе книге о музыке?"
     stop sound fadeout 3.0
-    a "Если конечо ты хочешь."
+    a "Если конечно ты хочешь."
     a "Ну как?"
     show alex neutral at character_scale_center
     # --- ВАРИАНТЫ ДАЛЬНЕЙШИХ ДЕЙСТВИЙ ---
@@ -628,7 +745,7 @@ label library_with_alex:
             show alex speaksmile at character_scale_center
             a "Музыка — это тоже язык чувств. Рад, что тебе понравилось."
     
-    narrator "Вы мило поболтали о книгах и музыке. [persistent.user_name] решила немного оглядеться и начала осматривать стелажи на соседнем ряду."
+    narrator "Вы мило поболтали о книгах и музыке. [persistent.user_name] решила немного оглядеться и начала осматривать стеллажи на соседнем ряду."
     narrator "Она была недалеко от Алекса, который что-то искал в книгах."
     narrator "[persistent.user_name] заметила как к Алекс начал разговаривать со старастой их класса."
 
@@ -663,7 +780,7 @@ label library_with_alex:
     katya "Почему всё так сложно..."
     
     $ heard_about_conflict = True
-    $ conflict_known_from = "direct"  # Узнали о конфликте напрямую
+    $ conflict_known_from = "direct"
     
     jump help_katya_choice
 
@@ -689,7 +806,7 @@ label wait_for_lina_in_music_room:
     show lina sad at character_scale_center
     
     $ heard_about_conflict = True
-    $ conflict_known_from = "lina"  # Узнали о конфликте от Лины
+    $ conflict_known_from = "lina"
     
     menu go_to_katya_from_lina:
         "Да, давай проверим, как она":
@@ -707,7 +824,7 @@ label wait_for_lina_in_music_room:
 # ПОМОЩЬ КАТЕ (ПРЯМОЕ НАБЛЮДЕНИЕ)
 # ============================================================================
 label help_katya_choice:
-    show katia sad character_scale_center
+    show katia sad at character_scale_center
     
     menu:
         "Подойти к Кате и поговорить (помочь разобраться)":
@@ -745,11 +862,11 @@ label talk_to_katya_with_minigame:
     call emotion_detective_minigame("help_katya") from _call_emotion_detective_minigame
     
     # После мини-игры проверяем успех
-    if detective_score >= 10:  # Успешно определили эмоцию
+    if detective_score >= 10:
         jump successful_help_katya
-    elif detective_score >= 5:  # Частичный успех
+    elif detective_score >= 5:
         jump partial_help_katya
-    else:  # Неудачно
+    else:
         jump less_successful_help_katya
 
 # ============================================================================
@@ -817,7 +934,7 @@ label less_successful_help_katya:
     show katia speak at character_scale_left
     katya "Ладно, мне пора. Увидимся."
     
-    hide katia dissolve
+    hide katia with dissolve
     narrator "Катя быстро ушла, оставив тебя с чувством, что ты могла бы сделать больше."
     
     $ update_player_state(empathy_change=2, anxiety_change=3)
@@ -848,7 +965,6 @@ label observe_katya_direct:
             katya "Просто у меня давление от родителей. Они ждут от меня идеальных результатов."
             katya "Алекс... он просто оказался не в то время не в том месте."
             show katia sad at character_scale_center
-            # Даже при наблюдении можно попробовать мини-игру, но более короткую
             narrator "Ты задумалась, что чувствует Катя на самом деле..."
             call emotion_wheel_game("simple_empathy") from _call_emotion_wheel_game_1
             
@@ -965,7 +1081,6 @@ label after_conflict_end:
     
     # --- ЛОГИКА ПОВТОРНОГО ПОСЕЩЕНИЯ МУЗЫКАЛКИ ---
     if visited_music_room and not after_music_invite_sent:
-        # Если уже были в музыкалке и слышали Алекса, предлагаем сходить ещё раз
         show alex speaksmile at character_scale_right
         a "Слушайте, я как раз новую мелодию доделал. Хотите послушать?"
         show alex smile at character_scale_right
@@ -977,7 +1092,6 @@ label after_conflict_end:
             "В другой раз, сейчас просто погуляем":
                 jump final_chapter2_scene
     elif not visited_music_room:
-        # Если НЕ были в музыкалке, Алекс предлагает сходить в первый раз
         show alex speaksmile at character_scale_right
         a "А вы не хотите зайти в музыкалку? Я мог бы сыграть для вас."
         show alex smile at character_scale_right

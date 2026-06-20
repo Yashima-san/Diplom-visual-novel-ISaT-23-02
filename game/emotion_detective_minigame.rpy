@@ -102,11 +102,12 @@ screen emotion_wheel_detective(correct_answer, on_confirm):
                 size 36
                 color gui.accent_color
                 xalign 0.5
-                bold True
+                # Убираем bold
+                outlines [(2, "#1a1a1a", 0, 0)]
             text "Нажми на карточку, которая кажется наиболее точной":
                 size 24
-                color "#cccccc"
                 xalign 0.5
+                outlines [(1, "#1a1a1a", 0, 0)]
             
             null height 20
             
@@ -125,7 +126,7 @@ screen emotion_wheel_detective(correct_answer, on_confirm):
                         text "[data['icon']] [data['name']]":
                             size 18
                             color data["color"]
-                            bold True
+                            # Убираем bold
                             xalign 0.5
                             yalign 0.5
             
@@ -139,11 +140,10 @@ screen emotion_wheel_detective(correct_answer, on_confirm):
                         text "[hint_data.get('icon', '')] [hint_data.get('name', '')]":
                             size 22
                             color hint_data.get("color", "#ffffff")
-                            bold True
+                            # Убираем bold
                             xalign 0.5
                         text "Возможные признаки:":
                             size 18
-                            color "#aaaaaa"
                             xalign 0.5
                         for clue in hint_data.get("body_clues", []):
                             text "• [clue]":
