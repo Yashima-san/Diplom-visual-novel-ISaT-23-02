@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/emotion_screen.rpy", line 310: Line is indented, but the preceding xalign statement does not expect a block. Please check this line's indentation. You may have forgotten a colon (:).
-    outlines [(1, "#1a1a1a", 0, 0)]
-    ^
+File "game/screens.rpy", line 1765: The if statement is not a valid child of the text statement.
+    color "#ffffff" if not is_achievement else "#ffd700"
+                      ^
 
 Ren'Py Version: Ren'Py 8.6.0.26031705+nightly
-Sat Jun 20 17:28:30 2026
+Sat Jun 20 21:49:25 2026

@@ -4,13 +4,12 @@
 screen warning_screen():
     modal True
     zorder 200
-    add "gui/overlay/confirm.png"
     
     frame:
         background Frame("gui/confirm_frame.png", 25, 25)
         xalign 0.5
         yalign 0.5
-        xsize 700
+        xsize 800
         ysize 500
         padding (30, 30)
         
@@ -22,27 +21,25 @@ screen warning_screen():
             text "⚠️ ВНИМАНИЕ":
                 size 40
                 color "#ff4444"
-                xalign 0.5
-                outlines [(2, "#1a1a1a", 0, 0)]
+                xalign 0.45
+                outlines [(2, "#560f0f", 0, 0)]
             
             text "Эта игра содержит темы, связанные с эмоциональными переживаниями, тревогой и сложными социальными ситуациями.":
                 size 22
                 xalign 0.5
                 text_align 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
             
             text "Все персонажи и события являются вымышленными. Любое сходство с реальными людьми случайно.":
                 size 20
                 xalign 0.5
                 text_align 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
+            null height 10
             
             text "Игра предназначена для аудитории старше 12 лет.":
                 size 20
                 xalign 0.5
                 text_align 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
-            
+                color "#d85353ff"
             null height 10
             
             textbutton "Я понимаю и принимаю":
@@ -61,6 +58,6 @@ init -1 python:
     style.warning_accept_button_text.color = "#b4744e"
     style.warning_accept_button_text.hover_color = "#ff9999"
     style.warning_accept_button_text.size = 24
-    style.warning_accept_button_text.outlines = [(2, "#671a1a", 0, 0)]
+    style.warning_accept_button_text.outlines = [(1, "#671a1a", 0, 0)]
     style.warning_accept_button_text.text_align = 0.5
     style.warning_accept_button_text.xalign = 0.5
