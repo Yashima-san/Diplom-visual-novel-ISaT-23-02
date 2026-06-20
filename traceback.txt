@@ -1,36 +1,79 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
 While running game code:
-  File "game/script.rpy", line 465, in script
-    $ enable_chat_mode()
-  File "game/script.rpy", line 465, in <module>
-    $ enable_chat_mode()
-      ~~~~~~~~~~~~~~~~^^
-  File "game/messenger.rpy", line 191, in enable_chat_mode
-    original_a, original_t, original_k, original_lib = a, t, k, lib
-                                                          ^        
-NameError: name 't' is not defined
+  File "game/script.rpy", line 581, in script
+    show text "{size=80}Глава Вторая{/size}\n{size=60}Новые знакомства{/size}" with dissolve
+  File "game/achievements.rpy", line 65, in process_notification_queue
+    renpy.show_screen("notify_queue", message=display_text, y_offset=i * 85, is_achievement=notif.is_achievement)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+renpy.display.screen.ScreenNotFound: Screen 'notify_queue' is not known.
 
 -- Full Traceback ------------------------------------------------------------
 
 Traceback (most recent call last):
-  File "game/script.rpy", line 465, in script
-    $ enable_chat_mode()
-  File "renpy/ast.py", line 1187, in execute
-    renpy.python.py_exec_bytecode(self.code.bytecode, self.hide, store=self.store)
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/python.py", line 1332, in py_exec_bytecode
-    exec(bytecode, globals, locals)
-    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "game/script.rpy", line 465, in <module>
-    $ enable_chat_mode()
-      ~~~~~~~~~~~~~~~~^^
-  File "game/messenger.rpy", line 191, in enable_chat_mode
-    original_a, original_t, original_k, original_lib = a, t, k, lib
-                                                          ^        
-NameError: name 't' is not defined
+  File "game/script.rpy", line 581, in script
+    show text "{size=80}Глава Вторая{/size}\n{size=60}Новые знакомства{/size}" with dissolve
+  File "renpy/ast.py", line 1582, in execute
+    renpy.exports.with_statement(trans, paired=paired)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/exports/statementexports.py", line 260, in with_statement
+    return renpy.game.interface.do_with(trans, paired, clear=clear)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/core.py", line 1478, in do_with
+    return self.interact(
+           ~~~~~~~~~~~~~^
+        trans_pause=True, suppress_overlay=not renpy.config.overlay_during_with, mouse="with", clear=clear
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "renpy/display/core.py", line 2156, in interact
+    repeat, rv = self.interact_core(
+                 ~~~~~~~~~~~~~~~~~~^
+        preloads=preloads,
+        ^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        **kwargs,
+        ^^^^^^^^^
+    )
+    ^
+  File "renpy/display/core.py", line 3250, in interact_core
+    rv = root_widget.event(ev, x, y, 0)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "renpy/display/layout.py", line 1281, in event
+    rv = i.event(ev, x - xo, y - yo, cst)
+         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/transition.py", line 51, in event
+    return self.new_widget.event(ev, x, y, st)  # E1101
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^         
+  File "renpy/display/layout.py", line 1281, in event
+    rv = i.event(ev, x - xo, y - yo, cst)
+         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/layout.py", line 1281, in event
+    rv = i.event(ev, x - xo, y - yo, cst)
+         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/screen.py", line 805, in event
+    rv = self.child.event(ev, x, y, st)
+         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "renpy/display/layout.py", line 1281, in event
+    rv = i.event(ev, x - xo, y - yo, cst)
+         ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/behavior.py", line 2796, in event
+    return run(self.function, *self.args, **self.kwargs)
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/behavior.py", line 411, in run
+    return action(*args, **kwargs)
+           ~~~~~~^^^^^^^^^^^^^^^^^
+  File "renpy/common/00action_other.rpy", line 618, in __call__
+    rv = self.callable(*self.args, **self.kwargs)
+         ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "game/achievements.rpy", line 65, in process_notification_queue
+    renpy.show_screen("notify_queue", message=display_text, y_offset=i * 85, is_achievement=notif.is_achievement)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/display/screen.py", line 1355, in show_screen
+    raise ScreenNotFound(name[0])
+renpy.display.screen.ScreenNotFound: Screen 'notify_queue' is not known.
 
 Windows-11-10.0.26200-SP0 AMD64
 Ren'Py 8.6.0.26031705+nightly
 За гранью чувств 1.0
-Sat Jun 20 16:54:18 2026
+Sun Jun 21 02:17:32 2026

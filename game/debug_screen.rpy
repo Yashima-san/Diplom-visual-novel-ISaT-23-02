@@ -44,15 +44,21 @@ init python:
         try:
             latest_slot = None
             latest_time = 0
+            current_user_id = persistent.user_id if hasattr(persistent, 'user_id') else None
+            
+            # Проверяем только слоты текущего игрока
             for i in range(1, 10):
                 slot_str = str(i)
                 if renpy.can_load(slot_str):
                     save_json = renpy.json_load(renpy.slot_json_filename(slot_str))
                     if save_json:
-                        timestamp = save_json.get('_timestamp', 0)
-                        if timestamp > latest_time:
-                            latest_time = timestamp
-                            latest_slot = slot_str
+                        save_user_id = save_json.get('user_id')
+                        # Загружаем только сохранения текущего игрока
+                        if save_user_id == current_user_id or current_user_id is None:
+                            timestamp = save_json.get('_timestamp', 0)
+                            if timestamp > latest_time:
+                                latest_time = timestamp
+                                latest_slot = slot_str
             
             if latest_slot:
                 save_json = renpy.json_load(renpy.slot_json_filename(latest_slot))
@@ -70,45 +76,37 @@ init python:
         return metrics
 
     def clear_database():
-        """Очистка базы данных и всех сохранений"""
-        persistent.user_data = {
-            'users': {},
-            'achievements': {},
-            'save_progress': {},
-            'next_id': 1
-        }
-        persistent._achievements = {}
-        persistent._gallery_unlocks = {}
-        persistent.emotion_stats = {}
-        persistent.body_sensation_stats = {}
-        persistent.reaction_stats = {}
-        persistent.user_id = None
-        persistent.user_name = ""
-        
-        if hasattr(db, 'sqlite_available') and db.sqlite_available:
+        """Полная очистка базы данных и всех сохранений"""
+        # Вызываем новый метод очистки из database.rpy
+        if 'db' in globals() and hasattr(db, 'clear_all_data'):
+            db.clear_all_data()
+        else:
+            # Ручная очистка, если db недоступна
+            persistent.user_data = {
+                'users': {},
+                'achievements': {},
+                'save_progress': {},
+                'next_id': 1
+            }
+            persistent._achievements = {}
+            persistent._gallery_unlocks = {}
+            persistent.emotion_stats = {}
+            persistent.body_sensation_stats = {}
+            persistent.reaction_stats = {}
+            persistent.user_id = None
+            persistent.user_name = ""
+            persistent.player_states = {}
+            
             try:
-                db.connect()
-                db.cursor.execute("DELETE FROM users")
-                db.cursor.execute("DELETE FROM save_progress_users")
-                db.cursor.execute("DELETE FROM achievements")
-                db.connection.commit()
+                for i in range(1, 10):
+                    renpy.unlink_save(str(i))
+                for i in range(1, 10):
+                    renpy.unlink_save(f"auto-{i}")
+                renpy.unlink_save("quick-save")
             except:
                 pass
-            finally:
-                db.disconnect()
-        
-        try:
-            for i in range(1, 10):
-                renpy.unlink_save(str(i))
-            for i in range(1, 10):
-                renpy.unlink_save(f"auto-{i}")
-            renpy.unlink_save("quick-save")
-        except:
-            pass
-        
-        renpy.notify("База данных и все сохранения очищены")
+            renpy.notify("База данных и все сохранения очищены")
         return True
-
 ################################################################################
 ## ЭКРАН ОТЛАДКИ БАЗЫ ДАННЫХ
 ################################################################################
@@ -139,19 +137,16 @@ screen debug_database():
                     xalign 0.5
                     text "Текущий игрок:":
                         size 26
-                        color "#ffffff"
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#671a1a", 0, 0)]
                     $ current_user_name = persistent.user_name if hasattr(persistent, 'user_name') and persistent.user_name else "Не задан"
                     $ current_user_id = persistent.user_id if hasattr(persistent, 'user_id') and persistent.user_id else "Не задан"
                     text "[current_user_name]":
                         size 26
                         color gui.accent_color
-                        bold True
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#671a1a", 0, 0)]
                     text "(ID: [current_user_id])":
                         size 24
-                        color "#cccccc"
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#671a1a", 0, 0)]
             
             null height 10
             
@@ -184,7 +179,7 @@ screen debug_database():
                     text "Все игроки (нажмите на строку для просмотра деталей):":
                         size 26
                         color gui.accent_color
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#671a1a", 0, 0)]
                     
                     $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
                     
@@ -200,39 +195,29 @@ screen debug_database():
                                 
                                 text "ID":
                                     size 20
-                                    bold True
-                                    color "#ffffff"
                                     xsize 80
                                     text_align 0.5
-                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                    outlines [(1, "#671a1a", 0, 0)]
                                 text "Имя":
                                     size 20
-                                    bold True
-                                    color "#ffffff"
                                     xsize 200
                                     text_align 0.5
-                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                    outlines [(1, "#671a1a", 0, 0)]
                                 text "Прогресс":
                                     size 20
-                                    bold True
-                                    color "#ffffff"
                                     xsize 250
                                     text_align 0.5
-                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                    outlines [(1, "#671a1a", 0, 0)]
                                 text "ЭИ":
                                     size 20
-                                    bold True
-                                    color "#ffffff"
                                     xsize 200
                                     text_align 0.5
-                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                    outlines [(1, "#671a1a", 0, 0)]
                                 text "Статистика":
                                     size 20
-                                    bold True
-                                    color "#ffffff"
                                     xsize 300
                                     text_align 0.5
-                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                    outlines [(1, "#671a1a", 0, 0)]
                         
                         viewport:
                             mousewheel True
@@ -247,7 +232,7 @@ screen debug_database():
                                         xfill True
                                         action Show("user_details", user_id=user_id, user_name=user_name)
                                         background Frame("gui/frame.png", 10, 10)
-                                        hover_background Solid("#3a2a1a")
+                                        hover_background Solid("#703f0e")
                                         padding (10, 8)
                                         
                                         hbox:
@@ -256,16 +241,14 @@ screen debug_database():
                                             
                                             text "[user_id]":
                                                 size 20
-                                                color "#ffffff"
                                                 xsize 80
                                                 text_align 0.5
-                                                outlines [(1, "#1a1a1a", 0, 0)]
+                                                outlines [(1, "#671a1a", 0, 0)]
                                             text "[user_name]":
                                                 size 20
-                                                color "#ffffff"
                                                 xsize 200
                                                 text_align 0.5
-                                                outlines [(1, "#1a1a1a", 0, 0)]
+                                                outlines [(1, "#671a1a", 0, 0)]
                                             
                                             $ progress = get_user_progress(user_id)
                                             $ total_chapters = 3
@@ -276,9 +259,8 @@ screen debug_database():
                                                 xsize 250
                                                 text "Глав: [completed]/[total_chapters]":
                                                     size 18
-                                                    color "#cccccc"
                                                     xalign 0.5
-                                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                                    outlines [(1, "#671a1a", 0, 0)]
                                                 bar:
                                                     value progress_percent
                                                     range 100
@@ -300,7 +282,7 @@ screen debug_database():
                                                 color ei_color_val
                                                 xsize 200
                                                 text_align 0.5
-                                                outlines [(1, "#1a1a1a", 0, 0)]
+                                                outlines [(1, "#671a1a", 0, 0)]
                                             
                                             if 'get_emotion_stats' in globals() and callable(get_emotion_stats):
                                                 $ emotion_stats = get_emotion_stats(user_id)
@@ -321,18 +303,15 @@ screen debug_database():
                                                 xsize 300
                                                 text "Попыток: [total_attempts]":
                                                     size 18
-                                                    color "#cccccc"
-                                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                                    outlines [(1, "#671a1a", 0, 0)]
                                                 text "Точность: [acc]%":
                                                     size 18
                                                     color acc_color_val
-                                                    outlines [(1, "#1a1a1a", 0, 0)]
+                                                    outlines [(1, "#671a1a", 0, 0)]
                     else:
                         text "Нет игроков в базе данных":
                             size 22
                             xalign 0.5
-                            color "#cccccc"
-                            outlines [(1, "#1a1a1a", 0, 0)]
 
 ################################################################################
 ## ЭКРАН ДЕТАЛЬНОЙ ИНФОРМАЦИИ О ПОЛЬЗОВАТЕЛЕ
@@ -356,14 +335,13 @@ screen user_details(user_id, user_name):
                 
                 hbox:
                     spacing 8
-                    text "←":
+                    text "<--":
                         size 28
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#671a1a", 0, 0)]
                     text "Назад к списку игроков":
                         size 26
-                        color "#494949"
                         hover_color gui.hover_color
-                        outlines [(1, "#855133", 0, 0)]
+                        outlines [(1, "#671a1a", 0, 0)]
             
             null height 10
             
@@ -388,13 +366,11 @@ screen user_details(user_id, user_name):
                     text "Прогресс игрока:":
                         size 26
                         color gui.accent_color
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#671a1a", 0, 0)]
                     
                     text "[progress_percent]% глав пройдено":
                         size 20
-                        color "#cccccc"
                         xalign 0.5
-                        outlines [(1, "#1a1a1a", 0, 0)]
                     bar:
                         value progress_percent
                         range 100
@@ -417,7 +393,7 @@ screen user_details(user_id, user_name):
                     text "Информация об игроке:":
                         size 26
                         color gui.accent_color
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        outlines [(1, "#671a1a", 0, 0)]
                     
                     $ metrics = get_player_metrics_from_saves(user_id)
                     
@@ -429,8 +405,6 @@ screen user_details(user_id, user_name):
                             xalign 0.5
                             text "Самопонимание:":
                                 size 20
-                                color "#aaaaaa"
-                                outlines [(1, "#1a1a1a", 0, 0)]
                             text "[metrics.get('self_awareness', 0)]%":
                                 size 20
                                 color "#c66b2f"
@@ -441,8 +415,6 @@ screen user_details(user_id, user_name):
                             xalign 0.5
                             text "Эмпатия:":
                                 size 20
-                                color "#aaaaaa"
-                                outlines [(1, "#1a1a1a", 0, 0)]
                             text "[metrics.get('empathy', 0)]%":
                                 size 20
                                 color "#c66b2f"
@@ -453,8 +425,6 @@ screen user_details(user_id, user_name):
                             xalign 0.5
                             text "Словарь эмоций:":
                                 size 20
-                                color "#aaaaaa"
-                                outlines [(1, "#1a1a1a", 0, 0)]
                             text "[metrics.get('vocabulary', 0)]%":
                                 size 20
                                 color "#c66b2f"
@@ -465,8 +435,6 @@ screen user_details(user_id, user_name):
                             xalign 0.5
                             text "Тревожность:":
                                 size 20
-                                color "#aaaaaa"
-                                outlines [(1, "#1a1a1a", 0, 0)]
                             text "[metrics.get('anxiety', 50)]%":
                                 size 20
                                 color "#ff6666"
@@ -477,8 +445,6 @@ screen user_details(user_id, user_name):
                             xalign 0.5
                             text "Доверие:":
                                 size 20
-                                color "#aaaaaa"
-                                outlines [(1, "#1a1a1a", 0, 0)]
                             text "[metrics.get('trust', 30)]%":
                                 size 20
                                 color "#4caf50"
@@ -528,7 +494,6 @@ screen confirm_clear_db():
                 size 22
                 xalign 0.5
                 text_align 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
             
             text "Это действие НЕОБРАТИМО!":
                 size 20
@@ -537,6 +502,11 @@ screen confirm_clear_db():
                 bold True
                 outlines [(1, "#1a1a1a", 0, 0)]
             
+            text "Будут удалены: все игроки, достижения, прогресс, сохранения и открытые изображения.":
+                size 18
+                xalign 0.5
+                text_align 0.5
+                color "#ffaa66"
             null height 10
             
             hbox:

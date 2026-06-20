@@ -102,12 +102,10 @@ screen emotion_wheel_detective(correct_answer, on_confirm):
                 size 36
                 color gui.accent_color
                 xalign 0.5
-                # Убираем bold
                 outlines [(2, "#1a1a1a", 0, 0)]
             text "Нажми на карточку, которая кажется наиболее точной":
                 size 24
                 xalign 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
             
             null height 20
             
@@ -140,7 +138,6 @@ screen emotion_wheel_detective(correct_answer, on_confirm):
                         text "[hint_data.get('icon', '')] [hint_data.get('name', '')]":
                             size 22
                             color hint_data.get("color", "#ffffff")
-                            # Убираем bold
                             xalign 0.5
                         text "Возможные признаки:":
                             size 18
@@ -148,7 +145,6 @@ screen emotion_wheel_detective(correct_answer, on_confirm):
                         for clue in hint_data.get("body_clues", []):
                             text "• [clue]":
                                 size 16
-                                color "#cccccc"
                                 xalign 0.5
             
             hbox:
@@ -188,7 +184,6 @@ screen body_clues_selector(available_clues, on_select):
                 bold True
             text "Выбери 1-2 наиболее ярких признака":
                 size 24
-                color "#cccccc"
                 xalign 0.5
             
             viewport:
@@ -249,11 +244,11 @@ label emotion_detective_minigame(scenario_id="library_conflict"):
     
     # Показываем персонажа в зависимости от сценария
     if current_scenario["character"] == "Катя":
-        show katia nervous at character_scale with dissolve
+        show katia sad at character_scale_center with dissolve
     elif current_scenario["character"] == "Лина":
-        show lina neutral at character_scale with dissolve
+        show lina neutral at character_scale_center with dissolve
     else:
-        show katia nervous at character_scale with dissolve
+        show katia sad at character_scale_center with dissolve
     
     pause 1.0
     
@@ -287,9 +282,9 @@ label emotion_detective_minigame(scenario_id="library_conflict"):
         $ update_player_state(self_awareness_change=5, empathy_change=5, vocabulary_change=5, anxiety_change=-3)
         
         if current_scenario["character"] == "Катя":
-            show katia thoughtful at character_scale with dissolve
+            show katia neutral at character_scale_center with dissolve
         else:
-            show lina smile at character_scale with dissolve
+            show lina smile at character_scale_center with dissolve
         
         narrator "[current_scenario['feedback']['correct']]"
         
@@ -318,6 +313,6 @@ label emotion_detective_minigame(scenario_id="library_conflict"):
     
     if not is_achievement_unlocked("detective_first_step"):
         $ unlock_achievement("detective_first_step")
-        narrator "Достигнуто: Первый шаг к пониманию"
+        narrator "Достигнуто: Первый шаг к пониманию!"
     
     return
