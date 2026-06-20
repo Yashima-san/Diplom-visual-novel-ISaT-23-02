@@ -1,4 +1,4 @@
-﻿# Определения персонажей и изображений
+# Определения персонажей и изображений
 define user_char = Character("[persistent.user_name]", color="#ff9e5e")
 define thought_user = Character("[persistent.user_name]", what_italic=True)
 define narrator = Character(None, what_italic=True)
@@ -421,7 +421,8 @@ label start:
     else:
         $ entered_name = renpy.input("Введите ваше имя:", length=20)
     
-    if entered_name is None or entered_name.strip() == "":
+    # Если игрок закрыл экран Esc или ввел пустую строку
+    if not entered_name or entered_name.strip() == "":
         $ player_name = "Настя"
     else:
         $ player_name = entered_name.strip()

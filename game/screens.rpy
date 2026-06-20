@@ -90,97 +90,60 @@ init python:
     if add_save_metadata not in config.save_json_callbacks:
         config.save_json_callbacks.append(add_save_metadata)
 
-    # --- ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ ПОСЛЕДНЕГО СОХРАНЕНИЯ ТЕКУЩЕГО ИГРОКА ---
+    def custom_save_action(slot):
+        try:
+            renpy.save(str(slot))
+            renpy.notify(f"Игра сохранена в слот {slot}")
+            return True
+        except Exception as e:
+            renpy.notify(f"Ошибка сохранения: {str(e)}")
+            return False
+
+    def custom_load_action(slot):
+        slot_str = str(slot)
+        try:
+            if renpy.can_load(slot_str):
+                save_json = renpy.json_load(renpy.slot_json_filename(slot_str))
+                current_user_id = persistent.user_id if hasattr(persistent, 'user_id') else None
+                if save_json:
+                    save_user_id = save_json.get("user_id")
+                    if save_user_id is not None and save_user_id != current_user_id:
+                        renpy.show_screen("confirm_user_switch", slot=slot)
+                        return
+                renpy.load(slot_str)
+            else:
+                renpy.notify(f"Слот {slot} пуст")
+        except Exception as e:
+            renpy.notify(f"Ошибка загрузки: {str(e)}")
+
     def load_latest_save():
         current_user_id = persistent.user_id if hasattr(persistent, 'user_id') else None
-        if current_user_id is None:
-            renpy.notify("Игрок не найден. Начните новую игру.")
-            return
-
+        
         latest_slot = None
         latest_time = 0
         slots_to_check = [str(i) for i in range(1, 10)] + [f"auto-{i}" for i in range(1, 10)] + ["quick-save"]
-
+        
         for slot in slots_to_check:
             if renpy.can_load(slot):
                 try:
                     save_json = renpy.json_load(renpy.slot_json_filename(slot))
                     if save_json:
                         save_user_id = save_json.get("user_id")
-                        # Загружаем только сохранения, принадлежащие текущему игроку
-                        if save_user_id == current_user_id:
+                        if save_user_id == current_user_id or current_user_id is None:
                             timestamp = save_json.get("_timestamp", 0)
                             if timestamp > latest_time:
                                 latest_time = timestamp
                                 latest_slot = slot
                 except:
                     pass
-
+                    
         if latest_slot:
             try:
                 renpy.load(latest_slot)
             except Exception as e:
                 renpy.notify(f"Ошибка загрузки: {str(e)}")
         else:
-            renpy.notify("Нет сохранений для текущего игрока. Начните новую игру.")
-
-    # --- ФУНКЦИЯ ДЛЯ СОХРАНЕНИЯ С ПРОВЕРКОЙ ---
-    def custom_save_action(slot):
-        current_user_id = persistent.user_id if hasattr(persistent, 'user_id') else None
-        slot_str = str(slot)
-
-        if renpy.can_load(slot_str):
-            try:
-                save_json = renpy.json_load(renpy.slot_json_filename(slot_str))
-                if save_json:
-                    save_user_id = save_json.get("user_id")
-                    if save_user_id is not None and save_user_id != current_user_id:
-                        # Показываем экран подтверждения
-                        renpy.show_screen("confirm_save_overwrite", slot=slot)
-                        return
-            except:
-                pass
-
-        # Если слот пуст или принадлежит текущему игроку — сохраняем
-        try:
-            renpy.save(slot_str)
-            renpy.notify(f"Игра сохранена в слот {slot}")
-        except Exception as e:
-            renpy.notify(f"Ошибка сохранения: {str(e)}")
-
-    # --- ФУНКЦИЯ ДЛЯ ПРИНУДИТЕЛЬНОГО СОХРАНЕНИЯ (ПОСЛЕ ПОДТВЕРЖДЕНИЯ) ---
-    def force_save_action(slot):
-        try:
-            renpy.save(str(slot))
-            renpy.notify(f"Игра сохранена в слот {slot}")
-            renpy.hide_screen("confirm_save_overwrite")
-        except Exception as e:
-            renpy.notify(f"Ошибка сохранения: {str(e)}")
-            renpy.hide_screen("confirm_save_overwrite")
-
-    # --- ФУНКЦИЯ ДЛЯ ЗАГРУЗКИ С ПРОВЕРКОЙ ---
-    def custom_load_action(slot):
-        slot_str = str(slot)
-        current_user_id = persistent.user_id if hasattr(persistent, 'user_id') else None
-
-        try:
-            if renpy.can_load(slot_str):
-                save_json = renpy.json_load(renpy.slot_json_filename(slot_str))
-                if save_json:
-                    save_user_id = save_json.get("user_id")
-                    save_user_name = save_json.get("user_name", "Неизвестный игрок")
-
-                    if save_user_id is not None and save_user_id != current_user_id:
-                        # Показываем экран подтверждения переключения
-                        renpy.show_screen("confirm_user_switch", slot=slot)
-                        return
-
-                # Если сохранение принадлежит текущему игроку или пользователь не задан
-                renpy.load(slot_str)
-            else:
-                renpy.notify(f"Слот {slot} пуст")
-        except Exception as e:
-            renpy.notify(f"Ошибка загрузки: {str(e)}")
+            renpy.notify("Нет сохранённой игры для текущего пользователя")
 
     def load_other_user_save(slot):
         try:
@@ -193,14 +156,9 @@ init python:
                     if save_user_id:
                         persistent.user_id = save_user_id
                         persistent.user_name = save_user_name
-                        # Перезагружаем пользовательские данные из БД
-                        if 'db' in globals() and hasattr(db, 'get_all_users'):
-                            db.get_all_users() # Синхронизация
                         renpy.load(slot_str)
-                        renpy.hide_screen("confirm_user_switch")
         except Exception as e:
             renpy.notify(f"Ошибка загрузки: {str(e)}")
-            renpy.hide_screen("confirm_user_switch")
 
     def delete_save(slot):
         try:
@@ -667,9 +625,8 @@ style about_label_text is gui_label_text
 style about_text is gui_text
 style about_label_text:
     size gui.label_text_size
-
 ################################################################################
-## ЭКРАН ПОМОЩИ (ОРИГИНАЛЬНЫЙ СТИЛЬ)
+## ЭКРАН ПОМОЩИ
 ################################################################################
 screen help():
     tag menu
@@ -689,91 +646,129 @@ screen help():
             frame:
                 background Frame("gui/confirm_frame.png", 15, 15)
                 xfill True
-                padding (25, 20)
+                padding (25, 25)
                 
                 vbox:
-                    spacing 15
+                    spacing 25
+                    xfill True
                     
                     text "Клавиатура и мышь":
                         size 28
                         color gui.accent_color
+                        xalign 0.05
                         outlines [(1, "#671a1a", 0, 0)]
                     
                     hbox:
                         spacing 20
                         xfill True
-                        text "Ввод/Продолжить:" size 22 xsize 250
-                        text "ЛКМ, Пробел, Enter" size 22 color "#cccccc"
+                        xalign 0.5
+                        xmaximum 1100
+                        text "Ввод/Продолжить:" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "ЛКМ, Пробел, Enter" size 24 color "#915d49" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
-                        text "Пропустить диалог:" size 22 xsize 250
-                        text "Ctrl, Tab" size 22 color "#cccccc"
+                        xalign 0.5
+                        xmaximum 1100
+                        text "Пропустить диалог:" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "Нажмите кнопку 'Пропуск' в быстром меню" size 24 color "#915d49" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
-                        text "Скрыть окно диалога:" size 22 xsize 250
-                        text "ПКМ, H" size 22 color "#cccccc"
+                        xalign 0.5
+                        xmaximum 1100
+                        text "Скрыть окно диалога:" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "ПКМ, H" size 24 color "#915d49" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
-                        text "Сделать скриншот:" size 22 xsize 250
-                        text "S" size 22 color "#cccccc"
+                        xalign 0.5
+                        xmaximum 1100
+                        text "Сделать скриншот:" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "S" size 24 color "#915d49" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
-                        text "Открыть меню:" size 22 xsize 250
-                        text "Esc, ПКМ" size 22 color "#cccccc"
+                        xalign 0.5
+                        xmaximum 1100
+                        text "Открыть меню:" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "Esc, ПКМ" size 24 color "#915d49" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
-                        text "Быстрое сохранение:" size 22 xsize 250
-                        text "F5" size 22 color "#cccccc"
+                        xalign 0.5
+                        xmaximum 1100
+                        text "Быстрое сохранение:" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "F5" size 24 color "#915d49" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
-                        text "Быстрая загрузка:" size 22 xsize 250
-                        text "F8" size 22 color "#cccccc"
+                        xalign 0.5
+                        xmaximum 1100
+                        text "Быстрая загрузка:" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "F8" size 24 color "#915d49" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
-                        text "Громкость (+/-):" size 22 xsize 250
-                        text "PageUp / PageDown" size 22 color "#cccccc"
+                        xalign 0.5
+                        xmaximum 1100
+                        text "Громкость (+/-):" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "PageUp / PageDown" size 24 color "#915d49" xsize 400
                     
                     hbox:
                         spacing 20
                         xfill True
-                        text "Полноэкранный режим:" size 22 xsize 250
-                        text "F11" size 22 color "#cccccc"
-            
-            null height 15
-            
-            frame:
-                background Frame("gui/confirm_frame.png", 15, 15)
-                xfill True
-                padding (25, 20)
-                
-                vbox:
-                    spacing 15
+                        xalign 0.5
+                        xmaximum 1100
+                        text "Полноэкранный режим:" size 24 xsize 300 yalign 0.5 text_align 0.0
+                        text "F11" size 24 color "#915d49" xsize 400
+                    
+                    null height 10
+                    frame:
+                        xsize 1000
+                        ysize 4
+                        xalign 0.5
+                        background "#ac5032"
+                    null height 10
                     
                     text "Советы":
                         size 28
                         color gui.accent_color
+                        xalign 0.05
                         outlines [(1, "#671a1a", 0, 0)]
                     
-                    text "• Обращай внимание на телесные ощущения персонажей — они помогут распознавать эмоции." size 20 color "#dddddd"
-                    text "• В мини-игре «Колесо эмоций» выбирай эмоцию, которая лучше всего описывает ситуацию." size 20 color "#dddddd"
-                    text "• Дневник наблюдений помогает развивать эмоциональный интеллект." size 20 color "#dddddd"
-                    text "• Твои решения влияют на отношения с персонажами и доступные достижения." size 20 color "#dddddd"
+                    text "• Обращай внимание на телесные ощущения персонажей — они помогут распознавать эмоции.":
+                        size 22
+                        xsize 1000
+                        xalign 0.5
+                        text_align 0.1
+                    
+                    text "• В мини-игре «Колесо эмоций» выбирай эмоцию, которая лучше всего описывает ситуацию.":
+                        size 22
+                        xsize 1000
+                        xalign 0.5
+                        text_align 0.1
+                    
+                    text "• Дневник наблюдений помогает развивать эмоциональный интеллект.":
+                        size 22
+                        xsize 1000
+                        xalign 0.5
+                        text_align 0.1
+                    
+                    text "• Твои решения влияют на отношения с персонажами и доступные достижения.":
+                        size 22
+                        xsize 1000
+                        xalign 0.5
+                        text_align 0.1
             
-            null height 30
+            null height 25
             
             textbutton "Закрыть":
                 xalign 0.5
@@ -782,7 +777,6 @@ screen help():
                 padding (35, 15)
                 xsize 300
                 action Return()
-
 ################################################################################
 ## ЭКРАН НАСТРОЕК (ОПЦИЙ)
 ################################################################################
@@ -1137,7 +1131,7 @@ style history_text:
     text_align gui.history_text_xalign
 
 ################################################################################
-## ЭКРАНЫ ЗАГРУЗКИ И СОХРАНЕНИЯ (ПЕРЕПИСАНЫ)
+## ЭКРАНЫ ЗАГРУЗКИ И СОХРАНЕНИЯ
 ################################################################################
 screen save():
     tag menu
@@ -1169,9 +1163,6 @@ screen file_slots_with_user(title, is_save=True):
                 for i in range(gui.file_slot_cols * gui.file_slot_rows):
                     $ slot = i + 1
                     $ slot_exists = renpy.can_load(str(slot))
-                    $ save_user = get_save_user_name(slot)
-                    $ current_user_name = persistent.user_name if hasattr(persistent, 'user_name') else ""
-                    
                     button:
                         if is_save:
                             action Function(custom_save_action, slot)
@@ -1207,15 +1198,10 @@ screen file_slots_with_user(title, is_save=True):
                         if file_name:
                             text "[file_name]":
                                 style "slot_name_text"
-                        # Информация об игроке с выделением, если это чужое сохранение
+                        $ save_user = get_save_user_name(slot)
                         if save_user:
-                            $ is_other_user = save_user != current_user_name and current_user_name != ""
-                            if is_other_user:
-                                text "Игрок: [save_user] (чужое)":
-                                    style "slot_user_text_other"
-                            else:
-                                text "Игрок: [save_user]":
-                                    style "slot_user_text"
+                            text "Игрок: [save_user]":
+                                style "slot_user_text"
                         $ save_chapter = get_save_chapter(slot)
                         if save_chapter:
                             text "Глава: [save_chapter]":
@@ -1239,50 +1225,6 @@ screen file_slots_with_user(title, is_save=True):
                         textbutton "[page]" action FilePage(page)
                     textbutton _(">") action FilePageNext()
                     key "save_page_next" action FilePageNext()
-
-# --- НОВЫЙ ЭКРАН ПОДТВЕРЖДЕНИЯ ПЕРЕЗАПИСИ СОХРАНЕНИЯ ---
-screen confirm_save_overwrite(slot):
-    modal True
-    zorder 200
-    add "gui/overlay/confirm.png"
-    frame:
-        style "confirm_frame"
-        xalign 0.5
-        yalign 0.5
-        xsize 600
-        ysize 400
-        vbox:
-            spacing 25
-            xalign 0.5
-            yalign 0.5
-            text "ВНИМАНИЕ":
-                size 36
-                color "#ff7171"
-                xalign 0.5
-            text "Это сохранение принадлежит другому игроку.":
-                size 24
-                xalign 0.5
-                text_align 0.5
-            text "Хотите заменить его на своё?":
-                size 24
-                xalign 0.5
-                text_align 0.5
-            null height 20
-            hbox:
-                spacing 30
-                xalign 0.5
-                textbutton "Заменить":
-                    action Function(force_save_action, slot)
-                    background Frame("gui/button/choice_idle_background.png", 15, 15)
-                    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
-                    padding (15, 10)
-                textbutton "Отмена":
-                    action Hide("confirm_save_overwrite")
-                    background Frame("gui/button/choice_idle_background.png", 15, 15)
-                    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
-                    padding (15, 10)
-    key "K_ESCAPE" action Hide("confirm_save_overwrite")
-    key "game_menu" action Hide("confirm_save_overwrite")
 
 ################################################################################
 ## ЭКРАН СТАТИСТИКИ ИГРОКА - ОДИН ФРЕЙМ
@@ -1686,7 +1628,7 @@ screen confirm_user_switch(slot):
                 size 24
                 xalign 0.5
                 text_align 0.5
-            text "Хотите загрузить его и переключиться?":
+            text "Загрузка переключит текущего пользователя.":
                 size 24
                 xalign 0.5
                 text_align 0.5
@@ -1695,7 +1637,7 @@ screen confirm_user_switch(slot):
                 spacing 30
                 xalign 0.5
                 textbutton "Загрузить":
-                    action Function(load_other_user_save, slot)
+                    action [Function(load_other_user_save, slot), Hide("confirm_user_switch")]
                     background Frame("gui/button/choice_idle_background.png", 15, 15)
                     hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
                     padding (15, 10)
@@ -1707,79 +1649,6 @@ screen confirm_user_switch(slot):
     key "K_ESCAPE" action Hide("confirm_user_switch")
     key "game_menu" action Hide("confirm_user_switch")
 
-################################################################################
-## ЭКРАН УВЕДОМЛЕНИЙ
-################################################################################
-screen notify(message):
-    zorder 100
-    
-    # Таймер для автоматического скрытия
-    timer 3.0 action Hide('notify')
-    
-    frame:
-        xpos 20
-        ypos 20
-        xsize 450
-        
-        background Frame("gui/button/choice_idle_background_0.png", 15, 15)
-        padding (20, 12)
-        
-        text message:
-            size 18
-            color "#ffffff"
-            xalign 0.5
-            text_align 0.5
-            outlines [(1, "#1a1a1a", 0, 0)]
-            min_width 300
-
-# Экран для очереди уведомлений (столбиком)
-screen notify_queue(message, y_offset=0, is_achievement=False):
-    zorder 100
-    
-    # Таймер для автоматического скрытия
-    timer 3.0 action Hide('notify_queue')
-    
-    # Определяем цвет в зависимости от типа уведомления
-    python:
-        if is_achievement:
-            text_color = "#ffd700"
-        else:
-            text_color = "#ffffff"
-    
-    frame:
-        xpos 20
-        ypos 20 + y_offset
-        xsize 450
-        
-        background Frame("gui/button/choice_idle_background_0.png", 15, 15)
-        padding (20, 12)
-        
-        vbox:
-            spacing 5
-            xfill True
-            
-            if is_achievement:
-                text "★ ДОСТИЖЕНИЕ ★":
-                    size 14
-                    color "#ffd700"
-                    bold True
-                    xalign 0.5
-                    outlines [(1, "#1a1a1a", 0, 0)]
-            
-            text message:
-                size 18
-                color text_color
-                xalign 0.5
-                text_align 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
-                min_width 300
-
-style notify_frame is empty
-style notify_frame:
-    background Frame("gui/button/choice_idle_background_0.png", 15, 15)
-    padding (20, 12)
-    xsize 450
-    yminimum 50
 ################################################################################
 ## СТИЛИ ДЛЯ СЛОТОВ СОХРАНЕНИЯ
 ################################################################################
@@ -1799,12 +1668,6 @@ style slot_name_text:
 
 style slot_user_text:
     color "#aaaaaa"
-    size 14
-    font gui.interface_text_font
-    xalign 0.5
-
-style slot_user_text_other:
-    color "#ffaa66"
     size 14
     font gui.interface_text_font
     xalign 0.5
