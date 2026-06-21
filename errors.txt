@@ -2,9 +2,9 @@
 errors listed below, and try again.
 
 
-File "game/script.rpy", line 767: expected 'image_name_component' not found.
-    hide
-         ^
+File "game/emotion_detective_minigame.rpy", line 190: The if statement is not a valid child of the textbutton statement.
+    textbutton "Продолжить" if len(selected_clues) > 0 else textbutton "Продолжить" sensitive False:
+                       ^
 
 Ren'Py Version: Ren'Py 8.6.0.26031705+nightly
-Sun Jun 21 15:37:20 2026
+Sun Jun 21 16:17:34 2026
