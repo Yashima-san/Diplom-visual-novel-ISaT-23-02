@@ -44,6 +44,13 @@ init -1 python:
                 # Сохраняем в базу данных
                 if persistent.user_id and 'db' in globals() and hasattr(db, 'save_achievement'):
                     db.save_achievement(persistent.user_id, achievements[id].name, achievements[id].description)
+                
+                # АВТОМАТИЧЕСКАЯ РАЗБЛОКИРОВКА ГАЛЕРЕИ
+                try:
+                    if 'auto_unlock_gallery_on_achievement' in globals():
+                        auto_unlock_gallery_on_achievement(id)
+                except:
+                    pass
     
     # Функция для проверки, разблокировано ли достижение
     def is_achievement_unlocked(id):
@@ -206,58 +213,65 @@ screen achievements():
             
             null height 30
             
-            # Список достижений
-            vpgrid:
-                cols 1
-                spacing 15
-                yinitial 0.0
-                scrollbar "vertical"
+            # Список достижений - с ограничением прокрутки
+            fixed:
+                ysize 650  # Фиксированная высота области прокрутки
                 
-                for ach in sorted(achievements.values(), key=lambda a: (not a.is_unlocked(), a.id)):
-                    if ach.is_unlocked() or not ach.hidden:
-                        button:
-                            style "achievement_button"
-                            
-                            frame:
-                                style "achievement_frame"
-                                background (gui.accent_color if ach.is_unlocked() else gui.insensitive_color)
-                                
-                                hbox:
-                                    spacing 20
+                viewport:
+                    yfill True
+                    scrollbars "vertical"
+                    mousewheel True
+                    draggable True
+                    
+                    vbox:
+                        spacing 15
+                        xfill True
+                        
+                        for ach in sorted(achievements.values(), key=lambda a: (not a.is_unlocked(), a.id)):
+                            if ach.is_unlocked() or not ach.hidden:
+                                button:
+                                    style "achievement_button"
                                     
-                                    # Иконка
                                     frame:
-                                        xysize (80, 80)
-                                        background None
-                                        if ach.is_unlocked():
-                                            text "🏆" size 60 xalign 0.5 yalign 0.5
-                                        else:
-                                            text "❓" size 60 xalign 0.5 yalign 0.5
-                                    
-                                    # Информация
-                                    vbox:
-                                        yalign 0.5
-                                        spacing 5
+                                        style "achievement_frame"
+                                        background (gui.accent_color if ach.is_unlocked() else gui.insensitive_color)
                                         
-                                        if ach.is_unlocked():
-                                            text ach.name:
-                                                style "achievement_name"
-                                                color "#ffffff"
-                                        else:
-                                            text ach.name:
-                                                style "achievement_name"
-                                                color gui.insensitive_color
-                                        
-                                        if ach.is_unlocked():
-                                            text ach.description:
-                                                style "achievement_description"
-                                        else:
-                                            if ach.hidden:
-                                                text _("Скрытое достижение"):
-                                                    style "achievement_description"
-                                            else:
-                                                text _("???"):
-                                                    style "achievement_description"
+                                        hbox:
+                                            spacing 20
+                                            
+                                            # Иконка
+                                            frame:
+                                                xysize (80, 80)
+                                                background None
+                                                if ach.is_unlocked():
+                                                    text "🏆" size 60 xalign 0.5 yalign 0.5
+                                                else:
+                                                    text "❓" size 60 xalign 0.5 yalign 0.5
+                                            
+                                            # Информация
+                                            vbox:
+                                                yalign 0.5
+                                                spacing 5
+                                                
+                                                if ach.is_unlocked():
+                                                    text ach.name:
+                                                        style "achievement_name"
+                                                        color "#ffffff"
+                                                else:
+                                                    text ach.name:
+                                                        style "achievement_name"
+                                                        color gui.insensitive_color
+                                                
+                                                if ach.is_unlocked():
+                                                    text ach.description:
+                                                        style "achievement_description"
+                                                else:
+                                                    if ach.hidden:
+                                                        text _("Скрытое достижение"):
+                                                            style "achievement_description"
+                                                    else:
+                                                        text _("???"):
+                                                            style "achievement_description"
 
 ## Стили для достижений
 style achievements_vbox:
