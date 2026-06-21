@@ -47,27 +47,141 @@ init python:
             for i in range(1, 10):
                 slot_str = str(i)
                 if renpy.can_load(slot_str):
-                    save_json = renpy.json_load(renpy.slot_json_filename(slot_str))
-                    if save_json:
-                        timestamp = save_json.get('_timestamp', 0)
-                        if timestamp > latest_time:
-                            latest_time = timestamp
-                            latest_slot = slot_str
+                    try:
+                        save_data = renpy.slot_json(slot_str)
+                        if save_data:
+                            timestamp = save_data.get('_timestamp', 0)
+                            if timestamp > latest_time:
+                                latest_time = timestamp
+                                latest_slot = slot_str
+                    except:
+                        pass
             
             if latest_slot:
-                save_json = renpy.json_load(renpy.slot_json_filename(latest_slot))
-                if save_json and 'player_state' in save_json:
-                    state = save_json['player_state']
-                    metrics['self_awareness'] = state.get('self_awareness', 0)
-                    metrics['empathy'] = state.get('empathy', 0)
-                    metrics['vocabulary'] = state.get('vocabulary', 0)
-                    metrics['anxiety'] = state.get('anxiety', 50)
-                    metrics['trust'] = state.get('trust', 30)
-                    metrics['ei_score'] = int((metrics['self_awareness'] + metrics['empathy']) / 2)
+                try:
+                    save_data = renpy.slot_json(latest_slot)
+                    if save_data and 'player_state' in save_data:
+                        state = save_data['player_state']
+                        metrics['self_awareness'] = state.get('self_awareness', 0)
+                        metrics['empathy'] = state.get('empathy', 0)
+                        metrics['vocabulary'] = state.get('vocabulary', 0)
+                        metrics['anxiety'] = state.get('anxiety', 50)
+                        metrics['trust'] = state.get('trust', 30)
+                        metrics['ei_score'] = int((metrics['self_awareness'] + metrics['empathy']) / 2)
+                except:
+                    pass
         except:
             pass
         
         return metrics
+
+    def get_user_saves(user_id):
+        """Получение списка сохранений пользователя"""
+        saves = []
+        try:
+            for i in range(1, 10):
+                slot_str = str(i)
+                if renpy.can_load(slot_str):
+                    try:
+                        save_data = renpy.slot_json(slot_str)
+                        if save_data:
+                            save_user_id = save_data.get('user_id')
+                            if save_user_id == user_id:
+                                chapter = save_data.get('chapter', 'Неизвестная глава')
+                                timestamp = save_data.get('_timestamp', 0)
+                                if timestamp > 0:
+                                    date_str = time.strftime('%d.%m.%Y %H:%M', time.localtime(timestamp))
+                                else:
+                                    date_str = 'Неизвестно'
+                                saves.append({
+                                    'slot': i,
+                                    'chapter': chapter,
+                                    'date': date_str,
+                                    'timestamp': timestamp
+                                })
+                    except:
+                        pass
+        except:
+            pass
+        return sorted(saves, key=lambda x: x['timestamp'], reverse=True)
+
+    def get_user_achievements_count(user_id):
+        """Получение количества разблокированных достижений"""
+        count = 0
+        total = 0
+        try:
+            if hasattr(persistent, '_achievements') and isinstance(persistent._achievements, dict):
+                for ach_id, unlocked in persistent._achievements.items():
+                    total += 1
+                    if unlocked:
+                        count += 1
+        except:
+            pass
+        return count, total
+
+    def get_user_achievements_list(user_id):
+        """Получение списка разблокированных достижений"""
+        unlocked = []
+        try:
+            if hasattr(persistent, '_achievements') and isinstance(persistent._achievements, dict):
+                for ach_id, unlocked_flag in persistent._achievements.items():
+                    if unlocked_flag and ach_id in achievements:
+                        unlocked.append(achievements[ach_id])
+        except:
+            pass
+        return unlocked
+
+    def get_user_gallery_progress(user_id):
+        """Получение прогресса галереи"""
+        unlocked = 0
+        total = 0
+        try:
+            if hasattr(persistent, '_gallery_unlocks') and isinstance(persistent._gallery_unlocks, dict):
+                if 'gallery_items' in globals():
+                    for item in gallery_items:
+                        total += 1
+                        if item.is_unlocked():
+                            unlocked += 1
+        except:
+            pass
+        return unlocked, total
+
+    def get_user_emotion_stats_count(user_id):
+        """Получение статистики по эмоциям"""
+        stats = {'total': 0, 'correct': 0, 'accuracy': 0}
+        try:
+            if hasattr(persistent, 'emotion_stats') and persistent.emotion_stats:
+                str_id = str(user_id)
+                if str_id in persistent.emotion_stats:
+                    data = persistent.emotion_stats[str_id]
+                    stats['total'] = data.get('total_attempts', 0)
+                    stats['correct'] = data.get('correct_matches', 0)
+                    if stats['total'] > 0:
+                        stats['accuracy'] = int((stats['correct'] / stats['total']) * 100)
+        except:
+            pass
+        return stats
+
+    def custom_load_action(slot):
+        """Загрузка сохранения с проверкой пользователя"""
+        slot_str = str(slot)
+        try:
+            if renpy.can_load(slot_str):
+                try:
+                    save_data = renpy.slot_json(slot_str)
+                    if save_data:
+                        current_user_id = persistent.user_id if hasattr(persistent, 'user_id') else None
+                        save_user_id = save_data.get("user_id")
+                        if save_user_id is not None and save_user_id != current_user_id:
+                            renpy.show_screen("confirm_user_switch", slot=slot)
+                            return
+                except:
+                    pass
+                renpy.load(slot_str)
+            else:
+                renpy.notify(f"Слот {slot} пуст")
+        except Exception as e:
+            renpy.notify(f"Ошибка загрузки: {str(e)}")
 
     def clear_database():
         """Очистка базы данных и всех сохранений"""
@@ -119,199 +233,239 @@ screen debug_database():
         style_prefix "debug"
         
         vbox:
-            spacing 20
+            spacing 15
             xfill True
             
-            text "Информация об игроках":
-                size 40
-                color gui.accent_color
-                xalign 0.5
-                outlines [(2, "#671a1a", 0, 0)]
-            
+            # ================================================================
+            # ОДИН ФРЕЙМ СО ВСЕЙ ИНФОРМАЦИЕЙ
+            # ================================================================
             frame:
                 background Frame("gui/confirm_frame.png", 15, 15)
                 xalign 0.5
-                xsize 1200
-                padding (20, 15)
-                
-                hbox:
-                    spacing 30
-                    xalign 0.5
-                    text "Текущий игрок:":
-                        size 26
-                        outlines [(1, "#77472f", 0, 0)]
-                    $ current_user_name = persistent.user_name if hasattr(persistent, 'user_name') and persistent.user_name else "Не задан"
-                    $ current_user_id = persistent.user_id if hasattr(persistent, 'user_id') and persistent.user_id else "Не задан"
-                    text "[current_user_name]":
-                        size 26
-                        color gui.accent_color
-                        outlines [(1, "#77472f", 0, 0)]
-                    text "(ID: [current_user_id])":
-                        size 24
-                        outlines [(1, "#77472f", 0, 0)]
-            
-            null height 10
-            
-            hbox:
-                spacing 20
-                xalign 0.5
-                textbutton "Обновить":
-                    action Show("debug_database")
-                    background Frame("gui/button/choice_idle_background.png", 15, 15)
-                    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
-                    padding (15, 8)
-                textbutton "Очистить БД":
-                    action Show("confirm_clear_db")
-                    background Frame("gui/button/choice_idle_background.png", 15, 15)
-                    hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
-                    padding (15, 8)
-            
-            null height 20
-            
-            frame:
-                background Frame("gui/confirm_frame.png", 15, 15)
-                xsize 1200
-                xalign 0.5
+                xysize (1200, 750)
                 padding (20, 15)
                 
                 vbox:
                     spacing 15
                     xfill True
                     
-                    text "Все игроки (нажмите на строку для просмотра деталей):":
-                        size 26
+                    text "Информация об игроках":
+                        size 32
                         color gui.accent_color
-                        outlines [(1, "#1a1a1a", 0, 0)]
+                        xalign 0.5
+                        outlines [(2, "#671a1a", 0, 0)]
+                    
+                    # Текущий игрок
+                    frame:
+                        background "#6f4427"
+                        xsize 1100
+                        xalign 0.5
+                        padding (15, 12)
+                        
+                        hbox:
+                            spacing 30
+                            xalign 0.5
+                            text "Текущий игрок:":
+                                size 22
+                                color "#cccccc"
+                                outlines [(1, "#77472f", 0, 0)]
+                            $ current_user_name = persistent.user_name if hasattr(persistent, 'user_name') and persistent.user_name else "Не задан"
+                            $ current_user_id = persistent.user_id if hasattr(persistent, 'user_id') and persistent.user_id else "Не задан"
+                            text "[current_user_name]":
+                                size 22
+                                color gui.accent_color
+                                outlines [(1, "#77472f", 0, 0)]
+                            text "(ID: [current_user_id])":
+                                size 20
+                                color "#cccccc"
+                    
+                    # Кнопки управления
+                    hbox:
+                        spacing 20
+                        xalign 0.5
+                        textbutton "Обновить":
+                            action Show("debug_database")
+                            background Frame("gui/button/choice_idle_background.png", 15, 15)
+                            hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                            padding (25, 10)
+                            xsize 320
+                        textbutton "Очистить БД":
+                            action Show("confirm_clear_db")
+                            background Frame("gui/button/choice_idle_background.png", 15, 15)
+                            hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
+                            padding (25, 10)
+                            xsize 320
+                    
+                    # Разделитель
+                    frame:
+                        xsize 1000
+                        ysize 4
+                        xalign 0.5
+                        background "#ac5032"
+                    
+                    # Заголовок списка
+                    text "Все игроки (нажмите на строку для просмотра деталей):":
+                        size 22
+                        color gui.accent_color
+                        xalign 0.5
                     
                     $ users = db.get_all_users() if hasattr(db, 'get_all_users') else []
                     
                     if users:
+                        # Заголовки таблицы
                         frame:
-                            background "#c66b2f"
-                            xfill True
+                            background "#6f4427"
+                            xsize 1100
                             padding (10, 10)
+                            xalign 0.5
                             
                             hbox:
-                                spacing 20
+                                spacing 15
                                 xfill True
                                 
                                 text "ID":
-                                    size 20
-                                    xsize 80
+                                    size 18
+                                    xsize 60
                                     text_align 0.5
+                                    color "#cccccc"
                                     outlines [(1, "#77472f", 0, 0)]
                                 text "Имя":
-                                    size 20
-                                    xsize 200
+                                    size 18
+                                    xsize 150
                                     text_align 0.5
+                                    color "#cccccc"
                                     outlines [(1, "#77472f", 0, 0)]
                                 text "Прогресс":
-                                    size 20
-                                    xsize 250
+                                    size 18
+                                    xsize 180
                                     text_align 0.5
+                                    color "#cccccc"
                                     outlines [(1, "#77472f", 0, 0)]
-                                text "ЭИ":
-                                    size 20
+                                text "Достиж.":
+                                    size 18
+                                    xsize 120
+                                    text_align 0.5
+                                    color "#cccccc"
+                                    outlines [(1, "#77472f", 0, 0)]
+                                text "Галерея":
+                                    size 18
+                                    xsize 120
+                                    text_align 0.5
+                                    color "#cccccc"
+                                    outlines [(1, "#77472f", 0, 0)]
+                                text "Сохранения":
+                                    size 18
                                     xsize 200
                                     text_align 0.5
+                                    color "#cccccc"
                                     outlines [(1, "#77472f", 0, 0)]
-                                text "Статистика":
-                                    size 20
-                                    xsize 300
+                                text "ЭИ":
+                                    size 18
+                                    xsize 100
                                     text_align 0.5
+                                    color "#cccccc"
                                     outlines [(1, "#77472f", 0, 0)]
                         
+                        # Список игроков
                         viewport:
-                            mousewheel True
-                            ysize 400
+                            ysize 350
+                            xfill True
+                            
                             vbox:
                                 spacing 2
+                                xfill True
+                                
                                 for user in users:
                                     $ user_id = user['user_ID']
                                     $ user_name = user['name']
                                     
                                     button:
-                                        xfill True
+                                        xsize 1100
+                                        xalign 0.5
                                         action Show("user_details", user_id=user_id, user_name=user_name)
                                         background Frame("gui/frame.png", 10, 10)
                                         hover_background Solid("#3a2a1a")
                                         padding (10, 8)
                                         
                                         hbox:
-                                            spacing 20
+                                            spacing 15
                                             xfill True
                                             
+                                            # ID
                                             text "[user_id]":
-                                                size 20
-                                                xsize 80
-                                                text_align 0.5
-                                            text "[user_name]":
-                                                size 20
-                                                xsize 200
+                                                size 18
+                                                xsize 60
                                                 text_align 0.5
                                             
+                                            # Имя
+                                            text "[user_name]":
+                                                size 18
+                                                xsize 150
+                                                text_align 0.5
+                                            
+                                            # Прогресс по главам
                                             $ progress = get_user_progress(user_id)
                                             $ total_chapters = 3
                                             $ completed = len(progress)
                                             $ progress_percent = int((completed / total_chapters) * 100)
                                             
                                             vbox:
-                                                xsize 250
-                                                text "Глав: [completed]/[total_chapters]":
-                                                    size 18
+                                                xsize 180
+                                                text "Гл: [completed]/[total_chapters]":
+                                                    size 16
                                                     xalign 0.5
                                                 bar:
                                                     value progress_percent
                                                     range 100
-                                                    xsize 200
-                                                    ysize 15
+                                                    xsize 160
+                                                    ysize 12
                                                     left_bar "#4caf50"
                                                     right_bar "#3a3a3a"
+                                                    xalign 0.5
                                             
+                                            # Достижения
+                                            $ ach_count, ach_total = get_user_achievements_count(user_id)
+                                            text "[ach_count]/[ach_total]":
+                                                size 18
+                                                xsize 120
+                                                text_align 0.5
+                                            
+                                            # Галерея
+                                            $ gal_unlocked, gal_total = get_user_gallery_progress(user_id)
+                                            text "[gal_unlocked]/[gal_total]":
+                                                size 18
+                                                xsize 120
+                                                text_align 0.5
+                                            
+                                            # Сохранения
+                                            $ saves = get_user_saves(user_id)
+                                            $ save_text = str(len(saves)) if saves else "0"
+                                            text "[save_text]":
+                                                size 18
+                                                xsize 200
+                                                text_align 0.5
+                                            
+                                            # ЭИ
                                             $ metrics = get_player_metrics_from_saves(user_id)
                                             $ ei_score = metrics.get('ei_score', 0)
                                             
                                             if ei_score >= 50:
-                                                $ ei_color_val = "#ffaa66"
+                                                $ ei_color_val = "#ffa052"
                                             else:
                                                 $ ei_color_val = "#888888"
                                             
-                                            text "ЭИ: [ei_score]%":
-                                                size 20
+                                            text "[ei_score]%":
+                                                size 18
                                                 color ei_color_val
-                                                xsize 200
+                                                xsize 100
                                                 text_align 0.5
-                                                outlines [(1, "#1a1a1a", 0, 0)]
-                                            
-                                            if 'get_emotion_stats' in globals() and callable(get_emotion_stats):
-                                                $ emotion_stats = get_emotion_stats(user_id)
-                                            else:
-                                                $ emotion_stats = {'total_attempts': 0, 'correct_matches': 0}
-                                            $ total_attempts = emotion_stats.get('total_attempts', 0)
-                                            $ correct = emotion_stats.get('correct_matches', 0)
-                                            $ acc = int((correct / max(total_attempts, 1)) * 100)
-                                            
-                                            if acc >= 70:
-                                                $ acc_color_val = "#4caf50"
-                                            elif acc >= 40:
-                                                $ acc_color_val = "#ffaa66"
-                                            else:
-                                                $ acc_color_val = "#888888"
-                                            
-                                            vbox:
-                                                xsize 300
-                                                text "Попыток: [total_attempts]":
-                                                    size 18
-                                                text "Точность: [acc]%":
-                                                    size 18
-                                                    color acc_color_val
                     else:
                         text "Нет игроков в базе данных":
                             size 22
                             xalign 0.5
 
 ################################################################################
-## ЭКРАН ДЕТАЛЬНОЙ ИНФОРМАЦИИ О ПОЛЬЗОВАТЕЛЕ
+## ЭКРАН ДЕТАЛЬНОЙ ИНФОРМАЦИИ О ПОЛЬЗОВАТЕЛЕ (ВСЁ В ОДНОМ ФРЕЙМЕ)
 ################################################################################
 
 screen user_details(user_id, user_name):
@@ -321,125 +475,310 @@ screen user_details(user_id, user_name):
     
     use game_menu(_(title_text), scroll="viewport"):
         vbox:
-            spacing 20
-            xfill 1200
+            spacing 15
+            xfill True
+
+            text "Статистика прохождения":
+                        size 32
+                        color gui.accent_color
+                        xalign 0.5
+                        outlines [(2, "#671a1a", 0, 0)]
+
+            null height 5
             
-            button:
-                action Show("debug_database")
-                background None
-                hover_background None
-                padding (10, 5)
-            
-            null height 10
-            
-            python:
-                if hasattr(persistent, 'user_data') and persistent.user_data:
-                    str_id = str(user_id)
-                    save_progress = persistent.user_data.get('save_progress', {}).get(str_id, [])
-                    completed_chapters = len(set([s.get('chapter', '') for s in save_progress if s.get('chapter')]))
-                else:
-                    completed_chapters = 0
-                total_chapters = 3
-                progress_percent = int((completed_chapters / total_chapters) * 100)
-            
+            # ================================================================
+            # ОДИН ФРЕЙМ СО ВСЕЙ ИНФОРМАЦИЕЙ
+            # ================================================================
             frame:
                 background Frame("gui/confirm_frame.png", 15, 15)
                 xfill True
                 padding (25, 20)
                 
                 vbox:
-                    spacing 15
+                    spacing 20
+                    xfill True
                     
-                    text "Прогресс игрока:":
-                        size 26
+                    # ========================================================
+                    # ПРОГРЕСС
+                    # ========================================================
+                    text "Прогресс по главам:":
+                        size 28
                         color gui.accent_color
-                        outlines [(1, "#77472f", 0, 0)]
+                        xalign 0.05
+                        outlines [(1, "#671a1a", 0, 0)]
                     
-                    text "[progress_percent]% глав пройдено":
-                        size 20
+                    $ progress = get_user_progress(user_id)
+                    $ total_chapters = 3
+                    $ completed = len(progress)
+                    $ progress_percent = int((completed / total_chapters) * 100)
+                    
+                    text "[progress_percent]% глав пройдено ([completed]/[total_chapters])":
+                        size 18
                         xalign 0.5
-                        outlines [(1, "#77472f", 0, 0)]
+                    
                     bar:
                         value progress_percent
                         range 100
                         xsize 800
-                        ysize 25
+                        ysize 20
                         left_bar "#4caf50"
                         right_bar "#3a3a3a"
                         xalign 0.5
-            
-            null height 10
-            
-            frame:
-                background Frame("gui/confirm_frame.png", 15, 15)
-                xfill True
-                padding (25, 20)
-                
-                vbox:
-                    spacing 15
                     
+                    if progress:
+                        hbox:
+                            spacing 15
+                            xalign 0.5
+                            for chapter in progress:
+                                text "✓ [chapter]":
+                                    size 16
+                                    color "#4caf50"
+                    
+                    # Разделитель
+                    frame:
+                        xsize 900
+                        ysize 4
+                        xalign 0.5
+                        background "#ac5032"
+                    
+                    # ========================================================
+                    # ИНФОРМАЦИЯ ОБ ИГРОКЕ
+                    # ========================================================
                     text "Информация об игроке:":
-                        size 26
+                        size 28
                         color gui.accent_color
-                        outlines [(1, "#77472f", 0, 0)]
+                        xalign 0.05
+                        outlines [(1, "#671a1a", 0, 0)]
                     
                     $ metrics = get_player_metrics_from_saves(user_id)
                     
-                    vbox:
-                        spacing 10
+                    grid 2 3:
+                        spacing 15
+                        xalign 0.5
                         
-                        hbox:
-                            spacing 30
-                            xalign 0.5
-                            text "Самопонимание:":
-                                size 20
-                            text "[metrics.get('self_awareness', 0)]%":
-                                size 20
-                                color "#c66b2f"
-                                outlines [(1, "#77472f", 0, 0)]
+                        frame:
+                            background "#3a2a1a"
+                            padding (15, 10)
+                            xsize 350
+                            vbox:
+                                spacing 5
+                                text "Самопонимание:":
+                                    size 18
+                                    color "#cccccc"
+                                    xalign 0.5
+                                text "[metrics.get('self_awareness', 0)]%":
+                                    size 24
+                                    color "#c66b2f"
+                                    xalign 0.5
                         
-                        hbox:
-                            spacing 30
-                            xalign 0.5
-                            text "Эмпатия:":
-                                size 20
-                            text "[metrics.get('empathy', 0)]%":
-                                size 20
-                                color "#c66b2f"
-                                outlines [(1, "#77472f", 0, 0)]
+                        frame:
+                            background "#3a2a1a"
+                            padding (15, 10)
+                            xsize 350
+                            vbox:
+                                spacing 5
+                                text "Эмпатия:":
+                                    size 18
+                                    color "#cccccc"
+                                    xalign 0.5
+                                text "[metrics.get('empathy', 0)]%":
+                                    size 24
+                                    color "#c66b2f"
+                                    xalign 0.5
                         
-                        hbox:
-                            spacing 30
-                            xalign 0.5
-                            text "Словарь эмоций:":
-                                size 20
-                            text "[metrics.get('vocabulary', 0)]%":
-                                size 20
-                                color "#c66b2f"
-                                outlines [(1, "#77532f", 0, 0)]
+                        frame:
+                            background "#3a2a1a"
+                            padding (15, 10)
+                            xsize 350
+                            vbox:
+                                spacing 5
+                                text "Словарь эмоций:":
+                                    size 18
+                                    color "#cccccc"
+                                    xalign 0.5
+                                text "[metrics.get('vocabulary', 0)]%":
+                                    size 24
+                                    color "#c66b2f"
+                                    xalign 0.5
                         
-                        hbox:
-                            spacing 30
-                            xalign 0.5
-                            text "Тревожность:":
-                                size 20
-                            text "[metrics.get('anxiety', 50)]%":
-                                size 20
-                                color "#ff6666"
-                                outlines [(1, "#702b14", 0, 0)]
+                        frame:
+                            background "#3a2a1a"
+                            padding (15, 10)
+                            xsize 350
+                            vbox:
+                                spacing 5
+                                text "Тревожность:":
+                                    size 18
+                                    color "#cccccc"
+                                    xalign 0.5
+                                text "[metrics.get('anxiety', 50)]%":
+                                    size 24
+                                    color "#ff6666"
+                                    xalign 0.5
                         
+                        frame:
+                            background "#3a2a1a"
+                            padding (15, 10)
+                            xsize 350
+                            vbox:
+                                spacing 5
+                                text "Доверие:":
+                                    size 18
+                                    color "#cccccc"
+                                    xalign 0.5
+                                text "[metrics.get('trust', 30)]%":
+                                    size 24
+                                    color "#4caf50"
+                                    xalign 0.5
+                        
+                        frame:
+                            background "#3a2a1a"
+                            padding (15, 10)
+                            xsize 350
+                            vbox:
+                                spacing 5
+                                text "Эмоциональный интеллект:":
+                                    size 18
+                                    color "#cccccc"
+                                    xalign 0.5
+                                $ ei_score = metrics.get('ei_score', 0)
+                                if ei_score >= 50:
+                                    $ ei_color = "#ffaa66"
+                                else:
+                                    $ ei_color = "#888888"
+                                text "[ei_score]%":
+                                    size 24
+                                    color ei_color
+                                    xalign 0.5
+                    
+                    # Разделитель
+                    frame:
+                        xsize 900
+                        ysize 4
+                        xalign 0.5
+                        background "#ac5032"
+                    
+                    # ========================================================
+                    # ДОСТИЖЕНИЯ (только разблокированные)
+                    # ========================================================
+                    text "Достижения:":
+                        size 28
+                        color gui.accent_color
+                        xalign 0.05
+                        outlines [(1, "#671a1a", 0, 0)]
+                    
+                    $ ach_count, ach_total = get_user_achievements_count(user_id)
+                    text "Разблокировано: [ach_count]/[ach_total]":
+                        size 18
+                        xalign 0.5
+                    
+                    $ unlocked_achievements = get_user_achievements_list(user_id)
+                    
+                    if unlocked_achievements:
                         hbox:
-                            spacing 30
+                            spacing 10
                             xalign 0.5
-                            text "Доверие:":
-                                size 20
-                            text "[metrics.get('trust', 30)]%":
-                                size 20
-                                color "#4caf50"
-                                outlines [(1, "#176721", 0, 0)]
+                            for ach in unlocked_achievements:
+                                frame:
+                                    background "#4caf50" + "33"
+                                    padding (8, 5)
+                                    xsize 250
+                                    hbox:
+                                        spacing 8
+                                        text "🏆":
+                                            size 20
+                                        vbox:
+                                            text ach.name:
+                                                size 14
+                                                color "#ffffff"
+                                            text ach.description:
+                                                size 11
+                                                color "#cccccc"
+                    else:
+                        text "Нет разблокированных достижений":
+                            size 16
+                            xalign 0.5
+                    
+                    # Разделитель
+                    frame:
+                        xsize 900
+                        ysize 4
+                        xalign 0.5
+                        background "#ac5032"
+                    
+                    # ========================================================
+                    # ГАЛЕРЕЯ (только количество открытых)
+                    # ========================================================
+                    text "Галерея:":
+                        size 28
+                        color gui.accent_color
+                        xalign 0.05
+                        outlines [(1, "#671a1a", 0, 0)]
+                    
+                    $ gal_unlocked, gal_total = get_user_gallery_progress(user_id)
+                    text "Открыто: [gal_unlocked]/[gal_total] картинок":
+                        size 18
+                        xalign 0.5
+                    
+                    # Разделитель
+                    frame:
+                        xsize 900
+                        ysize 4
+                        xalign 0.5
+                        background "#ac5032"
+                    
+                    # ========================================================
+                    # СОХРАНЕНИЯ
+                    # ========================================================
+                    text "Сохранения:":
+                        size 28
+                        color gui.accent_color
+                        xalign 0.05
+                        outlines [(1, "#671a1a", 0, 0)]
+                    
+                    $ saves = get_user_saves(user_id)
+                    
+                    if saves:
+                        for save in saves:
+                            frame:
+                                background "#3a2a1a"
+                                padding (10, 8)
+                                xsize 1100
+                                xalign 0.5
+                                
+                                hbox:
+                                    spacing 20
+                                    xfill True
+                                    
+                                    text "Слот [save['slot']]":
+                                        size 16
+                                        xsize 120
+                                    
+                                    text "[save['chapter']]":
+                                        size 16
+                                        xsize 300
+                                    
+                                    text "[save['date']]":
+                                        size 16
+                                        xsize 200
+                                    
+                                    textbutton "Загрузить":
+                                        action [Function(custom_load_action, save['slot']), Hide("user_details")]
+                                        background Frame("gui/button/choice_idle_background.png", 10, 10)
+                                        hover_background Frame("gui/button/choice_hover_background_1.png", 10, 10)
+                                        padding (10, 5)
+                                        xsize 150
+                    else:
+                        text "Нет сохранений":
+                            size 16
+                            color "#888888"
+                            xalign 0.5
             
-            null height 10
+            null height 15
             
+            # ================================================================
+            # КНОПКА ЗАКРЫТЬ
+            # ================================================================
             textbutton "Закрыть":
                 xalign 0.5
                 action [Hide("user_details"), Show("debug_database")]
@@ -462,8 +801,7 @@ screen confirm_clear_db():
         background Frame("gui/confirm_frame.png", 25, 25)
         xalign 0.5
         yalign 0.5
-        xsize 600
-        ysize 450
+        xysize (720, 450)
         padding (30, 30)
         
         vbox:
@@ -475,8 +813,7 @@ screen confirm_clear_db():
                 size 40
                 color "#ff4444"
                 xalign 0.5
-                bold True
-                outlines [(2, "#641f1f", 0, 0)]
+                outlines [(1, "#641f1f", 0, 0)]
             
             text "Вы уверены, что хотите очистить базу данных?":
                 size 22
@@ -488,25 +825,25 @@ screen confirm_clear_db():
                 color "#ff4444"
                 xalign 0.5
             
-            null height 10
+            null height 20
             
             hbox:
                 spacing 30
                 xalign 0.5
                 
-                textbutton "ДА, ОЧИСТИТЬ":
+                textbutton "Да, очистить":
                     action [Function(clear_database), Hide("confirm_clear_db"), Show("debug_database")]
                     background Frame("gui/button/choice_idle_background.png", 15, 15)
                     hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
-                    padding (15, 10)
-                    xsize 180
+                    padding (25, 15)
+                    xsize 320
                 
-                textbutton "ОТМЕНА":
+                textbutton "Отмена":
                     action Hide("confirm_clear_db")
                     background Frame("gui/button/choice_idle_background.png", 15, 15)
                     hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
-                    padding (15, 10)
-                    xsize 180
+                    padding (25, 15)
+                    xsize 320
     
     key "K_ESCAPE" action Hide("confirm_clear_db")
     key "game_menu" action Hide("confirm_clear_db")

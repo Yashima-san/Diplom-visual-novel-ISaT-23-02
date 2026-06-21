@@ -528,8 +528,6 @@ screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
                     viewport:
                         yinitial yinitial
                         scrollbars "vertical"
-                        mousewheel True
-                        draggable True
                         pagekeys True
                         edgescroll (300, 500)
                         xadjustment None
@@ -543,8 +541,6 @@ screen game_menu(title, scroll=None, yinitial=0.0, spacing=0):
                         cols 1
                         yinitial yinitial
                         scrollbars "vertical"
-                        mousewheel True
-                        draggable True
                         pagekeys True
                         xadjustment None
                         side_yfill True
@@ -619,6 +615,11 @@ screen about():
             if gui.about:
                 text "[gui.about!t]\n"
             text "Сделано с помощью {a=https://www.renpy.org/}Ren'Py{/a} [renpy.version_only].\n\n[renpy.license!t]"
+            
+            null height 15
+
+            text "Внимание: Игровой проект является педагогическим инструментом и тренажером эмоционального интеллекта."
+            text "Он не заменяет консультацию врача-психотерапевта или клинического психолога при наличии тяжелых психологических состояний и расстройств."
 
 style about_label is gui_label
 style about_label_text is gui_label_text

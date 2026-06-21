@@ -190,8 +190,7 @@ screen gallery():
                     cols 3
                     spacing 40
                     yinitial 0.5
-                    mousewheel True
-                    draggable True
+                    scrollbar "vertical"
                     xpos 50
                     
                     for item in category_items:

@@ -211,8 +211,7 @@ screen achievements():
                 cols 1
                 spacing 15
                 yinitial 0.0
-                mousewheel True
-                draggable True
+                scrollbar "vertical"
                 
                 for ach in sorted(achievements.values(), key=lambda a: (not a.is_unlocked(), a.id)):
                     if ach.is_unlocked() or not ach.hidden:
