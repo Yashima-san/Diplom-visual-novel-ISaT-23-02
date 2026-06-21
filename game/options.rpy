@@ -3,7 +3,7 @@
 ## Основное
 define config.name = _("За гранью чувств")
 define gui.show_name = True
-define config.version = "1.1"
+define config.version = "1.2"
 
 define gui.about = _p("""
 Игровой проект был сделан для обучения понимания чувств и личности человека.

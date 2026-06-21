@@ -45,6 +45,19 @@ default heard_about_conflict = False
 default conflict_version = 0
 default helped_katya = False
 
+# Переменные для отслеживания достижений
+default emotion_wheel_correct_count = 0
+default emotion_wheel_attempts = 0
+default emotion_detective_perfect_count = 0
+default emotion_diary_completed_count = 0
+default first_minigame_completed = False
+default second_minigame_completed = False
+default third_minigame_completed = False
+default all_minigames_perfect = False
+
+# Переменная для отслеживания встречи с Линой
+default met_lina = False
+
 # Статистика выборов
 default choice_statistics = {
     "self_awareness_choices": 0,
@@ -277,11 +290,6 @@ image katia smile = ConditionSwitch("renpy.loadable('images/characters/katia_smi
 image katia speaksmile = ConditionSwitch("renpy.loadable('images/characters/katia_speak_smile.png')", "images/characters/katia_speak_smile.png", "True", "#707ef6")
 image katia sad = ConditionSwitch("renpy.loadable('images/characters/katia_sad.png')", "images/characters/katia_sad.png", "True", "#707ef6")
 
-# image teacher neutral = ConditionSwitch("renpy.loadable('images/characters/teacher_neutral.png')", "images/characters/teacher_neutral.png", "True", "#9370db")
-# image teacher kind = ConditionSwitch("renpy.loadable('images/characters/teacher_kind.png')", "images/characters/teacher_kind.png", "True", "#9370db")
-# image librarian neutral = ConditionSwitch("renpy.loadable('images/characters/librarian_neutral.png')", "images/characters/librarian_neutral.png", "True", "#a0522d")
-# image librarian kind = ConditionSwitch("renpy.loadable('images/characters/librarian_kind.png')", "images/characters/librarian_kind.png", "True", "#a0522d")
-
 # Фоны
 image bg night_room = ConditionSwitch("renpy.loadable('images/night_room.png')", "images/night_room.png", "True", "#000000")
 image bg room_pk = ConditionSwitch("renpy.loadable('images/room_pk.png')", "images/room_pk.png", "True", "#2a2a2a")
@@ -305,8 +313,13 @@ init python:
                 db.update_save_progress(persistent.user_id, chapter_name)
             except:
                 pass
+        
+        # Разблокируем достижения за главы
         try:
-            unlock_achievement("chapter_one_complete")
+            if "Первая" in chapter_name:
+                unlock_achievement("chapter_one_complete")
+            elif "Вторая" in chapter_name:
+                unlock_achievement("chapter_two_complete")
         except:
             pass
         renpy.notify("Глава завершена! Прогресс сохранен.")
@@ -405,6 +418,17 @@ label start:
     $ heard_alex_play = False
     $ after_music_invite_sent = False
     $ conflict_known_from = None
+    $ met_lina = False
+    
+    # Сброс счетчиков для достижений
+    $ emotion_wheel_correct_count = 0
+    $ emotion_wheel_attempts = 0
+    $ emotion_detective_perfect_count = 0
+    $ emotion_diary_completed_count = 0
+    $ first_minigame_completed = False
+    $ second_minigame_completed = False
+    $ third_minigame_completed = False
+    $ all_minigames_perfect = False
     
     python:
         if not hasattr(persistent, 'player_states') or persistent.player_states is None:
@@ -506,6 +530,18 @@ label night_scene:
     
     $ emotion_game_completed = True
     
+    # Проверка достижения за первую мини-игру
+    $ first_minigame_completed = True
+    if not is_achievement_unlocked("emotion_beginner"):
+        $ unlock_achievement("emotion_beginner")
+    
+    # Проверка идеального прохождения (если игрок выбрал правильную эмоцию)
+    if emotion_wheel_correct_count >= 1 and emotion_wheel_attempts == emotion_wheel_correct_count:
+        if not is_achievement_unlocked("emotion_explorer"):
+            $ unlock_achievement("emotion_explorer")
+        if not is_achievement_unlocked("emotion_seeker"):
+            $ unlock_achievement("emotion_seeker")
+    
     narrator "Засыпая, [persistent.user_name] думала только об одном…"
     thought_user "Скорее бы наступило утро..."
     scene black with fade
@@ -541,6 +577,13 @@ label morning_scene:
     scene bg school_entrance with fade
     show lina smile at character_slide_center
     narrator "Лина махала ей рукой."
+    
+    # Разблокируем достижение за встречу с Линой и картинку в галерее
+    if not met_lina:
+        $ met_lina = True
+        if not is_achievement_unlocked("meet_lina"):
+            $ unlock_achievement("meet_lina")
+    
     show lina speaksmile at character_speak_slide
     e "[persistent.user_name]! Привет! Я так рада тебя видеть!"
     show lina smile at character_center_soft_approach
@@ -552,6 +595,12 @@ label morning_scene:
     show lina speaksmile at character_speak_slide
     
     call emotion_diary_minigame("meeting_lina") from _call_emotion_diary_minigame
+    
+    # Проверка достижения за дневник
+    $ emotion_diary_completed_count += 1
+    $ second_minigame_completed = True
+    if emotion_diary_completed_count >= 1 and not is_achievement_unlocked("emotion_pioneer"):
+        $ unlock_achievement("emotion_pioneer")
     
     hide lina
     scene black with fade
@@ -616,6 +665,11 @@ label chapter_two:
     
     show alex speaksmile at character_scale_right
     a "Класс! Я Алекс. Если что-то нужно — обращайся, мы учимся в одном классе."
+    
+    # Разблокируем достижение за знакомство с Алексом
+    if not is_achievement_unlocked("meet_alex"):
+        $ unlock_achievement("meet_alex")
+    
     show lina speaksmile at character_scale_left
     show alex smile at character_scale_right
     e "Алекс умеет играть на гитаре! У него классно получается."
@@ -670,6 +724,10 @@ label music_room_visit:
     
     play music "song/school_ambient.mp3" fadein 2.0
     $ heard_alex_play = True
+    
+    # Разблокируем достижение за посещение музыкальной комнаты
+    if not is_achievement_unlocked("music_room_visit"):
+        $ unlock_achievement("music_room_visit")
     
     show alex smile at character_collision
     
@@ -848,6 +906,10 @@ label help_katya_choice:
     play music "song/Menu_audio_2.mp3" fadein 1.0
     show katia sad at character_collision
     
+    # Разблокируем достижение за встречу с Катей
+    if not is_achievement_unlocked("meet_katya"):
+        $ unlock_achievement("meet_katya")
+    
     menu:
         "Подойти к Кате и поговорить (помочь разобраться)":
             $ update_player_state(empathy_change=3, trust_change=2)
@@ -884,6 +946,19 @@ label talk_to_katya_with_minigame:
     
     # Вызов мини-игры Эмоциональный детектив со специальным сценарием
     call emotion_detective_minigame("help_katya") from _call_emotion_detective_minigame
+    
+    # Третья мини-игра завершена
+    $ third_minigame_completed = True
+    if emotion_detective_perfect_count >= 1:
+        if not is_achievement_unlocked("emotion_treasure_hunter"):
+            $ unlock_achievement("emotion_treasure_hunter")
+    
+    # Проверка идеального прохождения всех трёх мини-игр
+    if first_minigame_completed and second_minigame_completed and third_minigame_completed:
+        if emotion_wheel_correct_count >= 1 and emotion_detective_perfect_count >= 1 and emotion_diary_completed_count >= 1:
+            if not is_achievement_unlocked("emotion_seeker"):
+                $ unlock_achievement("emotion_seeker")
+            $ all_minigames_perfect = True
     
     # После мини-игры проверяем успех
     if detective_score >= 10:
@@ -1033,6 +1108,10 @@ label go_to_library_with_lina:
     show katia smile at character_scale_center
     show lina smile at character_scale_left
     
+    # Разблокируем достижение за встречу с Катей (если ещё не разблокировано)
+    if not is_achievement_unlocked("meet_katya"):
+        $ unlock_achievement("meet_katya")
+    
     menu help_katya_with_lina:
         "Попробовать поговорить с Катей (помочь разобраться)":
             $ helped_katya = True
@@ -1066,6 +1145,10 @@ label meet_katya_after_conflict:
     
     $ update_player_state(empathy_change=3, trust_change=3)
     $ heard_about_conflict = True
+    
+    # Разблокируем достижение за встречу с Катей (если ещё не разблокировано)
+    if not is_achievement_unlocked("meet_katya"):
+        $ unlock_achievement("meet_katya")
        
     stop music fadeout 3.0
     jump after_conflict_skip_help

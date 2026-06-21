@@ -261,7 +261,12 @@ screen gallery():
                                                 
                                                 $ image_exists = renpy.loadable(item.image) if item.image else False
                                                 if image_exists:
-                                                    add Transform(item.image, zoom=0.2, xalign=0.5, yalign=0.5) xysize (300, 160)
+                                                    # ИСПРАВЛЕНО: используем xysize с сохранением пропорций
+                                                    add item.image:
+                                                        xysize (300, 160)
+                                                        fit "contain"
+                                                        xalign 0.5
+                                                        yalign 0.5
                                                 else:
                                                     text "Изображение\nне найдено" size 20 xalign 0.5 yalign 0.5
                                                 
@@ -321,7 +326,12 @@ screen gallery_image_popup(image, title):
             
             $ image_exists = renpy.loadable(image) if image else False
             if image_exists:
-                add Transform(image, zoom=0.8, xalign=0.5, yalign=0.5) xsize 1170 ysize 620
+                # ИСПРАВЛЕНО: используем xysize с сохранением пропорций для поп-апа
+                add image:
+                    xysize (1170, 620)
+                    fit "contain"
+                    xalign 0.5
+                    yalign 0.5
             else:
                 text "Изображение не найдено:\n[image]" size 30 xalign 0.5 yalign 0.5
             
