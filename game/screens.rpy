@@ -1553,18 +1553,21 @@ screen input_name_screen():
         style "input_frame"
         xalign 0.5
         yalign 0.5
-        xsize 600
+        xsize 700
         ysize 400
         padding (30, 30)
         vbox:
             spacing 25
             xalign 0.5
             text "Как тебя зовут?":
-                size 36
+                size 40
                 color "#e15a5a"
                 font gui.interface_text_font
                 xalign 0.5
                 outlines [(2, "#913218", 0, 0)]
+            
+            null height 10
+
             frame:
                 style "input_field_frame"
                 xysize (540, 70)
@@ -1583,8 +1586,9 @@ screen input_name_screen():
                 xalign 0.5
                 style "input_confirm_button"
                 action Return(input_name)
+
             text "Нажмите ENTER, чтобы продолжить":
-                size 18
+                size 20
                 color "#b03b2e"
                 font gui.interface_text_font
                 xalign 0.5

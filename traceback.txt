@@ -1,55 +1,36 @@
 ﻿I'm sorry, but an uncaught exception occurred.
 
 While running game code:
-  File "game/script.rpy", line 554, in script call
-    call emotion_diary_minigame("meeting_lina") from _call_emotion_diary_minigame
-  File "game/emotion_diary_minigame.rpy", line 444, in script
-    narrator "[scenario['narration']]"
-KeyError: 'narration'
+  File "game/script.rpy", line 741, in script
+    show alex speak at character_scale_collision
+  File "game/script.rpy", line 741, in <module>
+    show alex speak at character_scale_collision
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'character_scale_collision' is not defined. Did you mean: 'character_collision'?
 
 -- Full Traceback ------------------------------------------------------------
 
 Traceback (most recent call last):
-  File "game/script.rpy", line 554, in script call
-    call emotion_diary_minigame("meeting_lina") from _call_emotion_diary_minigame
-  File "game/emotion_diary_minigame.rpy", line 444, in script
-    narrator "[scenario['narration']]"
-  File "renpy/ast.py", line 2926, in execute
-    Say.execute(self)
-    ~~~~~~~~~~~^^^^^^
-  File "renpy/ast.py", line 991, in execute
-    renpy.exports.say(who, what, *args, **kwargs)
-    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/exports/sayexports.py", line 129, in say
-    who(what, *args, **kwargs)
-    ~~~^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/character.py", line 1550, in __call__
-    what = self.prefix_suffix("what", self.what_prefix, what, self.what_suffix)
-           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "renpy/character.py", line 1464, in prefix_suffix
-    return sub(prefix) + sub(body, translate=not renpy.game.context().translated) + sub(suffix)
-                         ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^              
-  File "renpy/character.py", line 1443, in sub
-    return renpy.substitutions.substitute(s, scope=scope, force=force, translate=translate)[0]
-           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^   
-  File "renpy/substitutions.py", line 358, in substitute
-    s = interpolate(s, variables)  # type: ignore
-        ~~~~~~~~~~~^^^^^^^^^^^^^^                
-  File "renpy/substitutions.py", line 89, in interpolate
-    raise e
-  File "renpy/substitutions.py", line 81, in interpolate
-    value = renpy.python.py_eval(code, {}, scope)
-            ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "game/script.rpy", line 741, in script
+    show alex speak at character_scale_collision
+  File "renpy/ast.py", line 1358, in execute
+    show_imspec(self.imspec, atl=getattr(self, "atl", None))
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "renpy/ast.py", line 726, in show_imspec
+    at_list = [renpy.python.py_eval(i) for i in at_list]
+               ~~~~~~~~~~~~~~~~~~~~^^^                  
   File "renpy/python.py", line 1364, in py_eval
     return py_eval_bytecode(code, globals, locals)
            ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
   File "renpy/python.py", line 1357, in py_eval_bytecode
     return eval(bytecode, globals, locals)
            ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<none>", line 1, in <module>
-KeyError: 'narration'
+  File "game/script.rpy", line 741, in <module>
+    show alex speak at character_scale_collision
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'character_scale_collision' is not defined. Did you mean: 'character_collision'?
 
 Windows-11-10.0.26200-SP0 AMD64
 Ren'Py 8.6.0.26031705+nightly
 За гранью чувств 1.0
-Sun Jun 21 03:40:36 2026
+Sun Jun 21 14:58:03 2026

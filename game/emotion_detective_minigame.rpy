@@ -222,7 +222,7 @@ screen body_clues_selector(available_clues, on_select):
                 background Frame("gui/button/choice_idle_background.png", 15, 15)
                 hover_background Frame("gui/button/choice_hover_background_1.png", 15, 15)
                 padding (20, 12)
-                xsize 200
+                xsize 320
     
     key "K_ESCAPE" action Return([])
 

@@ -322,7 +322,7 @@ screen user_details(user_id, user_name):
     use game_menu(_(title_text), scroll="viewport"):
         vbox:
             spacing 20
-            xfill True
+            xfill 1200
             
             button:
                 action Show("debug_database")

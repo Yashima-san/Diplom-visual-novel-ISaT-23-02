@@ -14,7 +14,7 @@ init python:
             "character": "lina smile",
             "character_position": "character_scale_center", 
             "character_dialogue": "Как ты себя чувствуешь? Волнуешься?",
-            "narration": "Ты чувствуешь, как сердце бьётся чуть чаще. В груди тепло, но в то же время лёгкое напряжение. Лина смотрит на тебя с ожиданием.",  # ← ДОБАВЛЕНО
+            "narration": "Ты чувствуешь, как сердце бьётся чуть чаще. В груди тепло, но в то же время лёгкое напряжение. Лина смотрит на тебя с ожиданием.",
             "body_sensations": {
                 "heart_fast": "Сердце бьётся чуть чаще",
                 "throat_tight": "Ком в горле",
@@ -136,8 +136,6 @@ screen body_sensations_picker(sensations_dict):
                 xalign 0.5
             
             viewport:
-                mousewheel True
-                scrollbars "vertical"
                 ysize 350
                 vbox:
                     spacing 8
@@ -231,8 +229,6 @@ screen reaction_selector(reactions_dict):
                 xalign 0.5
             
             viewport:
-                mousewheel True
-                scrollbars "vertical"
                 ysize 350
                 vbox:
                     spacing 12

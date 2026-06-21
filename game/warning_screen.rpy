@@ -4,13 +4,12 @@
 screen warning_screen():
     modal True
     zorder 200
-    add "gui/overlay/confirm.png"
     
     frame:
         background Frame("gui/confirm_frame.png", 25, 25)
         xalign 0.5
         yalign 0.5
-        xsize 700
+        xsize 800
         ysize 500
         padding (30, 30)
         
@@ -21,27 +20,27 @@ screen warning_screen():
             
             text "⚠️ ВНИМАНИЕ":
                 size 40
-                color "#ff4444"
-                xalign 0.5
-                outlines [(2, "#1a1a1a", 0, 0)]
+                color "#cf4d4d"
+                xalign 0.45
+                outlines [(2, "#671717", 0, 0)]
             
-            text "Эта игра содержит темы, связанные с эмоциональными переживаниями, тревогой и сложными социальными ситуациями.":
+            text "Эта игра содержит темы, связанные с эмоциональными переживаниями, тревогой.":
                 size 22
                 xalign 0.5
                 text_align 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
             
             text "Все персонажи и события являются вымышленными. Любое сходство с реальными людьми случайно.":
                 size 20
                 xalign 0.5
                 text_align 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
-            
+
+            null height 10
+
             text "Игра предназначена для аудитории старше 12 лет.":
-                size 20
+                color "#931f1f"
+                size 24
                 xalign 0.5
-                text_align 0.5
-                outlines [(1, "#1a1a1a", 0, 0)]
+                text_align 0.75
             
             null height 10
             
