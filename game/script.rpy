@@ -578,15 +578,17 @@ label chapter_two:
     pause 3.0
     scene black with dissolve
     
-    play music "song/Audio_soft_2.mp3" fadein 5.0
+    play music "song/school_ambient.mp3" fadein 2.0
     play sound "sounds/footsteps.mp3" fadein 2.0
     $ renpy.music.set_volume(0.4, delay=5)
     scene bg school_hallway with fade
     show lina smile at character_slide_left
     narrator "Лина вела [persistent.user_name] по коридорам."
     show lina speaksmile at character_speak_slide
+    e "Хорошо что ты со мной в одном классе! Тебе будет намного легче освоиться в школе."
+    show lina speaksmile at character_scale_center
     e "Смотри, это наша раздевалка! А тут спортзал."
-    
+
     play sound "sounds/running.mp3" fadein 1.0
     narrator "Пока Лина объясняла где что находится, внезапно, из-за угла выскочил парень."
     stop sound fadeout 3.0
@@ -594,13 +596,15 @@ label chapter_two:
     show lina neutral at character_collision_left
     show alex speak at character_collision_right
     stop sound fadeout 3.0
-    a "Ой, простите! Вы новенькая?"
+    a "Ой, простите! Я не заметил вас девчонки.."
+    narrator "Молодой человек посмотрел на [persistent.user_name]."
+    a "Вы новенькая?"
     
     menu second_chapter_first_choice:
-        "Да, я сегодня первый день. Приятно познакомиться.":
+        "Да, сегодня мой первый день. Приятно познакомиться...":
             $ chapter2_choice_1 = 1
             $ update_player_state(self_awareness_change=3, trust_change=5, anxiety_change=-3)
-            user_char "Да, я сегодня первый день. Приятно познакомиться."
+            user_char "Да, сегодня мой первый день. Приятно познакомиться..."
         "Эм... да. Я новенькая.":
             $ chapter2_choice_1 = 2
             $ update_player_state(anxiety_change=3, trust_change=-2)
@@ -611,12 +615,13 @@ label chapter_two:
             narrator "[persistent.user_name] просто молча кивнула."
     
     show alex speaksmile at character_scale_right
-    a "Класс! Я Алекс. Если что-то нужно — обращайся."
+    a "Класс! Я Алекс. Если что-то нужно — обращайся, мы учимся в одном классе."
     show lina speaksmile at character_scale_left
     show alex smile at character_scale_right
-    e "Алекс играет на гитаре!"
+    e "Алекс умеет играть на гитаре! У него классно получается."
+    show lina smile at character_scale_left
     show alex speak at character_scale_right
-    a "Слушай, а вы на большую перемену в музыкалку не хотите сходить?"
+    a "Слушай, а вы на большую перемену в музыкальный класс не хотите сходить?"
     
     menu second_chapter_second_choice:
         "Давай сходим. Интересно посмотреть.":
@@ -636,8 +641,9 @@ label chapter_two:
         show lina sad at character_move_to_center
         e "Ну хотя бы на пару минут заглянем?"
         user_char "Ладно, уговорила."
-        show lina smile at character_move_to_center
-
+        show lina smile at character_scale_center
+    
+    stop music fadeout 3.0
     # --- РАЗВЕТВЛЕНИЕ: ИДЁМ В МУЗЫКАЛКУ ИЛИ НЕТ ---
     if chapter2_choice_2 != 2:
         jump music_room_visit
@@ -646,20 +652,23 @@ label chapter_two:
 
 label music_room_visit:
     scene bg music_room with fade
-    play music "song/gentle_guitar.mp3" fadein 3.0
-    
     $ visited_music_room = True
+    play music "song/school_ambient.mp3" fadein 2.0
     
     narrator "Актовый зал оказался уютным и светлым."
     show alex speaksmile at character_move_to_center
-    a "Мы сейчас разучиваем новую песню. Хотите послушать?"
+    a "Мы сейчас на кружке разучиваем новую песню, поэтому я могу кривовато исполнить мелодию."
     
+    stop music fadeout 3.0
     hide alex
+    play music "song/gentle_guitar.mp3" fadein 3.0
     narrator "Алекс взял гитару и начал играть мелодичную композицию."
     narrator "Звуки гитары наполнили комнату теплом и уютом."
+    narrator "Игра была немного неуверенной и слегка сбивчивой, но от этого живой."
     stop music fadeout 2.0
-    narrator "Музыка закончилась, и Алекс посмотрел на тебя с надеждой."
+    narrator "Музыка закончилась, и Алекс посмотрел на [persistent.user_name]. Ему было интересно что она скажет."
     
+    play music "song/school_ambient.mp3" fadein 2.0
     $ heard_alex_play = True
     
     show alex smile at character_collision
@@ -685,12 +694,17 @@ label music_room_visit:
             a "Понимаю. Но если захочешь послушать ещё — приходи, я всегда рад."
     
     show lina speaksmile at character_collision_left
-    e "Ты здорово играешь, Алекс!"
+    e "Ты здорово играешь, Алекс! У тебя получается всё лучше и лучше!"
     show alex speaksmile at character_collision_right
     show lina smile at character_collision_left
+
+    play sound "sounds/message_receive.mp3" fadein 5.0
     a "Спасибо, Лина."
     
     # Лина уходит
+    show lina neutral at character_scale_left
+    narrator "Лине пришло уведомление на телефон. Она посмотрела, кто ей наисал"
+    stop sound fadeout 3.0
     show lina speak at character_collision_left
     e "Извините, мне нужно забежать в учительскую. Я быстро!"
     show lina neutral at character_fade_left
@@ -714,7 +728,8 @@ label music_room_visit:
             $ library_choice = 2
             $ update_player_state(empathy_change=3)
             jump wait_for_lina_in_music_room
-
+    
+    stop music fadeout 3.0
 # ============================================================================
 # ПУТЬ 1: В БИБЛИОТЕКУ С АЛЕКСОМ (ПРЯМОЕ НАБЛЮДЕНИЕ КОНФЛИКТА)
 # ============================================================================
@@ -738,15 +753,16 @@ label library_with_alex:
         "Не очень... Мне сложно сосредоточиться.":
             $ update_player_state(anxiety_change=3)
             user_char "Не очень... Мне сложно сосредоточиться."
-            show alex speak at character_scale_collision
+            show alex speak at character_scale_center
             a "Понимаю. Иногда я тоже не могу усидеть на месте."
         "Иногда читаю, но больше люблю слушать музыку.":
             $ update_player_state(empathy_change=3)
             user_char "Иногда читаю, но больше люблю слушать музыку."
-            show alex speaksmile at character_scale_collision
+            show alex speaksmile at character_collision
             a "Музыка — это тоже язык чувств. Рад, что тебе понравилось."
     
     play sound "sounds/footsteps.mp3" fadein 2.0
+    hide alex neutral fade
     narrator "Вы мило поболтали о книгах и музыке. [persistent.user_name] решила немного оглядеться и начала осматривать стеллажи на соседнем ряду."
     narrator "Она была недалеко от Алекса, который что-то искал в книгах."
     stop sound fadeout 1.0

@@ -294,8 +294,6 @@ screen messenger_chat():
                 id "chat_viewport"
                 yfill True  # Растягивается на всю доступную высоту
                 scrollbars "vertical"
-                mousewheel True
-                draggable True
                 yinitial 1.0
                 vbox:
                     spacing 10
